@@ -1,0 +1,30 @@
+.indicator-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+    user-select: none;
+    z-index: 25;
+    pointer-events: none;
+
+    .indicator {
+        flex: none;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 0 2rem;
+        border-radius: 4rem;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.5px;
+        color: #ffffff;
+        background-color: rgba(10, 13, 18, 0.92);
+        border: 1px solid rgba(242, 122, 36, 0.7);
+        box-shadow: 0 0 22px rgba(242, 122, 36, 0.4);
+        backdrop-filter: blur(8px);
+    }
+}

@@ -1,0 +1,49 @@
+name: Bug report
+description: Something does not work as it should
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for reporting. Please leave out secrets, tokens, private addon URLs and personal data."
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where?
+      options:
+        - Profiles / login
+        - Home / Discover / Smart filters
+        - AI copilot
+        - Streaming / player
+        - Downloads / Quality profiles
+        - Sentinel (auto-download)
+        - Server library
+        - Admin
+        - Deployment (Docker / Cloudflare)
+        - Other
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: "5.0.0-beta.42 or a commit hash"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Browser console or `docker logs` output, with secrets removed.
+      render: shell

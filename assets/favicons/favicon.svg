@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+    <title>HomeBot Cinema</title>
+    <defs>
+        <linearGradient id="hb-glow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD25A"/><stop offset="1" stop-color="#F27A24"/></linearGradient>
+        <mask id="hb-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+            <rect width="512" height="512" fill="#fff"/>
+            <path d="M232 268 L232 360 L318 314 Z" fill="#000" stroke="#000" stroke-width="22" stroke-linejoin="round"/>
+        </mask>
+        <linearGradient id="hb-tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a202b"/><stop offset="1" stop-color="#0a0d12"/></linearGradient>
+        <radialGradient id="hb-halo" cx="0.5" cy="0.62" r="0.5"><stop offset="0" stop-color="#F27A24" stop-opacity="0.28"/><stop offset="1" stop-color="#F27A24" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect x="8" y="8" width="496" height="496" rx="116" fill="url(#hb-tile)"/>
+    <rect x="8" y="8" width="496" height="496" rx="116" fill="url(#hb-halo)"/>
+    <rect x="11" y="11" width="490" height="490" rx="113" stroke="#fff" stroke-opacity="0.09" stroke-width="6"/>
+    <path d="M256 86 L420 230 V414 H92 V230 Z" fill="url(#hb-glow)" stroke="url(#hb-glow)" stroke-width="30" stroke-linejoin="round" mask="url(#hb-cut)"/>
+</svg>

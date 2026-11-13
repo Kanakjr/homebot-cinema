@@ -1,0 +1,15 @@
+.hint { color: var(--primary-foreground-color); opacity: 0.6; font-size: 0.95rem; margin-bottom: 1rem; }
+.swatches { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; max-width: 22rem; }
+.swatch {
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    &.selected { border-color: #fff; box-shadow: 0 0 0 2px #000 inset; }
+    &:focus-visible { outline: 2px solid var(--primary-accent-color); outline-offset: 2px; }
+}
+.range { display: flex; align-items: center; gap: 0.8rem; input { width: 12rem; accent-color: var(--primary-accent-color); } }
+.value { min-width: 3rem; text-align: right; opacity: 0.8; }
+.status { margin-top: 0.75rem; opacity: 0.6; font-size: 0.9rem; }

@@ -1,0 +1,112 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+
+.hero {
+    position: relative;
+    flex: none;
+    height: clamp(18rem, 42vh, 28rem);
+    margin: 0 0 1.5rem 0;
+    border-radius: 1.6rem;
+    overflow: hidden;
+    background: #0e0e10;
+
+    .slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.7s ease;
+
+        &.active { opacity: 1; pointer-events: auto; }
+    }
+
+    .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 20%; }
+
+    .shade {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.55) 38%, rgba(0, 0, 0, 0) 70%),
+            linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 40%);
+    }
+
+    .content {
+        position: absolute;
+        left: 4.2rem;
+        bottom: 2.4rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        max-width: 55%;
+    }
+
+    .logo { max-width: 24rem; max-height: 8rem; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.6)); }
+    .title { font-size: 2.8rem; font-weight: 800; line-height: 1.1; color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6); }
+
+    .meta { display: flex; align-items: center; gap: 0.7rem; font-size: 1.05rem; color: rgba(255, 255, 255, 0.85); .dot { opacity: 0.6; } }
+
+    .cta {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.8rem 1.6rem;
+        border-radius: 1.4rem;
+        background: #fff;
+        color: #000;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 0.15s;
+        &:hover, &:focus-visible { transform: scale(1.04); }
+    }
+
+    // small round, see-through previous/next buttons; shown while the pointer or keyboard is on the banner (always, a bit fainter, on touch screens)
+    .nav {
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.35);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(-50%);
+        transition: opacity 0.2s, background 0.2s, border-color 0.2s, transform 0.15s;
+
+        &.prev { left: 1rem; }
+        &.next { right: 1rem; }
+        &:hover { background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.45); }
+        &:active { transform: translateY(-50%) scale(0.93); }
+        &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+    }
+    &:hover .nav, &:focus-within .nav { opacity: 1; }
+
+    .dots { position: absolute; right: 1.6rem; bottom: 1.4rem; display: flex; gap: 0.5rem; }
+    .pip {
+        width: 0.55rem;
+        height: 0.55rem;
+        padding: 0;
+        border: none;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.35);
+        cursor: pointer;
+        transition: width 0.25s, background 0.25s;
+        &.on { width: 1.8rem; background: #fff; }
+    }
+}
+
+@media (hover: none) {
+    .hero .nav { opacity: 0.7; width: 2.2rem; height: 2.2rem; &.prev { left: 0.5rem; } &.next { right: 0.5rem; } }
+}
+
+@media (max-width: 640px) {
+    .hero { .content { left: 3.4rem; max-width: 80%; } .logo { max-width: 14rem; } }
+}

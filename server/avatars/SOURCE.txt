@@ -1,0 +1,2 @@
+Original artwork drawn for this project by scripts/brand/make-avatars.js (same license as the repository, GPL-2.0).
+Any other PNG you drop in this folder (a-z, 0-9 and dashes in the name) shows up as a preset avatar; keep it to artwork you have the right to use.
