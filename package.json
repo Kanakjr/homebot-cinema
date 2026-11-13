@@ -56,7 +56,7 @@
         "react-focus-lock": "2.13.7",
         "react-i18next": "^15.7.4",
         "react-is": "18.3.1",
-        "react-router": "6.30.0",
+        "react-router": "7.18.5",
         "react-router-dom": "6.30.0",
         "spatial-navigation-polyfill": "github:Stremio/spatial-navigation#64871b1422466f5f45d24ebc8bbd315b2ebab6a6",
         "stremio-translations": "github:Stremio/stremio-translations#779d9b141f3d0b4c2c24fec5686bb5581635f27e",
