@@ -1,0 +1,85 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+
+@surface: #0e0e10;
+@surface-2: #18181b;
+@border: rgba(255, 255, 255, 0.1);
+@fg: var(--primary-foreground-color);
+@muted: rgba(255, 255, 255, 0.6);
+
+.route { background: var(--primary-background-color); }
+
+.scroll {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.page {
+    padding: 1.6rem 2.4rem 5rem;
+    max-width: 62rem;
+    color: @fg;
+    box-sizing: border-box;
+
+    .muted { color: @muted; font-weight: 500; b { color: @fg; } }
+    .error { margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 0.8rem; background: rgba(255, 80, 80, 0.12); color: #ff9a9a; }
+    .empty { padding: 1.2rem 0; color: @muted; }
+    .hint { margin: -0.3rem 0 0.8rem; font-size: 0.9rem; color: @muted; }
+
+    .btn, .btn-sm {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.65rem 1.2rem;
+        border: 1px solid @border;
+        border-radius: 1.2rem;
+        background: @surface-2;
+        color: #fff;
+        font: inherit;
+        font-size: 0.92rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        &:disabled { opacity: 0.55; cursor: default; }
+    }
+    .btn-sm { padding: 0.45rem 0.9rem; border-radius: 0.7rem; font-size: 0.82rem; &.danger { color: #ff7b7b; background: transparent; border-color: rgba(255, 107, 107, 0.35); } }
+
+    .storage { margin-bottom: 1.8rem; padding: 1rem 1.2rem; border: 1px solid @border; border-radius: 1rem; background: @surface; }
+    .storage-top { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.7rem; font-weight: 800; }
+
+    .track { height: 0.45rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+    .fill { height: 100%; border-radius: 1rem; background: var(--primary-accent-color); transition: width 0.4s; &.hot { background: #ff5a5a; } }
+
+    .section { display: flex; align-items: center; gap: 0.6rem; margin: 2rem 0 0.9rem; font-size: 1.35rem; font-weight: 800; }
+    .count { padding: 0.1rem 0.6rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); font-size: 0.82rem; }
+
+    .list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem 1rem;
+        border: 1px solid @border;
+        border-radius: 1rem;
+        background: @surface;
+        color: @fg;
+        font: inherit;
+        text-align: left;
+
+        &.clickable { cursor: pointer; width: 100%; &:hover { border-color: #fff; } }
+        .go { flex: none; color: @muted; font-weight: 700; font-size: 0.88rem; }
+    }
+    .thumb { flex: none; width: 3.2rem; height: 4.6rem; border-radius: 0.5rem; object-fit: cover; background: @surface-2; }
+    .thumb-empty { display: flex; align-items: center; justify-content: center; font-weight: 800; color: @muted; }
+    .card-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+    .card-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.85rem; color: @muted; }
+    .card-actions { flex: none; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .profile-select { max-width: 12rem; padding: 0.4rem 0.7rem; border: 1px solid @border; border-radius: 0.7rem; background: @surface-2; color: #fff; font: inherit; font-size: 0.8rem; font-weight: 700; outline: none; option { background: #18181b; } }
+}
+
+@media (max-width: 640px) {
+    .page { padding: 1rem 1rem 5rem; .card { flex-wrap: wrap; } }
+}

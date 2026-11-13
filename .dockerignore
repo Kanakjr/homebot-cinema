@@ -1,0 +1,9 @@
+node_modules
+# runtime state and secrets never belong in the build context
+data
+.env
+.env.*
+.cache
+build
+.claude
+*.log

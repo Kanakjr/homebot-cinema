@@ -1,0 +1,77 @@
+# HomeBot Cinema: example stack (the app + the Stremio streaming server + Transmission).
+#
+#   cp .env.example .env                              # fill in the values (see README > Configuration)
+#   cp data/addons.example.json data/addons.json      # the addons your household sees; add your own sources here
+#   cp docker-compose.example.yml docker-compose.yml  # then adjust the media paths below
+#   docker compose up -d --build                      # -> http://localhost:3002
+#
+# Login: in production put the app behind Cloudflare Access (CF_TEAM_DOMAIN, CF_ACCESS_AUD, ADMIN_EMAILS in .env), which
+# is the only supported way to sign in. To just try it on your own machine, uncomment the two "local trial" lines below.
+# They let anyone who can reach the port in as an admin: never use them on a server other people can reach.
+#
+# Media folders: Transmission, the streaming server and the app all see the same /Movies and /TV paths, so a finished
+# download is found wherever it is looked at. Point the left-hand sides at real folders on your disk.
+
+services:
+  homebot-cinema:
+    build: .
+    container_name: homebot-cinema
+    ports:
+      - "3002:8080"
+    env_file:
+      - .env
+    environment:
+      - LIBRARY_MOVIES_DIR=/Movies
+      - LIBRARY_TV_DIR=/TV
+      # --- local trial only (see above) ---
+      # - NODE_ENV=development
+      # - DEV_EMAIL=you@example.com
+    volumes:
+      - ./data:/var/www/stremio-web/data   # database, addon list, snapshots: back this folder up
+      - ./media/Movies:/Movies
+      - ./media/TV:/TV
+      - ./downloads:/downloads
+    depends_on:
+      - stremio-streaming-server
+      - transmission
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Streams and transcodes video (HLS) for the player. Not published to the internet: only the app talks to it.
+  stremio-streaming-server:
+    image: stremio/server:latest
+    container_name: stremio-streaming-server
+    environment:
+      - NO_CORS=1
+    volumes:
+      - ./stremio-server:/root/.stremio-server
+      - ./media/Movies:/Movies
+      - ./media/TV:/TV
+      - ./downloads:/downloads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:11470/stats.json || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Downloads to your own disk. The app drives it over RPC (TRANSMISSION_HOST / TRANSMISSION_PORT in .env).
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./transmission:/config
+      - ./media/Movies:/Movies
+      - ./media/TV:/TV
+      - ./downloads:/downloads
+    restart: unless-stopped

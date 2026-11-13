@@ -1,0 +1,139 @@
+.shortcuts-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.15s ease-out;
+}
+
+.shortcuts-modal-card {
+    position: relative;
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    background: #0d1117;
+    border: 1px solid rgba(242, 122, 36, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 0 35px rgba(242, 122, 36, 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: #f0f6fc;
+}
+
+.shortcuts-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid rgba(242, 122, 36, 0.25);
+    background: rgba(242, 122, 36, 0.08);
+
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+
+        .icon {
+            color: #F27A24;
+            font-size: 1.3rem;
+        }
+
+        .title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    .close-button {
+        background: transparent;
+        border: none;
+        color: #8b949e;
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+
+        &:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+.shortcuts-modal-body {
+    padding: 1.2rem 1.5rem;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+}
+
+.shortcuts-section {
+    background: rgba(22, 27, 34, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 1rem;
+
+    .section-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #F27A24;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .shortcut-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .shortcut-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.88rem;
+
+        .label {
+            color: #c9d1d9;
+        }
+
+        .keys {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+
+            kbd {
+                background: #161b22;
+                border: 1px solid rgba(242, 122, 36, 0.4);
+                color: #FFD700;
+                padding: 0.15rem 0.45rem;
+                border-radius: 5px;
+                font-family: monospace;
+                font-size: 0.8rem;
+                font-weight: 600;
+                box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+            }
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+}
