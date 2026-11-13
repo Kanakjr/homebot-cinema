@@ -35,7 +35,7 @@
         "@stremio/stremio-core-web": "0.65.1",
         "@stremio/stremio-icons": "5.15.0",
         "@stremio/stremio-video": "0.0.98",
-        "bowser": "2.14.1",
+        "bowser": "2.15.0",
         "buffer": "6.0.3",
         "classnames": "2.5.1",
         "eventemitter3": "5.0.4",
