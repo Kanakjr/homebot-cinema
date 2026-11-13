@@ -13,9 +13,15 @@ smart discovery, and an AI copilot that only suggests: you press the button.
 [![Docker](https://img.shields.io/badge/docker-compose-2496ed)](docker-compose.example.yml)
 [![Built on Stremio Web](https://img.shields.io/badge/built%20on-Stremio%20Web-8a5bf5)](https://github.com/Stremio/stremio-web)
 
-<img src="docs/screenshots/home.png" alt="HomeBot Cinema home screen" width="100%">
+<img src="docs/screenshots/home.webp" alt="HomeBot Cinema home screen" width="100%">
 
 </div>
+
+## Watch the demo
+
+[![HomeBot Cinema demo: a private Netflix for the whole family, on YouTube](https://img.youtube.com/vi/e2sj2VLFnLc/maxresdefault.jpg)](https://youtu.be/e2sj2VLFnLc)
+
+A tour of profiles, Smart filters, the AI copilot, downloads and Sentinel. ▶ [Watch on YouTube](https://youtu.be/e2sj2VLFnLc)
 
 ## What is it?
 
@@ -36,14 +42,14 @@ file and one folder you can back up.
 ### For the household
 - **Profiles for everyone** (up to 8): a "Who's watching?" screen, avatars, an optional PIN, and a **kids** profile.
   Each profile has its own library, Continue watching, watch progress and settings.
-- **Home hero banner** and rows built from your addons, with *Continue watching* that follows each profile.
+- **Home hero banner** and rows built from your addons, with *Continue watching* that follows each profile, plus search across all of them.
 - **Smart filters** (`Discover > Smart filters`): find titles by rating, votes, genre, language, runtime, year and
   "on a streaming service in your country", powered by [TMDB](https://www.themoviedb.org). 40 ready-made quick picks
   (charts, genres, languages, short on time), a hover info panel, and a kid-safe mode.
 - **Phone friendly and installable** as a PWA; interface zoom (default 90%); a clean full-screen layout on small screens.
 
 ### AI copilot
-<img src="docs/screenshots/copilot.png" alt="The AI copilot suggesting titles" align="right" width="46%">
+<img src="docs/screenshots/copilot-mobile.webp" alt="The AI copilot on a phone, suggesting titles as poster cards" align="right" width="30%">
 
 Click the sparkle button in the top bar and ask: *"something light under two hours"*, *"what did I leave unfinished?"*,
 *"is season 3 on the server?"*, *"download this in 1080p"*, *"keep this show updated"*.
@@ -76,20 +82,34 @@ Click the sparkle button in the top bar and ask: *"something light under two hou
 
 ## Screenshots
 
+### Discover and Smart filters
+
 | | |
 |:---:|:---:|
-| ![Smart filters](docs/screenshots/find.png) | ![Title page](docs/screenshots/detail.png) |
-| **Smart filters** with the hover info panel | **Title page** with sources and the download bar |
-| ![Downloads and Sentinel](docs/screenshots/downloads.png) | ![Server library](docs/screenshots/library.png) |
-| **Downloads** and **Sentinel** (auto-download) | **Server library** |
+| ![Smart filters: series on a streaming service rated 8 and up](docs/screenshots/smart-filters.webp) | ![Smart filters: the quick picks menu](docs/screenshots/quick-picks.webp) |
+| **Smart filters** with the hover info panel | **40 quick picks**: charts, services, genres, languages |
+| ![Discover: the addon catalogs with the info panel](docs/screenshots/discover.webp) | ![Search across all addons](docs/screenshots/search.webp) |
+| **Discover** your addon catalogs | **Search** across all your addons |
 
-<p align="center">
-  <img src="docs/screenshots/mobile-home.png" alt="Phone: home" width="24%">
-  &nbsp;
-  <img src="docs/screenshots/mobile-copilot.png" alt="Phone: the copilot" width="24%">
-  &nbsp;
-  <img src="docs/screenshots/profiles.png" alt="Who's watching?" width="48%">
-</p>
+### Titles, downloads and quality
+
+| | |
+|:---:|:---:|
+| ![A title page with the server status, quality profile and Save to server](docs/screenshots/title-page.webp) | ![Downloads: storage, active downloads, monitored shows and recently completed](docs/screenshots/downloads.webp) |
+| **Title page**: server status, quality profile, *Save to server*, *Auto-download episodes* | **Downloads**: storage, active downloads, Sentinel and what just finished |
+| ![Quality profiles editor](docs/screenshots/quality-profiles.webp) | ![Admin overview: storage, library, downloads, Sentinel, streaming, people](docs/screenshots/admin-overview.webp) |
+| **Quality profiles**: resolutions and size limits per movie or episode | **Admin overview**: storage, library, downloads, Sentinel, people |
+
+### Library, calendar and player
+
+| | |
+|:---:|:---:|
+| ![Your library, per profile](docs/screenshots/library.webp) | ![The calendar of upcoming episodes](docs/screenshots/calendar.webp) |
+| **Your library**, separate for every profile | **Calendar** of upcoming episodes |
+
+![The player with subtitles, speed, casting and audio controls](docs/screenshots/player.webp)
+
+**The player**: deep buffer, subtitles from addons, playback speed, casting and audio controls.
 
 ## How it fits together
 

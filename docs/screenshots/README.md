@@ -1,17 +1,26 @@
 # Screenshots
 
-The images the main [README](../../README.md) links to. Drop PNGs here with these names (1440x900 or similar works well):
+The images the main [README](../../README.md) shows. They are real captures of a running instance (WebP, about 2200 px wide),
+cropped to the app itself.
 
-| File | What to show |
+| File | Shows |
 |---|---|
-| `home.png` | Home: hero banner, Continue watching, rows |
-| `copilot.png` | Home with the copilot open and a reply with title cards (it floats beside the text, so a tall crop works) |
-| `find.png` | Discover > Smart filters with a poster hovered (the info panel on the right filled in) |
-| `detail.png` | A title page with the sources list and the download bar |
-| `downloads.png` | Downloads with the Sentinel (auto-download) tab |
-| `library.png` | The server library |
-| `profiles.png` | The "Who's watching?" screen |
-| `mobile-home.png`, `mobile-copilot.png` | Phone-sized (about 420 px wide) home and copilot |
+| `home.webp` | Home: hero banner and catalog rows |
+| `discover.webp` | Discover with the info panel |
+| `smart-filters.webp`, `quick-picks.webp` | Smart filters, and the quick picks menu |
+| `search.webp` | Search across all addons |
+| `title-page.webp` | A title page: server status, quality profile, *Save to server*, *Auto-download episodes* |
+| `downloads.webp` | Downloads: storage, active, Sentinel, recently completed |
+| `quality-profiles.webp`, `admin-overview.webp` | Admin: quality profiles and the overview cards |
+| `library.webp`, `calendar.webp` | Your library, and the calendar of upcoming episodes |
+| `player.webp` | The player |
+| `copilot-mobile.webp` | The AI copilot on a phone |
 
-Before committing an image, look at it: it should not show real emails, private addon names or URLs, tokens, or anything
-you would not want strangers to see. Only publish artwork you have the right to share.
+## Adding or replacing a screenshot
+
+- Crop out the browser's address bar and tabs (they show your hostname and account), and any hover-link tooltip at the bottom.
+- Look at the whole image before committing: no emails, tokens, private addon names or URLs, and no stream lists with release
+  names or source names.
+- Profile pictures: use the avatars in `server/avatars/` (original artwork). Do not publish character or actor images.
+- Save as WebP (quality about 88) to keep the repository small: `cwebp -q 88 in.png -o out.webp`.
+- Only publish artwork you have the right to share. Posters shown by the app belong to their owners.
