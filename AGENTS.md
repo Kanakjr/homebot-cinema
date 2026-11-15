@@ -49,6 +49,8 @@ Read this file instead of exploring; open only the files named here.
   are household-wide too: `POST /settings` is admin-only, and Settings › Streaming is read-only for everyone else.
 - Streams always sort best-first by the quality profile; dead swarms are demoted; grab returns 422 `no_live_swarm` unless `force`.
 - Every profile gets the addons in `data/addons.json` (`/api/addons`, `AutoAddonsLoader`). Bundled defaults carry only metadata, subtitle and public-domain addons.
+- Direct play: `GET /api/downloads/stream/:id?direct=1` serves the file as stored (no MP4 swap or remux) for the desktop app's mpv;
+  through Cloudflare use `.../video.mp4/?direct=1` (trailing slash).
 - Player: HLS buffer 90–240 s (`src/common/hlsConfig.js` via webpack replacement); HEVC forced to H.264 for HLS.
 - Interface zoom defaults to 90%. No "new version" banner: updates apply on the next load.
 - Home hero: `src/routes/Board/HeroCarousel/pickHeroItems.js`. No "recently added" row by design.

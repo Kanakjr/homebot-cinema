@@ -541,9 +541,14 @@ class DownloadsManager {
             return res.status(404).json({ error: 'Media file not found on disk' });
         }
 
+        // direct=1 (the desktop player, mpv): it plays the original file as stored, with every track. Skip the
+        // MKV/AVI -> MP4 sibling swap and the background faststart remux, which only exist to make browsers
+        // happy (the remux writes a new multi-GB file next to the original). Everything else is unchanged.
+        const direct = req.query.direct === '1';
+
         // If target is MKV/AVI, check if an MP4 counterpart already exists on disk
         const initialExt = path.extname(targetPath).toLowerCase();
-        if (initialExt === '.mkv' || initialExt === '.avi') {
+        if (!direct && (initialExt === '.mkv' || initialExt === '.avi')) {
             const mp4Candidate = targetPath.replace(/\.(mkv|avi)$/i, '.mp4');
             if (fs.existsSync(mp4Candidate)) {
                 targetPath = mp4Candidate;
@@ -557,7 +562,7 @@ class DownloadsManager {
         const ext = path.extname(targetPath).toLowerCase();
         const isMkv = ext === '.mkv' || ext === '.avi';
         const isDownload = req.query.download === '1' || req.query.dl === '1' || req.query.raw === '1';
-        const forceRaw = req.query.raw === '1';
+        const forceRaw = req.query.raw === '1' || direct; // never live-remux a direct request
         const filename = path.basename(targetPath);
         const disposition = isDownload ? `attachment; filename="${encodeURIComponent(filename)}"` : `inline; filename="${encodeURIComponent(filename)}"`;
 
