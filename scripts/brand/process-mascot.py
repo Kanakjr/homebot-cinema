@@ -61,7 +61,52 @@ def key_out(img: Image.Image, tolerance: float = 70.0, soft: float = 40.0) -> Im
     return out
 
 
-def cut_flood(img: Image.Image, tol: float = 26.0, pocket_min: int = 100) -> Image.Image:
+def peel_halo(img: Image.Image, depth: int, speck_ratio: float = 0.03) -> Image.Image:
+    """Eat up to `depth` px of pale, unsaturated pixels (an old white edge, grey shadow) inward from the transparent area, then drop
+    small disconnected specks. Dark linework and coloured parts stop it."""
+    from collections import deque
+    w, h = img.size
+    px = img.load()
+    light = lambda c: c[3] > 0 and min(c[:3]) >= 205 and max(c[:3]) - min(c[:3]) <= 28
+    q = deque()
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 0:
+                q.append((x, y, 0))
+    while q:
+        x, y, d = q.popleft()
+        if d >= depth:
+            continue
+        for a, b in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= a < w and 0 <= b < h and light(px[a, b]):
+                px[a, b] = (0, 0, 0, 0)
+                q.append((a, b, d + 1))
+    seen = bytearray(w * h)
+    comps = []
+    for y0 in range(h):
+        for x0 in range(w):
+            if seen[y0 * w + x0] or px[x0, y0][3] == 0:
+                continue
+            comp, q = [], deque([(x0, y0)])
+            seen[y0 * w + x0] = 1
+            while q:
+                x, y = q.popleft()
+                comp.append((x, y))
+                for a, b in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if 0 <= a < w and 0 <= b < h and not seen[b * w + a] and px[a, b][3] > 0:
+                        seen[b * w + a] = 1
+                        q.append((a, b))
+            comps.append(comp)
+    if comps:
+        biggest = max(len(c) for c in comps)
+        for c in comps:
+            if len(c) < biggest * speck_ratio:
+                for x, y in c:
+                    px[x, y] = (0, 0, 0, 0)
+    return img
+
+
+def cut_flood(img: Image.Image, tol: float = 26.0, pocket_min: int = 100, peel: int = 0) -> Image.Image:
     """White-style background: flood from the border, then also drop enclosed pure-white gaps of at least pocket_min pixels."""
     from collections import deque
     img = img.convert('RGBA')
@@ -97,6 +142,8 @@ def cut_flood(img: Image.Image, tol: float = 26.0, pocket_min: int = 100) -> Ima
             if len(comp) >= pocket_min:
                 for x, y in comp:
                     px[x, y] = (0, 0, 0, 0)
+    if peel:
+        img = peel_halo(img, peel)
     a = img.getchannel('A').filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.7))
     img.putalpha(a)
     return img
@@ -151,6 +198,7 @@ def main(argv):
     ap.add_argument('--sticker', dest='sticker', action='store_true', default=True)
     ap.add_argument('--no-sticker', dest='sticker', action='store_false')
     ap.add_argument('--tol', type=float, default=26.0, help='--bg white: how close to the corner colour counts as background (lower keeps pale edges)')
+    ap.add_argument('--peel', type=int, default=0, help='--bg white: also eat this many px of pale leftover edge and drop stray specks (for art that came with its own sticker edge)')
     ap.add_argument('--glow', action='store_true', help='also add a soft amber glow around the sticker (off by default)')
     ap.add_argument('--already-sticker', default='', help='comma list of names that already have a white edge (only the glow is added)')
     args = ap.parse_args(argv)
@@ -161,9 +209,9 @@ def main(argv):
         src = find(raw, name)
         if not src:
             continue
-        cut = key_out(Image.open(src)) if args.bg == 'green' else cut_flood(Image.open(src), tol=args.tol if name not in skip_edge else min(args.tol, 14.0))
+        cut = key_out(Image.open(src)) if args.bg == 'green' else cut_flood(Image.open(src), tol=args.tol, peel=args.peel)
         glow = max(14, size // 12) if args.glow else 0
-        edge = 0 if name in skip_edge else max(4, size // 55)
+        edge = 0 if name in skip_edge else max(3, size // 75)
         res = fit_square(cut, size, pad=0.06 + ((edge + glow) / size if args.sticker else 0))
         if args.sticker:
             res = sticker(res, edge, glow)

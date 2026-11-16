@@ -52,6 +52,7 @@ prompt "in the style of" a named character or studio.
    ```
    The sticker look (a white die-cut edge; `--glow` adds an amber glow, off by default) is baked into the PNG so it reads on the app's dark background without
    touching Stremio's components. `--tol N` tunes how close to the corner colour counts as background (default 26).
+   For art that already came with its own sticker edge or speckles, add `--peel 18` to eat the pale leftovers and drop stray specks.
 6. **Record where it came from** in `assets/brand/mascot/SOURCE.txt`: tool and model, date, and the exact prompts. Commit the raw
    renders and the processed images together.
 
