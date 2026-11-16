@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   macos:
-    runs-on: macos-14   # Apple Silicon
+    runs-on: macos-latest   # Apple Silicon (macos-14 is rejected on this account)
     permissions:
       contents: write   # attach files to the release
     steps:
