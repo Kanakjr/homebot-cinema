@@ -43,6 +43,7 @@ const { default: Indicator } = require('./Indicator/Indicator');
 const { default: useMediaSession } = require('./useMediaSession');
 const { default: ShortcutsModal } = require('./ShortcutsModal');
 const formatTime = require('./ControlBar/SeekBar/formatTime');
+const { PluginSlot } = require('stremio/plugins'); // HomeBot: slot playerOverlays (skip intro, ...)
 
 const GAMEPAD_HANDLER_ID = 'player';
 
@@ -127,11 +128,16 @@ const Player = () => {
         liveEpgRange === null ? null : liveEpgRange.endTime - epgNow
         :
         video.state.time === null || video.state.duration === null ? null : video.state.duration - video.state.time;
+    // HomeBot: a playerOverlays plugin may report when the end credits start ({ stream, at } in ms); Up Next then opens
+    // there instead of a fixed time before the end. Tied to the stream so it never carries over to the next episode.
+    const [creditsHint, setCreditsHint] = React.useState(null);
+    const creditsStarted = !isEpg && creditsHint !== null && creditsHint.stream === video.state.stream &&
+        video.state.time !== null && video.state.time >= creditsHint.at;
     const nextVideoPopupOpen = upcomingVideo !== null &&
         (nextVideoPopupDismissal === null || nextVideoPopupDismissal.stream !== video.state.stream ||
             (isEpg && nextVideoPopupDismissal.programId !== currentEpgVideo?.id)) &&
         nextVideoRemainingTime !== null && nextVideoRemainingTime > 0 &&
-        nextVideoRemainingTime <= settings.nextVideoNotificationDuration;
+        (nextVideoRemainingTime <= settings.nextVideoNotificationDuration || (settings.nextVideoNotificationDuration > 0 && creditsStarted));
     const [sideDrawerOpen, , closeSideDrawer, toggleSideDrawer] = useBinaryState(false);
     const [shortcutsModalOpen, , closeShortcutsModal, toggleShortcutsModal] = useBinaryState(false);
 
@@ -396,6 +402,11 @@ const Player = () => {
         }
         streamStateChanged({ videoScale: nextScale });
     }, [player.videoScale, video.state.stream, video.state.videoScale, streamStateChanged, videoScaleChanged]);
+
+    // HomeBot: credits start reported by a playerOverlays plugin (ms, or null)
+    const onCreditsStartReported = React.useCallback((at) => {
+        setCreditsHint(Number.isFinite(at) ? { stream: video.state.stream, at } : null);
+    }, [video.state.stream]);
 
     const onDismissNextVideoPopup = React.useCallback(() => {
         setNextVideoPopupDismissal({ stream: video.state.stream, programId: currentEpgVideo?.id });
@@ -1192,6 +1203,22 @@ const Player = () => {
                 className={classnames(styles['layer'], styles['indicator-layer'])}
                 videoState={video.state}
                 disabled={subtitlesMenuOpen || speedMenuOpen}
+            />
+            {/* HomeBot: plugin overlays (skip intro, ...) above the control bar, below the popups and menus */}
+            <PluginSlot
+                name={'playerOverlays'}
+                videoId={urlParams.videoId ?? null}
+                streamUrl={player.selected?.stream?.url ?? null}
+                timeMs={video.state.time}
+                durationMs={video.state.duration}
+                paused={video.state.paused}
+                live={livePlayback}
+                controlsHidden={overlayHidden}
+                menusOpen={menusOpen}
+                hasNextVideo={!isEpg && player.nextVideo !== null}
+                seekTo={commitSeek}
+                playNext={onNextVideoRequested}
+                reportCreditsStart={onCreditsStartReported}
             />
             {
                 nextVideoPopupOpen ?

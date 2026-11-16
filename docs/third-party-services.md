@@ -22,6 +22,7 @@ Search, Library, Calendar and Settings (playback not exercised), plus a search o
 | `opensubtitles-v3.strem.io` | Stremio | Subtitles (when listed for a video) | Title and file hash of what is played |
 | `anime-kitsu.strem.fun` | Community | Anime catalogs | Catalog requests |
 | `api.tmdb.org`, `image.tmdb.org` | TMDB | Smart filters, copilot (server-side key) | Filters and titles |
+| `api.introdb.app` | IntroDB (community) | `skip` plugin, server-side: intro, recap and credits times when the file has no chapter markers. Asked once per episode or movie when it is played, cached in SQLite. `SKIP_INTRODB_URL=off` turns it off | IMDb id, season and episode of what is played (from the server's IP) |
 | `generativelanguage.googleapis.com`, `api.telegram.org` | Google, Telegram | `ai` and `telegram` plugins, server-side | Copilot prompts (titles only); alert text |
 | Your addons and stream sources | You choose | Whatever you add to `data/addons.json` / `STREAM_ADDON_URL` | Their requests |
 | `stremio/server` container | Stremio | Streaming and transcoding | Not audited yet |

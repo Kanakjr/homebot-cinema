@@ -78,6 +78,9 @@ Click the sparkle button in the top bar and ask: *"something light under two hou
   new, and marks episodes on the Calendar.
 - **Player**: HLS with a deep buffer (90 to 240 s ahead), HEVC re-encoded to H.264 for smooth playback, subtitles from
   addons, and signed, expiring links for external players such as VLC.
+- **Skip intro, recap and credits** (plugin `skip`): a Skip button when their times are known (chapter markers in your
+  files, otherwise the community [IntroDB](https://introdb.app)), optional auto-skip per profile, and Up Next as soon as the
+  credits start.
 - **Admin panel**: overview, people, activity log and quality profiles.
 - **Live updates** (server-sent events) so downloads and the library refresh without reloading, and a daily database
   snapshot (the last 7 are kept).
@@ -169,6 +172,7 @@ you switch on or off, so you run only what you want:
 |---|---|---|
 | `find` | Smart filters (TMDB) | on |
 | `themes` | Appearance settings and extra accent colours | on |
+| `skip` | Skip intro, recap and credits in the player; Up Next when the credits start | on |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |
 | `gdrive` | Google Drive (rclone) folders as extra library roots | off |

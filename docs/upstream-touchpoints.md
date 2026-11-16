@@ -23,7 +23,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/MetaDetails/StreamsList/StreamsList.js` | 274 | Quality-profile sort, swarm health, Save button (fork identity). |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
-| `src/routes/Player/Player.js` | 137 | Server library playback, HUD notices, external player links. |
+| `src/routes/Player/Player.js` | 166 | Server library playback, HUD notices, external player links; slot playerOverlays and Up Next at the credits start a plugin reports (skip intro). |
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (same-origin). |
