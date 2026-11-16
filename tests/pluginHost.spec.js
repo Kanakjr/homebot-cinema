@@ -41,4 +41,18 @@ describe('plugin host', () => {
         host.onPluginsLoaded(() => { late = true; });
         expect(late).toBe(true);
     });
+
+    it('never passes a second `name` prop to <PluginSlot> (it would replace the slot name and crash the screen)', () => {
+        const fs = require('fs');
+        const path = require('path');
+        const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : /\.(js|tsx?)$/.test(e.name) ? [path.join(dir, e.name)] : []));
+        const offenders = [];
+        for (const file of walk(path.join(__dirname, '..', 'src'))) {
+            const src = fs.readFileSync(file, 'utf8');
+            for (const m of src.matchAll(/<PluginSlot\b[\s\S]*?\/>/g)) {
+                if ((m[0].match(/\bname=/g) || []).length > 1) offenders.push(path.relative(path.join(__dirname, '..'), file));
+            }
+        }
+        expect(offenders).toEqual([]);
+    });
 });

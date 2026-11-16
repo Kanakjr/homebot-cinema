@@ -3,6 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const express = require('express');
 const { fakeCtx } = require('../../../server/plugins/testing');
+const { openDb } = require('../../../server/db');
 const { register } = require('../server');
 const { createSessions, deviceLabel, TTL } = require('../server/sessions');
 
@@ -15,7 +16,7 @@ test('sessions: heartbeats are validated, kept per login, and expire', () => {
     assert.equal(s.beat({ ...beat(), session: 'x' }, who), false, 'bad session id');
     assert.equal(s.beat({ ...beat(), title: '' }, who), false, 'no title');
     assert.equal(s.beat(beat(), { ...who, login: null }), false, 'no login');
-    assert.equal(s.beat(beat({ mode: 'weird', source: 'ftp', poster: 'javascript:alert(1)', timeMs: -5 }), who), true);
+    assert.ok(s.beat(beat({ mode: 'weird', source: 'ftp', poster: 'javascript:alert(1)', timeMs: -5 }), who));
     const [one] = s.list();
     assert.equal(one.mode, 'direct');
     assert.equal(one.source, null);
@@ -50,7 +51,7 @@ async function withServer(app, fn) {
 test('routes: profiles report, only admins list, login comes from the request', async () => {
     const app = express();
     app.use(express.json());
-    const { ctx } = fakeCtx({ id: 'nowplaying', app, login: { email: 'kid-parent@example.com', isAdmin: false }, profile: { id: 3, name: 'Kid', is_kid: 1 } });
+    const { ctx } = fakeCtx({ id: 'nowplaying', app, db: openDb(':memory:', ':memory:'), login: { email: 'kid-parent@example.com', isAdmin: false }, profile: { id: 3, name: 'Kid', is_kid: 1 } });
     register(ctx);
     await withServer(app, async (base) => {
         const post = (path, body) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -61,7 +62,7 @@ test('routes: profiles report, only admins list, login comes from the request', 
 
     const adminApp = express();
     adminApp.use(express.json());
-    const admin = fakeCtx({ id: 'nowplaying', app: adminApp });
+    const admin = fakeCtx({ id: 'nowplaying', app: adminApp, db: openDb(':memory:', ':memory:') });
     const api = register(admin.ctx);
     await withServer(adminApp, async (base) => {
         await fetch(`${base}/api/nowplaying`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0) Firefox/130.0' }, body: JSON.stringify(beat()) });

@@ -33,6 +33,7 @@ const renderPlugin = (item, where, props, ref) => (
     </PluginBoundary>
 );
 
+// `name` is the slot; slot props must never be called `name` (it would replace the slot name and crash the screen)
 const PluginSlot = ({ name, ...props }) => {
     const items = React.useMemo(() => slot(name), [name]);
     return items.length ? <>{items.map((item) => renderPlugin(item, name, props))}</> : null;
