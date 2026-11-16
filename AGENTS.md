@@ -52,6 +52,8 @@ Read this file instead of exploring; open only the files named here.
 - Player: HLS buffer 90–240 s (`src/common/hlsConfig.js` via webpack replacement); HEVC forced to H.264 for HLS.
 - Interface zoom defaults to 90%. No "new version" banner: updates apply on the next load.
 - Home hero: `src/routes/Board/HeroCarousel/pickHeroItems.js`. No "recently added" row by design.
+- System artwork (empty states, default/signed-out avatar, library/calendar placeholders): the captain mascot, `docs/mascot-art.md`
+  (`scripts/brand/process-mascot.py`). An install can override them privately with `data/art/<name>.png`.
 - Branding sources: `assets/brand/*.svg`; `scripts/brand/build.js` regenerates icons and splash images. Avatars are original artwork; never commit character images.
 
 ## Commands

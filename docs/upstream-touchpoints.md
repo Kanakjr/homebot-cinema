@@ -44,7 +44,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/router/routerPaths.tsx` | 30 | Core routes (/downloads, /admin, /server) + slot routes. |
 | `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 30 | Brand mark, profile avatar, slot navButtons. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 27 | Badge. |
-| `webpack.config.js` | 28 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API). |
+| `webpack.config.js` | 30 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API); five system images left out of the offline cache (private `data/art/` override). |
 | `src/routes/Board/Board.js` | 25 | Hero carousel, continue-watching cards. |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 15 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
