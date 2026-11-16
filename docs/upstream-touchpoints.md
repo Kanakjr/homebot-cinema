@@ -80,7 +80,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
 | `src/routes/Player/ControlBar/ControlBar.js` | 5 | Small control changes. |
 | `src/components/MetaPreview/MetaPreview.js` | 4 | Small fix. |
-| `src/routes/Settings/Streaming/Streaming.tsx` | 5 | Server URL list hidden (`SERVER_URL_EDITING`): the app always uses its own origin. |
+| `src/routes/Settings/Streaming/Streaming.tsx` | 17 | Server URL list hidden (`SERVER_URL_EDITING`): the app always uses its own origin. Server settings read-only for non-admins. |
 | `src/routes/Settings/Interface/useInterfaceOptions.ts` | 3 | Zoom choices. |
 | `src/components/UpdateBanner/UpdateBanner.less` | 3 | Hidden banner. |
 | `src/routes/Discover/Discover.js` | 2 | Slot discoverActions. |

@@ -45,7 +45,8 @@ Read this file instead of exploring; open only the files named here.
 | `site/` | GitHub Pages website (`.github/workflows/pages.yml`) |
 
 ## Behaviours worth knowing
-- Profiles are household-wide; admin is a login (`ADMIN_EMAILS`), not a profile.
+- Profiles are household-wide; admin is a login (`ADMIN_EMAILS`), not a profile. Streaming-server settings (cache, transcoding)
+  are household-wide too: `POST /settings` is admin-only, and Settings › Streaming is read-only for everyone else.
 - Streams always sort best-first by the quality profile; dead swarms are demoted; grab returns 422 `no_live_swarm` unless `force`.
 - Every profile gets the addons in `data/addons.json` (`/api/addons`, `AutoAddonsLoader`). Bundled defaults carry only metadata, subtitle and public-domain addons.
 - Player: HLS buffer 90–240 s (`src/common/hlsConfig.js` via webpack replacement); HEVC forced to H.264 for HLS.

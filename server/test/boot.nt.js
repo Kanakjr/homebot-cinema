@@ -41,7 +41,8 @@ async function boot(plugins, extraEnv = {}) {
     }
     assert.match(log, /listening on port/, `server did not start:\n${log}`);
     const get = async (p) => { const r = await fetch(base + p); return { status: r.status, headers: r.headers, body: await r.json().catch(() => null) }; };
-    return { get, log: () => log, stop: () => new Promise((r) => { child.once('exit', r); child.kill('SIGTERM'); }) };
+    const post = async (p, body) => (await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).status;
+    return { get, post, log: () => log, stop: () => new Promise((r) => { child.once('exit', r); child.kill('SIGTERM'); }) };
 }
 
 test('boots with no plugins: core routes answer, plugin routes do not exist', { timeout: 30000 }, async () => {
@@ -81,5 +82,25 @@ test('boots with every plugin on: each loads or explains why it is inactive', { 
         assert.equal((await s.get('/api/find/options')).body.configured, false);
     } finally {
         await s.stop();
+    }
+});
+
+test('streaming-server settings are admin-only (both proxy paths); reading them is not blocked', { timeout: 30000 }, async () => {
+    const user = await boot('none', { ADMIN_EMAILS: 'someone-else@example.com' });
+    try {
+        assert.equal((await user.get('/api/me')).body.isAdmin, false);
+        assert.equal(await user.post('/settings', { cacheSize: 0 }), 403);
+        assert.equal(await user.post('/streaming/settings', { cacheSize: 0 }), 403);
+        assert.equal(await user.post('/SETTINGS/', { cacheSize: 0 }), 403);
+        assert.notEqual((await user.get('/settings')).status, 403, 'reading settings stays open to logged-in profiles');
+    } finally {
+        await user.stop();
+    }
+    const admin = await boot('none');
+    try {
+        // passes the guard and reaches the (absent) streaming server
+        assert.equal(await admin.post('/settings', { cacheSize: 0 }), 502);
+    } finally {
+        await admin.stop();
     }
 });

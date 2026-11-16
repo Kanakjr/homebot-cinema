@@ -117,6 +117,10 @@ const streamingPaths = [
     /^\/[0-9a-fA-F]{40}(\/.*)?$/
 ];
 
+// Streaming-server settings (cache size, transcoding, torrent profile) are household-wide: only admins may change them.
+// '/streaming/settings' reaches the same endpoint (the proxy strips the /streaming prefix).
+app.post(['/settings', '/streaming/settings'], auth.requireLogin, auth.requireAdmin);
+
 app.use(streamingPaths, async (req, res) => {
     if (req.method === 'OPTIONS') {
         res.writeHead(200, {
