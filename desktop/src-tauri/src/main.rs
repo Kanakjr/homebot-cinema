@@ -16,6 +16,7 @@
 mod glview;
 mod home;
 mod mpv;
+mod server;
 mod shell;
 
 use glview::Rect;
@@ -31,24 +32,70 @@ struct Ui {
     home: Option<(String, String)>, // (public, local)
 }
 
-/// SPIKE_URL overrides (development, no home mode). Otherwise the origins baked in at build time (CINEMA_ORIGIN,
-/// CINEMA_LOCAL_ORIGIN, see build.rs). None = the local overlay page used by the spike.
-/// CINEMA_HOME_MODE=0 forces the public address only.
-fn ui_config() -> Option<Ui> {
+/// Start address and home-mode pair for a server. CINEMA_HOME_MODE=0 forces the public address only.
+fn ui_for(public: &str, local: &str) -> Ui {
+    let home = !local.is_empty() && std::env::var("CINEMA_HOME_MODE").map_or(true, |v| v != "0");
+    if !home {
+        return Ui { start: public.to_string(), home: None };
+    }
+    let start = if home::reachable(local) { local } else { public };
+    Ui { start: start.to_string(), home: Some((public.to_string(), local.to_string())) }
+}
+
+/// Which server to open, in order: SPIKE_URL (development, no home mode), the one chosen in the app (server.json),
+/// the one baked in at build time (CINEMA_ORIGIN, private builds). None = first run: show setup.html.
+fn ui_config(app: &tauri::AppHandle) -> Option<Ui> {
     if let Ok(u) = std::env::var("SPIKE_URL") {
         return Some(Ui { start: u, home: None });
+    }
+    if let Some(s) = server::load(app) {
+        if let Err(e) = server::allow(app, &s) {
+            eprintln!("[server] could not grant the saved server: {e}");
+            return None;
+        }
+        return Some(ui_for(&s.public, &s.local));
     }
     let public = env!("CINEMA_ORIGIN_BAKED");
     if public.contains("example.com") {
         return None;
     }
-    let local = env!("CINEMA_LOCAL_ORIGIN_BAKED");
-    let home = !local.is_empty() && std::env::var("CINEMA_HOME_MODE").map_or(true, |v| v != "0");
-    if !home {
-        return Some(Ui { start: public.to_string(), home: None });
+    Some(ui_for(public, env!("CINEMA_LOCAL_ORIGIN_BAKED")))
+}
+
+/// The bundled page that asks for the server address.
+fn setup_url() -> tauri::Url {
+    // the app's own pages are served from the tauri:// scheme on macOS
+    "tauri://localhost/setup.html".parse().expect("static url")
+}
+
+#[tauri::command]
+fn get_server(app: tauri::AppHandle) -> Option<server::Server> {
+    server::load(&app)
+}
+
+/// Called by setup.html: validate, save, allow and open the server. `async` so the reachability check of the
+/// home address does not block the main thread (which renders video).
+#[tauri::command]
+async fn set_server(app: tauri::AppHandle, public: String, local: String) -> Result<(), String> {
+    let s = server::validate(&public, &local)?;
+    server::save(&app, &s)?;
+    server::allow(&app, &s)?;
+    let ui = ui_for(&s.public, &s.local);
+    let win = app.get_webview_window("main").ok_or("no window")?;
+    win.navigate(ui.start.parse().map_err(|e| format!("bad address: {e}"))?).map_err(|e| e.to_string())?;
+    if let Some((public, local)) = ui.home {
+        home::spawn_watcher(app.clone(), public, local);
     }
-    let start = if home::reachable(local) { local } else { public };
-    Some(Ui { start: start.to_string(), home: Some((public.to_string(), local.to_string())) })
+    Ok(())
+}
+
+/// Menu: the standard macOS menus plus Server > Change Server… (forgets the saved address, shows setup.html).
+fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
+    use tauri::menu::{Menu, MenuItem, Submenu};
+    let menu = Menu::default(app.handle())?;
+    let change = MenuItem::with_id(app, "change-server", "Change Server…", true, None::<&str>)?;
+    menu.append(&Submenu::with_items(app, "Server", true, &[&change])?)?;
+    Ok(menu)
 }
 
 /// Tell the user something important without a terminal (the app is normally launched from Finder).
@@ -424,13 +471,27 @@ fn main() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![mpv_load, mpv_command, mpv_status, spike_reorder, shell_ipc])
+        .invoke_handler(tauri::generate_handler![mpv_load, mpv_command, mpv_status, spike_reorder, shell_ipc, get_server, set_server])
+        .on_menu_event(|app, event| {
+            if event.id() == "change-server" {
+                server::clear(app);
+                home::stop_watcher();
+                if let Some(w) = app.get_webview_window("main") {
+                    let _ = w.navigate(setup_url());
+                }
+            }
+        })
         .setup(|app| {
-            let ui = ui_config();
-            let remote = ui.is_some();
+            app.set_menu(build_menu(app)?)?;
+            let ui = ui_config(app.handle());
+            // SPIKE_LOCAL_PAGE: the spike's own overlay page (development). Everything else is treated as remote
+            // content: hardened mpv, render API, no mpv log file.
+            let spike_page = ui.is_none() && std::env::var("SPIKE_LOCAL_PAGE").is_ok();
+            let remote = !spike_page;
             let target = match &ui {
                 Some(u) => WebviewUrl::External(u.start.parse().map_err(|e| format!("bad web UI URL: {e}"))?),
-                None => WebviewUrl::App("index.html".into()),
+                None if spike_page => WebviewUrl::App("index.html".into()),
+                None => WebviewUrl::App("setup.html".into()),
             };
             let mut builder = WebviewWindowBuilder::new(app, "main", target)
                 .title("HomeBot Cinema")

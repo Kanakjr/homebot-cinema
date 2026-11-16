@@ -16,6 +16,7 @@ use base64::Engine;
 use serde_json::Value;
 use std::io::{Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tauri::webview::cookie::Cookie;
 use tauri::{AppHandle, Manager, Url, WebviewWindow};
@@ -94,8 +95,16 @@ fn playing(app: &AppHandle) -> bool {
     m.map_or(false, |m| m.get_property("path").is_some())
 }
 
-/// Keep the window on the best address. Runs for the life of the app.
+/// Only the newest watcher runs: starting another one, or `stop_watcher`, ends the previous one.
+static GENERATION: AtomicU64 = AtomicU64::new(0);
+
+pub fn stop_watcher() {
+    GENERATION.fetch_add(1, Ordering::SeqCst);
+}
+
+/// Keep the window on the best address, until the server is changed.
 pub fn spawn_watcher(app: AppHandle, public: String, local: String) {
+    let generation = GENERATION.fetch_add(1, Ordering::SeqCst) + 1;
     std::thread::spawn(move || {
         let (Ok(public), Ok(local)) = (Url::parse(&public), Url::parse(&local)) else { return };
         let mut last_move = Instant::now() - Duration::from_secs(60);
@@ -103,6 +112,9 @@ pub fn spawn_watcher(app: AppHandle, public: String, local: String) {
         let mut gave_up = false; // home mode switched off for this run
         loop {
             std::thread::sleep(Duration::from_secs(3));
+            if GENERATION.load(Ordering::SeqCst) != generation {
+                return;
+            }
             if gave_up {
                 continue;
             }

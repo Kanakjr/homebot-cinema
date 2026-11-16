@@ -43,6 +43,7 @@ Read this file instead of exploring; open only the files named here.
 | `src/routes/` | Our routes: `ServerLibrary`, `Downloads`, `Admin` (incl. Plugins tab); upstream routes with small edits |
 | `scripts/` | `new-plugin.js`, `upstream-check.js`, `graft-upstream-history.sh`, `build-site.sh`, `brand/` (icons, avatars) |
 | `site/` | GitHub Pages website (`.github/workflows/pages.yml`) |
+| `desktop/` | macOS app (Tauri + libmpv); `git tag vX.Y.Z` builds the DMG and attaches it to a GitHub Release (`.github/workflows/desktop.yml`, docs in `desktop/README.md`) |
 
 ## Behaviours worth knowing
 - Profiles are household-wide; admin is a login (`ADMIN_EMAILS`), not a profile. Streaming-server settings (cache, transcoding)

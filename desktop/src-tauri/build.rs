@@ -4,7 +4,7 @@ fn main() {
     // The remote capability names the one web origin allowed to call `shell_ipc`. It comes from the environment
     // (CINEMA_ORIGIN=https://your-host) so no personal hostname is committed; the generated file is git-ignored.
     println!("cargo:rerun-if-env-changed=CINEMA_ORIGIN");
-    let origin = env::var("CINEMA_ORIGIN").unwrap_or_else(|_| "https://cinema.example.com".into());
+    let origin = env::var("CINEMA_ORIGIN").ok().filter(|v| !v.trim().is_empty()).unwrap_or_else(|| "https://cinema.example.com".into());
     let origin = origin.trim_end_matches('/');
     let ok_chars = origin.chars().all(|c| c.is_ascii_alphanumeric() || ".:-/".contains(c));
     let ok_scheme = origin.starts_with("https://") || origin.starts_with("http://localhost");
@@ -38,7 +38,7 @@ fn main() {
     // Declaring the app commands makes Tauri's ACL cover them: each gets an `allow-<name>` permission.
     // Only `shell_ipc` is granted to the remote web UI; see capabilities/.
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
-        tauri_build::AppManifest::new().commands(&["shell_ipc", "mpv_load", "mpv_command", "mpv_status", "spike_reorder"]),
+        tauri_build::AppManifest::new().commands(&["shell_ipc", "mpv_load", "mpv_command", "mpv_status", "spike_reorder", "get_server", "set_server"]),
     ))
     .expect("failed to run tauri-build");
 }

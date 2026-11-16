@@ -1,7 +1,7 @@
 {
     "$schema": "../gen/schemas/desktop-schema.json",
     "identifier": "default",
-    "description": "spike capability",
+    "description": "the app's own pages (setup.html; index.html in development)",
     "windows": [
         "main"
     ],
@@ -11,6 +11,8 @@
         "allow-mpv-load",
         "allow-mpv-command",
         "allow-mpv-status",
-        "allow-spike-reorder"
+        "allow-spike-reorder",
+        "allow-get-server",
+        "allow-set-server"
     ]
 }

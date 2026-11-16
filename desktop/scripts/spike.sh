@@ -4,7 +4,7 @@
 #
 #   spike.sh clip                      make the 10-bit HEVC + AC3 MKV test clip (needs ffmpeg)
 #   spike.sh build                     cargo build + assemble/sign CinemaSpike.app
-#   spike.sh run [render|child|wid|ui|home] launch; home = baked-in addresses + home mode; ui = real web UI at $SPIKE_URL (storage persists; build with CINEMA_ORIGIN=<same origin>); render = libmpv render API (default), child = mpv's own
+#   spike.sh run [render|child|wid|ui|home|setup] launch; setup = first-run "connect to your server" page; home = baked-in addresses + home mode; ui = real web UI at $SPIKE_URL (storage persists; build with CINEMA_ORIGIN=<same origin>); render = libmpv render API (default), child = mpv's own
 #                                      window attached below (send `cmd attach`), wid = --wid (fails)
 #   spike.sh cmd <verb> [args]         send a verb to the running app (snap, region, dump, attach, mpv,
 #                                      eval, resize, fullscreen, simplefs, reorder, aux, quit)
@@ -52,6 +52,9 @@ run)
     extra=(); clip=(--env SPIKE_CLIP="$CLIP"); mpvlog=(--env SPIKE_MPV_LOG="$SPIKE_HOME/mpv.log")
     [[ $mode == render ]] && extra+=(--env SPIKE_RENDER=1)
     [[ $mode == child ]] && extra+=(--env SPIKE_NO_WID=1)
+    # render/child/wid play the test clip on the spike's own overlay page; setup = first run with a scratch config folder
+    [[ $mode == render || $mode == child || $mode == wid ]] && extra+=(--env SPIKE_LOCAL_PAGE=1)
+    [[ $mode == setup ]] && { clip=(); mpvlog=(); extra+=(--env CINEMA_CONFIG_DIR="$SPIKE_HOME/config"); }
     # ui = the real web UI (SPIKE_URL, default a scratch server on :3102) with the render-API shell, no auto-play
     # home = no SPIKE_URL: the app uses its baked-in addresses and home mode (extra env: CINEMA_HOME_MODE=0 forces public only)
     [[ $mode == home ]] && { clip=(); mpvlog=(); [[ -n ${CINEMA_HOME_MODE:-} ]] && extra+=(--env CINEMA_HOME_MODE="$CINEMA_HOME_MODE"); }
