@@ -21,6 +21,10 @@
 /data/*
 !/data/addons.example.json
 /data/addons.json
+# private notes for agents about this install (see AGENTS.md); data/LOCAL.md is covered by /data/* above
+*.local.md
+CLAUDE.local.md
+# private plugins live in data/plugins/ (covered by /data/*)
 # test artefact: sqlite ':memory:' creates a directory when given as a path
 /:memory:
 # editor / tooling
@@ -74,3 +78,5 @@
 /server/avatars/v.png
 /server/avatars/walter-white.png
 /server/avatars/wednesday.png
+/.cache
+/_site

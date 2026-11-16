@@ -228,3 +228,78 @@ test('imdbIdsOnServer: matched titles on disk, as a set (smart browse "On server
     assert.ok(ids.has('tt14688458') && ids.has('tt0411008'));
     assert.ok([...ids].every((v) => /^tt\d+$/.test(v)));
 });
+
+// ---------- cold roots (Google Drive mounted through rclone) ----------
+const { COLD_MARKER } = require('../library/library');
+
+function coldFixture({ online = true } = {}) {
+    const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'cold-')));
+    const M = path.join(base, 'Movies');
+    const GM = path.join(base, 'GDriveMovies');
+    touch(path.join(M, 'Local.Film.2024.1080p.mkv'));
+    touch(path.join(GM, 'Cloud.Film.2020.1080p.mkv'));
+    if (online) touch(path.join(GM, COLD_MARKER), 0);
+    fs.mkdirSync(path.join(base, 'TV'));
+    touch(path.join(base, 'TV', 'Show - S01E01.mkv'));
+    const db = openDb(base, ':memory:');
+    const lib = new Library({ db, roots: { movie: M, series: path.join(base, 'TV') }, extraRoots: { movie: [GM] }, fetchJson: async () => ({ metas: [] }), minBytes: 1 });
+    return { base, M, GM, lib, db };
+}
+
+test('cold root: files on the mounted drive appear in the library next to local ones', async () => {
+    const { lib } = coldFixture();
+    await lib.scan();
+    assert.deepEqual(names(lib), ['Cloud Film', 'Local Film', 'Show']);
+    assert.equal(lib.scanTrusted(), true);
+});
+
+test('cold root without its marker (unmounted, empty mount point) is skipped, untrusted, and its rows survive', async () => {
+    const { lib, GM } = coldFixture();
+    await lib.scan();
+    fs.rmSync(path.join(GM, COLD_MARKER)); // mount dropped: directory is there, marker is not
+    fs.rmSync(path.join(GM, 'Cloud.Film.2020.1080p.mkv')); // and the listing is empty
+    await lib.scan();
+    assert.deepEqual(lib.status.offlineRoots, [GM]);
+    assert.equal(lib.scanTrusted(), false, 'Sentinel must not judge deletions while the drive is away');
+    assert.ok(names(lib).includes('Cloud Film'), 'rows under the offline root are kept, not treated as deleted');
+});
+
+test('cold root that comes back is trusted again; a real deletion is then noticed', async () => {
+    const { lib, GM } = coldFixture();
+    await lib.scan();
+    fs.rmSync(path.join(GM, COLD_MARKER));
+    await lib.scan();
+    touch(path.join(GM, COLD_MARKER), 0);
+    fs.rmSync(path.join(GM, 'Cloud.Film.2020.1080p.mkv'));
+    await lib.scan();
+    assert.equal(lib.scanTrusted(), true);
+    assert.deepEqual(names(lib), ['Local Film', 'Show']);
+});
+
+test('deleting a file on an offline cold root fails with 503 and keeps the row', async () => {
+    const { lib, GM } = coldFixture();
+    await lib.scan();
+    const id = lib.list().items.find((i) => i.title === 'Cloud Film').id;
+    const fileId = lib.raw.prepare('SELECT id FROM media_files WHERE media_item_id = ?').get(id).id;
+    fs.rmSync(path.join(GM, COLD_MARKER));
+    assert.throws(() => lib.deleteFile(fileId), (e) => e.status === 503 && /root_offline/.test(e.message));
+    assert.ok(lib.raw.prepare('SELECT id FROM media_files WHERE id = ?').get(fileId), 'row kept');
+});
+
+test('an unreadable sub-folder mid-scan makes the scan untrusted and prunes nothing', async () => {
+    const { lib, M } = coldFixture();
+    await lib.scan();
+    const bad = path.join(M, 'Locked (2020)');
+    touch(path.join(bad, 'locked.2020.mkv'));
+    await lib.scan();
+    fs.chmodSync(bad, 0o000);
+    try {
+        await lib.scan();
+        if (lib.status.walkErrors) {
+            assert.equal(lib.scanTrusted(), false);
+            assert.ok(names(lib).includes('Locked'), 'row kept while the folder cannot be read');
+        } // running as root can read it anyway: nothing to assert
+    } finally {
+        fs.chmodSync(bad, 0o755);
+    }
+});

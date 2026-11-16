@@ -1,0 +1,11 @@
+{
+    "id": "find",
+    "name": "Smart filters",
+    "description": "Browse by rating, votes, genre, language, runtime, year and \"streaming on X in your region\" (TMDB discover), linked from Discover.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "env": [
+        { "name": "TMDB_API_KEY", "required": true, "description": "TMDB v3 API key (free). Without it the page explains how to enable it." },
+        { "name": "WATCH_REGION", "description": "Two-letter region for streaming services (default IN)." }
+    ]
+}

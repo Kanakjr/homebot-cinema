@@ -6,7 +6,7 @@ const PropTypes = require('prop-types');
 const classNames = require('classnames');
 const pm = require('stremio/common/profileManager');
 const { BrandLockup } = require('stremio/components/BrandMark');
-const { ACCENTS, DEFAULT_ACCENT } = require('stremio/common/theme');
+const { getAccents, DEFAULT_ACCENT } = require('stremio/common/theme');
 const styles = require('./styles');
 
 const PIN_LENGTH = 4;
@@ -151,7 +151,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                 </label>
                 <div className={styles['field-label']}>Accent colour</div>
                 <div className={styles['swatches']}>
-                    {Object.entries(ACCENTS).map(([key, a]) => (
+                    {Object.entries(getAccents()).map(([key, a]) => (
                         <button
                             key={key}
                             type="button"

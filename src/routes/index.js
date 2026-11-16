@@ -6,7 +6,6 @@ const Discover = require('./Discover');
 const Library = require('./Library');
 const Downloads = require('./Downloads');
 const ServerLibrary = require('./ServerLibrary');
-const Find = require('./Find');
 const Admin = require('./Admin');
 const Calendar = require('./Calendar').default;
 const MetaDetails = require('./MetaDetails');
@@ -23,7 +22,6 @@ module.exports = {
     Library,
     Downloads,
     ServerLibrary,
-    Find,
     Admin,
     Calendar,
     MetaDetails,

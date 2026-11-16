@@ -19,9 +19,9 @@ smart discovery, and an AI copilot that only suggests: you press the button.
 
 ## Watch the demo
 
-[![HomeBot Cinema demo: a private Netflix for the whole family, on YouTube](https://img.youtube.com/vi/e2sj2VLFnLc/maxresdefault.jpg)](https://youtu.be/e2sj2VLFnLc)
+[![HomeBot Cinema demo: a private Netflix for the whole family, on YouTube](https://img.youtube.com/vi/aCRXjZhj_kQ/maxresdefault.jpg)](https://youtu.be/aCRXjZhj_kQ)
 
-A tour of profiles, Smart filters, the AI copilot, downloads and Sentinel. ▶ [Watch on YouTube](https://youtu.be/e2sj2VLFnLc)
+A tour of profiles, Smart filters, the AI copilot, downloads and Sentinel. ▶ [Watch on YouTube](https://youtu.be/aCRXjZhj_kQ)
 
 ## What is it?
 
@@ -156,7 +156,23 @@ admin, so never use them on a server other people can reach.
 sources you add is up to you.
 
 **Optional, but nice:** a free [TMDB key](https://www.themoviedb.org/settings/api) turns on Smart filters, and a
-[Gemini key](https://aistudio.google.com/apikey) turns on the copilot.
+[Gemini key](https://aistudio.google.com/apikey) plus `CINEMA_PLUGINS=all` (or the `ai` plugin) turns on the copilot.
+
+## Plugins
+
+The core is profiles, streaming, downloads, the server library, quality profiles and Sentinel. Everything else is a plugin
+you switch on or off, so you run only what you want:
+
+| Plugin | Adds | Default |
+|---|---|---|
+| `find` | Smart filters (TMDB) | on |
+| `themes` | Appearance settings and extra accent colours | on |
+| `ai` | The AI copilot (Gemini) | off |
+| `telegram` | Alerts to a Telegram chat | off |
+| `gdrive` | Google Drive (rclone) folders as extra library roots | off |
+
+Pick them with `CINEMA_PLUGINS=find,themes,ai` or in `data/plugins.json`; admins see what is on, and why something is not,
+at `/api/plugins`. Writing your own: [docs/plugins.md](docs/plugins.md) (`pnpm plugin:new my-plugin`).
 
 ## Configuration
 
@@ -171,8 +187,10 @@ All settings are environment variables; [`.env.example`](.env.example) has every
 | `LIBRARY_MOVIES_DIR`, `LIBRARY_TV_DIR` | Media folders as seen inside the container |
 | `STREAM_ADDON_URL` | The Stremio stream addon Sentinel and the copilot ask for releases (base URL or install link). **No default**: without it they find nothing |
 | `TMDB_API_KEY`, `WATCH_REGION` | Smart filters, and the country whose streaming catalogs are searched |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | The AI copilot |
-| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Optional Sentinel alerts |
+| `CINEMA_PLUGINS` | Which plugins run (`all`, `none`, a list, `-id`); otherwise `data/plugins.json`, otherwise each plugin's default |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Plugin `ai`: the AI copilot |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Plugin `telegram`: alerts |
+| `LIBRARY_EXTRA_MOVIES_DIRS`, `LIBRARY_EXTRA_TV_DIRS` | Plugin `gdrive`: cloud folders as extra library roots ([setup](plugins/gdrive/README.md)) |
 | `PUBLIC_HOSTS`, `DASHBOARD_URL` | Optional: extra browser-facing hostnames, and a link to a companion dashboard |
 | `HLS_FORCE_H264` | `0` stops forcing H.264 on HLS transcodes |
 
@@ -184,16 +202,20 @@ Node.js 22+ and [pnpm](https://pnpm.io) 11+.
 pnpm install
 pnpm build            # UI -> build/
 pnpm test             # UI tests (jest)
-pnpm test:server      # backend tests (node:test)
+pnpm test:server      # backend tests (node:test), core and plugins
 pnpm lint
+pnpm plugin:new <id>  # scaffold a plugin
+pnpm check:upstream   # upstream stremio-web files we change are all documented
 ```
+
+Keeping up with upstream stremio-web: [docs/upstream-sync.md](docs/upstream-sync.md).
 
 Run the whole app with a dev login (only on your own machine):
 
 ```sh
 pnpm test:server      # once: caches express + jose into .cache/
 NODE_PATH=$PWD/.cache/server-deps/node_modules NODE_ENV=development DEV_EMAIL=you@example.com ADMIN_EMAILS=you@example.com \
-  node --disable-warning=ExperimentalWarning http_server.js         # http://localhost:8080
+  CINEMA_PLUGINS=all CINEMA_DATA_DIR=/tmp/cinema-data node --disable-warning=ExperimentalWarning http_server.js   # http://localhost:8080
 ```
 
 `pnpm start` runs only the webpack dev server (hot reload, no backend). See [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -201,8 +223,10 @@ NODE_PATH=$PWD/.cache/server-deps/node_modules NODE_ENV=development DEV_EMAIL=yo
 ## Security and privacy
 
 - **Fails closed.** No valid Cloudflare Access token means no API access. The dev login only works with `NODE_ENV=development`.
-- **Your data stays with you.** Profiles, history and settings live in `data/` on your machine. The only outside calls are
-  to the addons you list, TMDB (if enabled) and Gemini (if enabled).
+- **Your data stays with you.** Profiles, history and settings live in `data/` on your machine; nothing about your account,
+  library or history is sent to Stremio or anyone else. The app does use public services for catalogs and artwork (Stremio's
+  Cinemeta and image CDN, the addons you list, TMDB and Gemini if enabled), which see the titles you browse. Every outside
+  host, and the plan to need fewer: [docs/third-party-services.md](docs/third-party-services.md).
 - **The copilot sees titles only**, never emails, profile names or PINs, and can only *stage* actions you confirm.
 - Stream links for external players are **signed and expire**; media paths must live inside your configured library
   folders; stream responses are never cached.

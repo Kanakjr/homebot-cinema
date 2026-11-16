@@ -1,0 +1,11 @@
+{
+    "id": "telegram",
+    "name": "Telegram alerts",
+    "description": "Sends household notifications (for example Sentinel queuing a new episode) to a Telegram chat.",
+    "version": "1.0.0",
+    "defaultEnabled": false,
+    "env": [
+        { "name": "TELEGRAM_BOT_TOKEN", "required": true, "description": "Bot token from @BotFather." },
+        { "name": "TELEGRAM_CHAT_ID", "required": true, "description": "Chat (or group) id that receives the messages." }
+    ]
+}

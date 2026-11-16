@@ -58,21 +58,7 @@ const StreamingServerWarning = ({ className }: Props) => {
                 {t('SETTINGS_SERVER_UNAVAILABLE')}
             </div>
             <div className={styles['actions']}>
-                <a
-                    href='https://www.stremio.com/download-service'
-                    target='_blank'
-                    rel='noreferrer'
-                >
-                    <Button
-                        className={styles['action']}
-                        title={t('SERVICE_INSTALL')}
-                        tabIndex={-1}
-                    >
-                        <div className={styles['label']}>
-                            {t('SERVICE_INSTALL')}
-                        </div>
-                    </Button>
-                </a>
+                {/* HomeBot: the streaming server is part of this install (a container), not something to download from stremio.com */}
                 <Button
                     className={styles['action']}
                     title={t('WARNING_STREAMING_SERVER_LATER')}

@@ -13,6 +13,10 @@ type Props = {
     streamingServer: StreamingServer,
 };
 
+// HomeBot: the app always uses its own origin as the streaming server (src/App/App.js resets anything else), so the URL list
+// with "Add URL" only confuses. Hidden instead of deleted to keep upstream merges small.
+const SERVER_URL_EDITING = false;
+
 const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer }: Props, ref) => {
     const { t } = useTranslation();
     const toast = useToast();
@@ -27,6 +31,10 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
         torrentProfileSelect,
         transcodingProfileSelect,
     } = useStreamingOptions(streamingServer);
+    // HomeBot: these are server-wide settings (one streaming server for the household): only admins change them. The server
+    // enforces it too (POST /settings is admin-only in http_server.js).
+    const canEdit = !!(window as any).ssoIsAdmin;
+    const locked = settingsDisabled || !canEdit;
 
     const onCopyRemoteUrl = useCallback(() => {
         if (streamingServer.remoteUrl) {
@@ -42,7 +50,8 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
 
     return (
         <Section ref={ref} label={'SETTINGS_NAV_STREAMING'}>
-            <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />
+            {SERVER_URL_EDITING && <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />}
+            {!canEdit && <div style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '1rem' }}>These settings apply to the whole household. Only an admin can change them.</div>}
             {
                 streamingServerRemoteUrlInput.value !== null &&
                     <Option className={styles['configure-input-container']} label={'SETTINGS_REMOTE_URL'}>
@@ -58,7 +67,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
                         <MultiselectMenu
                             className={'multiselect'}
                             {...remoteEndpointSelect}
-                            disabled={settingsDisabled}
+                            disabled={locked}
                         />
                     </Option>
             }
@@ -68,7 +77,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
                         <MultiselectMenu
                             className={'multiselect'}
                             {...cacheSizeSelect}
-                            disabled={settingsDisabled}
+                            disabled={locked}
                         />
                     </Option>
             }
@@ -79,6 +88,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
                             <MultiselectMenu
                                 className={'multiselect'}
                                 {...cacheLocationSelect}
+                                disabled={(cacheLocationSelect as any).disabled || !canEdit}
                             />
                             {cacheLocationError && <div className={styles['cache-location-error']} role={'alert'}>{cacheLocationError}</div>}
                         </div>
@@ -90,7 +100,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
                         <MultiselectMenu
                             className={'multiselect'}
                             {...torrentProfileSelect}
-                            disabled={settingsDisabled}
+                            disabled={locked}
                         />
                     </Option>
             }
@@ -100,7 +110,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
                         <MultiselectMenu
                             className={'multiselect'}
                             {...transcodingProfileSelect}
-                            disabled={settingsDisabled}
+                            disabled={locked}
                         />
                     </Option>
             }

@@ -174,8 +174,32 @@ function openDb(dataPath, filename = 'cinema.db') {
         RETURNING email, disabled, quota_gb`);
     const insertAudit = db.prepare('INSERT INTO audit_log (ts, email, profile_id, action, payload) VALUES (?, ?, ?, ?, ?)');
 
+    /**
+     * A plugin's own schema, versioned per plugin id (table plugin_schema), independent of the core MIGRATIONS above.
+     * steps: SQL strings, append-only. Plugin tables should be prefixed with the plugin id (e.g. tracker_plays).
+     */
+    const migratePlugin = (id, steps) => {
+        if (!/^[a-z][a-z0-9-]{1,31}$/.test(String(id))) throw new Error(`bad plugin id "${id}"`);
+        db.exec('CREATE TABLE IF NOT EXISTS plugin_schema (id TEXT PRIMARY KEY, version INTEGER NOT NULL)');
+        const row = db.prepare('SELECT version FROM plugin_schema WHERE id = ?').get(id);
+        const have = row ? row.version : 0;
+        for (let v = have; v < steps.length; v++) {
+            db.exec('BEGIN');
+            try {
+                db.exec(steps[v]);
+                db.prepare('INSERT INTO plugin_schema (id, version) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET version = excluded.version').run(id, v + 1);
+                db.exec('COMMIT');
+            } catch (e) {
+                db.exec('ROLLBACK');
+                throw new Error(`plugin ${id} migration v${v + 1} failed: ${e.message}`);
+            }
+        }
+        return steps.length;
+    };
+
     return {
         raw: db,
+        migratePlugin,
         schemaVersion: () => db.prepare('PRAGMA user_version').get().user_version,
         touchLogin: (email) => upsertLogin.get(email, now(), now()),
         audit: (email, profileId, action, payload) =>

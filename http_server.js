@@ -20,7 +20,8 @@ const http = require('http');
 
 const build_path = path.resolve(__dirname, 'build');
 const index_path = path.join(build_path, 'index.html');
-const data_path = path.resolve(__dirname, 'data');
+// CINEMA_DATA_DIR: runtime state folder (default ./data). Tests and dev runs point it at a scratch folder.
+const data_path = path.resolve(process.env.CINEMA_DATA_DIR || path.join(__dirname, 'data'));
 const users_path = path.join(data_path, 'users');
 
 const STREMIO_SERVER_HOST = process.env.STREMIO_SERVER_HOST || 'stremio-streaming-server';
@@ -44,6 +45,12 @@ const streamLinksSecret = loadSecret(data_path);
 const streamLinks = createStreamLinks({ secret: streamLinksSecret });
 
 const app = express();
+// Never send our hostname to outside services (addons, image CDNs, TMDB) in Referer; same-origin requests keep it.
+app.use((_req, res, next) => { res.set('Referrer-Policy', 'same-origin'); next(); });
+
+// Plugin hooks (server/plugins/hooks.js): named extension points core exposes to plugins/ (see docs/plugins.md).
+const { createHooks } = require('./server/plugins/hooks');
+const hooks = createHooks();
 
 
 // Keep-alive agent for upstream connections to the Stremio streaming server
@@ -109,6 +116,10 @@ const streamingPaths = [
     // that the player builds when the streaming server URL is the bare origin.
     /^\/[0-9a-fA-F]{40}(\/.*)?$/
 ];
+
+// Streaming-server settings (cache size, transcoding, torrent profile) are household-wide: only admins may change them.
+// '/streaming/settings' reaches the same endpoint (the proxy strips the /streaming prefix).
+app.post(['/settings', '/streaming/settings'], auth.requireLogin, auth.requireAdmin);
 
 app.use(streamingPaths, async (req, res) => {
     if (req.method === 'OPTIONS') {
@@ -271,6 +282,7 @@ const { registerProbeRoutes } = require('./server/grabber/probe_routes');
 // live check: can the streaming server really pull data for this torrent right now?
 const swarmProbe = createSwarmProbe({ host: STREMIO_SERVER_HOST, port: STREMIO_SERVER_PORT, warm: (hash) => warmTorrent(hash, []) });
 sentinelDaemon.setGrabber({ resolve: (id) => qualityStore.resolve(id), probeMany: swarmProbe.probeMany });
+sentinelDaemon.setNotifier((n) => hooks.emit('notify', n));
 
 // Start sentinel daemon in background (checks every 2 hours)
 sentinelDaemon.start();
@@ -283,7 +295,16 @@ const { Library } = require('./server/library/library');
 const { registerLibraryRoutes } = require('./server/library/routes');
 const library = new Library({
     db: cinemaDb,
-    roots: { movie: process.env.LIBRARY_MOVIES_DIR || '/Movies', series: process.env.LIBRARY_TV_DIR || '/TV' }
+    roots: { movie: process.env.LIBRARY_MOVIES_DIR || '/Movies', series: process.env.LIBRARY_TV_DIR || '/TV' },
+    // extra "cold" roots from plugins (hook library.roots, e.g. the gdrive plugin); read on every scan
+    extraRoots: () => {
+        const out = { movie: [], series: [] };
+        for (const r of hooks.collect('library.roots')) {
+            out.movie.push(...((r && r.movie) || []));
+            out.series.push(...((r && r.series) || []));
+        }
+        return out;
+    }
 });
 sentinelDaemon.setLibrary(library);
 registerLibraryRoutes(app, {
@@ -302,19 +323,10 @@ registerLibraryRoutes(app, {
         if (rec) await downloadsManager.actionDownload(rec.id, 'delete', false);
     }
 });
+// TMDB client: a core service (smart filters and the AI copilot use it). Without TMDB_API_KEY it reports "not configured".
+const tmdb = require('./server/tmdb').createTmdb({ apiKey: process.env.TMDB_API_KEY, apiBase: process.env.TMDB_API_BASE || undefined, raw: cinemaDb.raw, region: process.env.WATCH_REGION || 'IN' });
+
 // Admin dashboard API
-// Smart browse (TMDB discover). Without TMDB_API_KEY the routes answer "not configured" and the page explains how to enable it.
-const tmdb = require('./server/smart/tmdb').createTmdb({ apiKey: process.env.TMDB_API_KEY, apiBase: process.env.TMDB_API_BASE || undefined, raw: cinemaDb.raw, region: process.env.WATCH_REGION || 'IN' });
-require('./server/smart/routes').registerFindRoutes(app, { tmdb, library });
-
-// AI copilot (Gemini): recommends titles, answers questions about the server and stages downloads that the user must confirm.
-// Off until GEMINI_API_KEY is set; the key never leaves the server.
-require('./server/ai').registerAi(app, {
-    requireProfile: profileApi.requireProfile,
-    db: cinemaDb, tmdb, library, downloadsManager, sentinel: sentinelDaemon, qualityStore, probeMany: swarmProbe.probeMany,
-    region: process.env.WATCH_REGION || 'IN'
-});
-
 require('./server/admin_routes').registerAdminRoutes(app, {
     db: cinemaDb,
     auth,
@@ -341,6 +353,32 @@ setInterval(() => library.scan(), 30 * 60 * 1000);
 const { createEventHub, emitAfter, createTorrentWatcher } = require('./server/events');
 const eventHub = createEventHub();
 app.get('/api/events', eventHub.handler);
+
+// Plugins: plugins/<id> (public) and data/plugins/<id> (private, gitignored). Which run: CINEMA_PLUGINS > data/plugins.json > defaults.
+// Each gets ctx (server/plugins/context.js); a plugin that fails to load is reported at /api/plugins and skipped.
+const { loadPlugins } = require('./server/plugins/loader');
+const { createContextFactory } = require('./server/plugins/context');
+const pluginsFile = path.join(data_path, 'plugins.json');
+let pluginSettings = {};
+try { pluginSettings = (JSON.parse(fs.readFileSync(pluginsFile, 'utf8')) || {}).settings || {}; } catch (_) { /* no file: defaults */ }
+const plugins = loadPlugins({
+    dirs: [{ dir: path.resolve(__dirname, 'plugins'), source: 'repo' }, { dir: path.join(data_path, 'plugins'), source: 'data' }],
+    dataFile: pluginsFile,
+    makeCtx: createContextFactory({
+        app,
+        auth: { requireLogin: auth.requireLogin, requireAdmin: auth.requireAdmin, requireProfile: profileApi.requireProfile },
+        db: cinemaDb,
+        hooks,
+        events: eventHub,
+        services: {
+            library, downloads: downloadsManager, sentinel: sentinelDaemon, quality: qualityStore, probeMany: swarmProbe.probeMany,
+            tmdb, region: process.env.WATCH_REGION || 'IN', streamLinks,
+        },
+        dataPath: data_path,
+        settings: pluginSettings,
+    }),
+});
+require('./server/plugins/routes').registerPluginRoutes(app, { loader: plugins, dataFile: pluginsFile, requireAdmin: auth.requireAdmin, audit: cinemaDb.audit });
 emitAfter(downloadsManager, ['addDownload', 'actionDownload'], eventHub.emit, 'downloads');
 emitAfter(library, ['scan', 'deleteFile', 'deleteItem', 'identify'], eventHub.emit, 'library');
 emitAfter(sentinelDaemon, ['addMonitored', 'removeMonitored', 'redownload', 'checkSeries', 'checkAllMonitored', 'markEpisodeRemoved'], eventHub.emit, 'sentinel');

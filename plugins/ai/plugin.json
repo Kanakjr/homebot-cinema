@@ -1,0 +1,12 @@
+{
+    "id": "ai",
+    "name": "AI copilot",
+    "description": "A chat drawer (Gemini) that recommends titles, answers questions about the server and stages downloads or monitors that the user confirms.",
+    "version": "1.0.0",
+    "defaultEnabled": false,
+    "env": [
+        { "name": "GEMINI_API_KEY", "required": true, "description": "Google AI Studio key. Stays on the server." },
+        { "name": "GEMINI_MODEL", "description": "Model name (default gemini-2.5-flash)." },
+        { "name": "TMDB_API_KEY", "description": "Lets the copilot search and filter titles (recommended)." }
+    ]
+}

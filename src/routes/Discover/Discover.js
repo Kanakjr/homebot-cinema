@@ -20,6 +20,7 @@ const useDiscover = require('./useDiscover');
 const useSelectableInputs = require('./useSelectableInputs');
 const { default: FiltersSheet } = require('./FiltersSheet');
 const { default: Guide } = require('./Guide');
+const { PluginSlot } = require('stremio/plugins');
 const { default: DaySelector } = require('./Guide/DaySelector');
 const { default: useLiveTvGuide } = require('./useLiveTvGuide');
 const styles = require('./styles');
@@ -372,7 +373,7 @@ const Discover = () => {
                                 </Button>
                             </div>
                         </div>}
-                        {isEpgLayout ? null : <a className={styles['smart-link']} href="#/find" title="Filter by rating, genre, streaming service and more">✨ Smart filters</a>}
+                        {isEpgLayout ? null : <PluginSlot name={'discoverActions'} className={styles['smart-link']} />}
                         {
                             isEpgLayout && compactEpgDate ?
                                 <DaySelector

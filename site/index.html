@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HomeBot Cinema</title>
+    <meta name="description" content="A private, self-hosted media hub for the whole household: profiles, your own server library, downloads to your own disk, shows that keep themselves up to date, and a plugin system for the rest.">
+    <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#000000">
+    <meta property="og:title" content="HomeBot Cinema">
+    <meta property="og:description" content="A private, self-hosted media hub for the whole household.">
+    <meta property="og:image" content="screenshots/home.webp">
+    <link rel="icon" href="brand/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav">
+    <div class="wrap nav-inner">
+        <a class="brand" href="#top"><img src="brand/icon.svg" alt="" width="28" height="28"><span>HomeBot <b>Cinema</b></span></a>
+        <nav class="links" aria-label="Sections">
+            <a href="#why">Why</a>
+            <a href="#features">Features</a>
+            <a href="#plugins">Plugins</a>
+            <a href="#start">Get started</a>
+            <a href="#download">Download</a>
+            <a href="#docs">Docs</a>
+        </nav>
+        <a class="btn small" href="https://github.com/Kanakjr/homebot-cinema">GitHub</a>
+    </div>
+</header>
+
+<main id="top">
+    <section class="hero">
+        <div class="wrap hero-grid">
+            <div>
+                <p class="eyebrow">Open source &middot; self-hosted &middot; GPL-2.0</p>
+                <h1>Your household's own <span class="grad">cinema</span>, on a box you own.</h1>
+                <p class="lead">A profile for everyone, a library of what is on your server, downloads to your own disk,
+                    shows that keep themselves up to date, and a plugin system for everything else. Built on Stremio Web.</p>
+                <div class="cta">
+                    <a class="btn" href="#start">Get started</a>
+                    <a class="btn ghost" href="https://youtu.be/aCRXjZhj_kQ">Watch the demo</a>
+                </div>
+            </div>
+            <figure class="shot hero-shot"><img src="screenshots/home.webp" alt="HomeBot Cinema home screen with a hero banner and rows of titles"></figure>
+        </div>
+    </section>
+
+    <section id="why" class="band">
+        <div class="wrap two">
+            <div>
+                <h2>Why we built it</h2>
+                <p>Stremio Web is a great player with a great addon ecosystem, but it is made for one person with one account in the
+                    cloud. A household needs something else: everyone on the same box, each with their own watch history, a
+                    library of the files you already have, new episodes that arrive by themselves, and no account with
+                    anyone but you.</p>
+                <p>So we forked it and grew a small server around it. Everything (profiles, history, library, settings) lives in
+                    one SQLite file and one folder you can back up. Only the people you invite can sign in.</p>
+            </div>
+            <div class="card quiet">
+                <h3>Principles</h3>
+                <ul class="ticks">
+                    <li><b>Yours.</b> Runs on a Mac mini, NAS or mini PC. Your data never leaves it.</li>
+                    <li><b>Small core, opt-in extras.</b> Anything not everyone wants is a plugin.</li>
+                    <li><b>Suggest, never act.</b> The AI copilot stages things; a person presses Confirm.</li>
+                    <li><b>Close to upstream.</b> We keep merging Stremio Web instead of drifting away.</li>
+                    <li><b>Sources are yours to choose.</b> The repo ships no stream sources.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="wrap">
+            <h2>What it adds on top of Stremio Web</h2>
+            <p class="sub">The Stremio player and addon catalogs are still there. Around them:</p>
+            <div class="grid">
+                <article class="card"><h3>Profiles for everyone</h3><p>Up to 8, with avatars, optional PIN and kids mode. Each has its own library, Continue watching and settings.</p></article>
+                <article class="card"><h3>Server library</h3><p>Scans your movie and TV folders, matches titles, plays straight from the server and badges what is new.</p></article>
+                <article class="card"><h3>Downloads to your disk</h3><p>Through Transmission, with quality profiles (4K, HD, direct play, space saver, your own) and a live swarm check.</p></article>
+                <article class="card"><h3>Sentinel</h3><p>Keeps shows up to date: new episodes only, chosen seasons, or everything. Never re-fetches what you deleted.</p></article>
+                <article class="card"><h3>A better player path</h3><p>Deep HLS buffer, smooth HEVC handling, signed expiring links for VLC and friends. Native apps play files as they are.</p></article>
+                <article class="card"><h3>Admin and live updates</h3><p>Overview, people, activity log; pages refresh by themselves; a daily database snapshot.</p></article>
+            </div>
+            <div class="gallery">
+                <figure class="shot"><img loading="lazy" src="screenshots/smart-filters.webp" alt="Smart filters by rating, genre and streaming service"><figcaption>Smart filters (plugin <code>find</code>)</figcaption></figure>
+                <figure class="shot"><img loading="lazy" src="screenshots/title-page.webp" alt="Title page with streams sorted by quality profile"><figcaption>Streams sorted by your quality profile</figcaption></figure>
+                <figure class="shot"><img loading="lazy" src="screenshots/downloads.webp" alt="Downloads and Sentinel"><figcaption>Downloads and Sentinel</figcaption></figure>
+                <figure class="shot"><img loading="lazy" src="screenshots/library.webp" alt="Server library"><figcaption>Server library</figcaption></figure>
+                <figure class="shot"><img loading="lazy" src="screenshots/calendar.webp" alt="Calendar with on-server markers"><figcaption>Calendar with what is on the server</figcaption></figure>
+                <figure class="shot"><img loading="lazy" src="screenshots/admin-overview.webp" alt="Admin overview"><figcaption>Admin overview</figcaption></figure>
+            </div>
+        </div>
+    </section>
+
+    <section id="plugins" class="band">
+        <div class="wrap">
+            <h2>Plugins: run only what you want</h2>
+            <p class="sub">Each plugin is one folder with its server code, its UI, its tests and its notes. Switch them with one setting.</p>
+            <div class="grid plugins">
+                <article class="card"><span class="tag on">on by default</span><h3>find</h3><p>Smart filters: rating, votes, genre, language, runtime, year, "streaming on X in your country" (TMDB).</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>themes</h3><p>Appearance per profile and ten extra accent colours. Theme packs are plugins too.</p></article>
+                <article class="card"><span class="tag">opt-in</span><h3>ai</h3><p>A copilot drawer (Gemini). Recommends, answers questions about the server, stages downloads you confirm.</p></article>
+                <article class="card"><span class="tag">opt-in</span><h3>telegram</h3><p>Household alerts, for example "Sentinel queued a new episode".</p></article>
+                <article class="card"><span class="tag">opt-in</span><h3>gdrive</h3><p>Google Drive (rclone) folders as extra library roots, offline-safe, plus a plan for moving watched files there.</p></article>
+                <article class="card dashed"><span class="tag next">next</span><h3>yours</h3><p>A Plex-style watch tracker, more Plex features, your own sources. <code>pnpm plugin:new my-plugin</code></p></article>
+            </div>
+            <div class="two code-row">
+                <div>
+                    <h3>Switch them on</h3>
+<pre><code># .env
+CINEMA_PLUGINS=find,themes,ai,telegram
+
+# or data/plugins.json (gitignored, survives rebuilds)
+{ "enabled": ["find", "themes", "ai"] }</code></pre>
+                    <p class="note">Admins see every plugin, and why one is not active, at <code>/api/plugins</code>.</p>
+                </div>
+                <div>
+                    <h3>Write one</h3>
+<pre><code>// plugins/hello/server/index.js
+module.exports = {
+  register(ctx) {
+    if (!ctx.config.get('HELLO_KEY')) return ctx.disable('HELLO_KEY not set');
+    ctx.hooks.on('notify', (n) => ctx.log.info(n.text));
+    ctx.app.get('/api/hello', (req, res) => res.json({ hi: req.login.email }));
+  },
+};</code></pre>
+                    <p class="note">UI plugins add to named slots: routes, top-bar buttons, settings sections, accent colours. <a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md">Plugin guide</a>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how">
+        <div class="wrap">
+            <h2>How it fits together</h2>
+            <div class="diagram" role="img" aria-label="Browsers and native apps talk to the HomeBot Cinema server, which runs core and plugins and talks to the streaming server, Transmission and your media folders">
+                <div class="col">
+                    <div class="node">Browser / PWA</div>
+                    <div class="node">Native app<br><small>macOS · Windows · Linux</small></div>
+                </div>
+                <div class="arrow" aria-hidden="true">&rarr;</div>
+                <div class="col">
+                    <div class="node big"><b>HomeBot Cinema server</b><br><small>Cloudflare Access login</small>
+                        <div class="split"><span>core</span><span>plugins</span></div>
+                    </div>
+                </div>
+                <div class="arrow" aria-hidden="true">&rarr;</div>
+                <div class="col">
+                    <div class="node">Streaming server</div>
+                    <div class="node">Transmission</div>
+                    <div class="node">Your Movies / TV</div>
+                </div>
+            </div>
+            <p class="sub center">One SQLite file and one <code>data/</code> folder hold everything. Back them up and you have backed up the house.</p>
+        </div>
+    </section>
+
+    <section id="start" class="band">
+        <div class="wrap">
+            <h2>Get started</h2>
+            <ol class="steps">
+                <li><h3>Clone and configure</h3>
+<pre><code>git clone https://github.com/Kanakjr/homebot-cinema
+cd homebot-cinema
+cp .env.example .env
+cp data/addons.example.json data/addons.json
+cp docker-compose.example.yml docker-compose.yml</code></pre>
+                    <p>Point the media folders in <code>docker-compose.yml</code> at your disk, and set your login (Cloudflare Access) in <code>.env</code>.</p></li>
+                <li><h3>Start it</h3>
+<pre><code>docker compose up -d --build   # http://localhost:3002</code></pre>
+                    <p>Create a profile for everyone on the "Who's watching?" screen.</p></li>
+                <li><h3>Add what you want</h3>
+                    <p>A free TMDB key turns on Smart filters; a Gemini key and <code>CINEMA_PLUGINS=…,ai</code> turn on the copilot. Add the addons you have the right to use to <code>data/addons.json</code>.</p></li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="download">
+        <div class="wrap">
+            <h2>Apps</h2>
+            <p class="sub">The web app works everywhere and installs as a PWA. Native desktop apps play files directly with mpv (HEVC, AV1, Dolby audio, embedded subtitles) instead of asking the server to transcode.</p>
+            <div class="grid dl">
+                <article class="card"><h3>macOS</h3><p>Apple Silicon. Working preview; signed builds coming.</p><span class="tag next">preview</span></article>
+                <article class="card"><h3>Windows</h3><p>Windows 10 and 11, WebView2 + mpv.</p><span class="tag">planned</span></article>
+                <article class="card"><h3>Linux</h3><p>AppImage first, then Flatpak and .deb.</p><span class="tag">planned</span></article>
+                <article class="card"><h3>Any device</h3><p>Open your server in a browser and choose "Install" / "Add to Home Screen".</p><span class="tag on">available</span></article>
+            </div>
+            <p class="note center">Releases will appear on <a href="https://github.com/Kanakjr/homebot-cinema/releases">GitHub Releases</a>. <a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/native-apps.md">Native apps plan</a>.</p>
+        </div>
+    </section>
+
+    <section id="docs" class="band">
+        <div class="wrap">
+            <h2>Documentation</h2>
+            <div class="grid docs">
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema#readme"><h3>README</h3><p>Features, quick start, configuration.</p></a>
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md"><h3>Plugins</h3><p>Switching them, writing one, hooks and slots.</p></a>
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugin-architecture.md"><h3>Architecture</h3><p>Core vs plugins, and why.</p></a>
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/upstream-sync.md"><h3>Upstream sync</h3><p>How we keep merging Stremio Web.</p></a>
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/third-party-services.md"><h3>Outside services</h3><p>Every host the app talks to, and the plan to need fewer.</p></a>
+                <a class="card link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/AGENTS.md"><h3>For AI agents</h3><p>AGENTS.md at the root and in every plugin.</p></a>
+            </div>
+        </div>
+    </section>
+
+    <section id="roadmap">
+        <div class="wrap">
+            <h2>Where it is going</h2>
+            <ul class="roadmap">
+                <li><b>Watch tracker</b>: plays, stats and "On deck", Plex-style, as a plugin.</li>
+                <li><b>More Plex features</b>: collections, per-file details, sharing a title with another profile.</li>
+                <li><b>Our own metadata</b>: a TMDB-backed catalog served from your server, so browsing does not depend on outside catalogs.</li>
+                <li><b>Signed native apps</b> for macOS, Windows and Linux, with automatic updates.</li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer class="foot">
+    <div class="wrap">
+        <p><b>Responsible use.</b> HomeBot Cinema does not host, index, provide or recommend any media. It is a client for the sources you
+            configure and a manager for your own server. Use it for media you have the right to access.</p>
+        <p>An independent project, not affiliated with or endorsed by Stremio or Smart Code OOD. Built on
+            <a href="https://github.com/Stremio/stremio-web">Stremio Web</a> (GPL-2.0). Metadata by
+            <a href="https://www.themoviedb.org">TMDB</a> where enabled.</p>
+        <p class="small">GPL-2.0 &middot; <a href="https://github.com/Kanakjr/homebot-cinema">Source on GitHub</a></p>
+    </div>
+</footer>
+</body>
+</html>

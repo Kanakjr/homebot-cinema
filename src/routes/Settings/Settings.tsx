@@ -8,7 +8,7 @@ import { MainNavBars } from 'stremio/components';
 import { SECTIONS } from './constants';
 import Menu from './Menu';
 import General from './General';
-import Appearance from './Appearance';
+import { slot, renderPlugin } from 'stremio/plugins';
 import Interface from './Interface';
 import Player from './Player';
 import Streaming from './Streaming';
@@ -24,20 +24,22 @@ const Settings = () => {
 
     const sectionsContainerRef = useRef<HTMLDivElement>(null);
     const generalSectionRef = useRef<HTMLDivElement>(null);
-    const appearanceSectionRef = useRef<HTMLDivElement>(null);
     const interfaceSectionRef = useRef<HTMLDivElement>(null);
     const playerSectionRef = useRef<HTMLDivElement>(null);
     const streamingServerSectionRef = useRef<HTMLDivElement>(null);
     const shortcutsSectionRef = useRef<HTMLDivElement>(null);
 
+    // sections contributed by plugins (slot "settingsSections"), shown right after General
+    const pluginSections = useMemo(() => slot('settingsSections').map((s: any) => ({ ...s, ref: React.createRef<HTMLDivElement>() })), []);
+
     const sections = useMemo(() => ([
         { ref: generalSectionRef, id: SECTIONS.GENERAL },
-        { ref: appearanceSectionRef, id: SECTIONS.APPEARANCE },
+        ...pluginSections.map((s: any) => ({ ref: s.ref, id: s.id })),
         { ref: interfaceSectionRef, id: SECTIONS.INTERFACE },
         { ref: playerSectionRef, id: SECTIONS.PLAYER },
         { ref: streamingServerSectionRef, id: SECTIONS.STREAMING },
         { ref: shortcutsSectionRef, id: SECTIONS.SHORTCUTS },
-    ]), []);
+    ]), [pluginSections]);
 
     const [selectedSectionId, setSelectedSectionId] = useState(SECTIONS.GENERAL);
 
@@ -93,6 +95,7 @@ const Settings = () => {
                 <Menu
                     selected={selectedSectionId}
                     streamingServer={streamingServer}
+                    extraSections={pluginSections}
                     onSelect={onMenuSelect}
                 />
 
@@ -101,7 +104,7 @@ const Settings = () => {
                         ref={generalSectionRef}
                         profile={profile}
                     />
-                    <Appearance ref={appearanceSectionRef} />
+                    {pluginSections.map((s: any) => renderPlugin(s, 'settingsSections', {}, s.ref))}
                     <Interface
                         ref={interfaceSectionRef}
                         profile={profile}

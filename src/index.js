@@ -23,6 +23,7 @@ const { CoreProvider } = require('./core');
 const { FileDropProvider, PlatformProvider } = require('./common');
 const { initSSOManager } = require('./common/ssoManager');
 const { ensureProfile } = require('./common/profileGate');
+const { loadPlugins } = require('./plugins');
 
 // only English is bundled; App switches to the profile's language via common/i18nLanguages (loaded on demand)
 const translations = { 'en-US': { translation: enUS } };
@@ -60,6 +61,8 @@ async function startHomeBotCinema() {
 
     // Resolve the household profile ("Who's watching?") before anything reads per-profile storage,
     // then initialize profile isolation, universal addons and the localStorage interceptors.
+    // Which plugins run for this login (GET /api/plugins). Before the profile gate: plugins may add accents and routes.
+    await loadPlugins();
     const identity = await ensureProfile();
     await initSSOManager(identity);
 

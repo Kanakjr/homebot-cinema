@@ -34,6 +34,8 @@ FROM base
 
 COPY http_server.js /var/www/stremio-web
 COPY server /var/www/stremio-web/server
+# plugin server code (the UI parts are already compiled into build/)
+COPY plugins /var/www/stremio-web/plugins
 COPY --from=server /var/www/stremio-web/node_modules /var/www/stremio-web/node_modules
 COPY --from=app /var/www/stremio-web/build /var/www/stremio-web/build
 RUN mkdir -p /var/www/stremio-web/data/users /var/www/stremio-web/data

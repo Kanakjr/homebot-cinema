@@ -7,7 +7,7 @@ const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button } = require('stremio/components');
 const BrandMark = require('stremio/components/BrandMark');
-const { useCopilot } = require('stremio/common/copilotState');
+const { PluginSlot } = require('stremio/plugins');
 const { useHorizontalNavGamepadNavigation } = require('stremio/services/GamepadNavigation');
 const SearchBar = require('./SearchBar');
 const NavMenu = require('./NavMenu');
@@ -28,7 +28,6 @@ const HorizontalNavBar = React.memo(({ className, route, query, title, backButto
             {children}
         </Button>
     ), []);
-    const copilot = useCopilot();
     useHorizontalNavGamepadNavigation(route || className, backButton ? backButtonOnClick : undefined);
     return (
         <nav {...props} className={classnames(className, styles['horizontal-nav-bar-container'])}>
@@ -64,12 +63,8 @@ const HorizontalNavBar = React.memo(({ className, route, query, title, backButto
                         null
                 }
                 {
-                    navMenu && copilot.available ?
-                        <Button className={classnames(styles['button-container'], styles['menu-button-container'], { active: copilot.open })} title={'Copilot'} aria-label={'Copilot'} aria-pressed={copilot.open} tabIndex={-1} onClick={copilot.toggle}>
-                            <svg className={styles['icon']} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                                <path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14zM5 15l.7 1.8L7.5 17.5l-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7L5 15z" />
-                            </svg>
-                        </Button>
+                    navMenu ?
+                        <PluginSlot name={'navButtons'} className={classnames(styles['button-container'], styles['menu-button-container'])} iconClassName={styles['icon']} />
                         :
                         null
                 }
