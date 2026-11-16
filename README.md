@@ -19,9 +19,9 @@ smart discovery, and an AI copilot that only suggests: you press the button.
 
 ## Watch the demo
 
-[![HomeBot Cinema demo: a private Netflix for the whole family, on YouTube](https://img.youtube.com/vi/e2sj2VLFnLc/maxresdefault.jpg)](https://youtu.be/e2sj2VLFnLc)
+[![HomeBot Cinema demo: a private Netflix for the whole family, on YouTube](https://img.youtube.com/vi/aCRXjZhj_kQ/maxresdefault.jpg)](https://youtu.be/aCRXjZhj_kQ)
 
-A tour of profiles, Smart filters, the AI copilot, downloads and Sentinel. ▶ [Watch on YouTube](https://youtu.be/e2sj2VLFnLc)
+A tour of profiles, Smart filters, the AI copilot, downloads and Sentinel. ▶ [Watch on YouTube](https://youtu.be/aCRXjZhj_kQ)
 
 ## What is it?
 
