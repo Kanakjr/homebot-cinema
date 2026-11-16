@@ -40,7 +40,7 @@ function useSegments(videoId, file) {
     return state.key === key ? state.segments : [];
 }
 
-const SkipOverlay = ({ videoId, streamUrl, timeMs, durationMs, paused, live, controlsHidden, menusOpen, hasNextVideo, seekTo, playNext, reportCreditsStart }) => {
+const SkipOverlay = ({ videoId, streamUrl, timeMs, durationMs, paused, live, controlsHidden, menusOpen, hasNextVideo, seekTo, playNext, reportCreditsStart, reportMarks }) => {
     const prefs = L.readPrefs(window.ssoProfile);
     const lookupId = L.lookupVideoId(videoId);
     const file = L.libraryFileParam(streamUrl);
@@ -71,6 +71,14 @@ const SkipOverlay = ({ videoId, streamUrl, timeMs, durationMs, paused, live, con
     React.useEffect(() => () => {
         if (typeof reportCreditsStart === 'function') reportCreditsStart(null);
     }, [reportCreditsStart]);
+
+    // intro / credits marks on the seek bar
+    React.useEffect(() => {
+        if (typeof reportMarks === 'function') reportMarks(segments.length ? L.toMarks(segments) : null);
+    }, [segments, reportMarks]);
+    React.useEffect(() => () => {
+        if (typeof reportMarks === 'function') reportMarks(null);
+    }, [reportMarks]);
 
     const seg = live ? null : L.activeSegment(segments, timeMs);
 
@@ -145,6 +153,7 @@ SkipOverlay.propTypes = {
     seekTo: PropTypes.func,
     playNext: PropTypes.func,
     reportCreditsStart: PropTypes.func,
+    reportMarks: PropTypes.func,
 };
 
 module.exports = SkipOverlay;

@@ -18,7 +18,8 @@ Contract: docs/plugins.md. This file is only what is special about this plugin.
     become "Next episode" (`playNext`), because seeking to the very end makes the player leave.
   - `reportCreditsStart(ms)` opens the core Up Next popup at the credits start, only when they start in the last 10 minutes
     and the second half (`creditsStart`). The player ties the hint to the current stream.
-- **Core touchpoint**: `src/routes/Player/Player.js` renders the slot and ORs `creditsStarted` into `nextVideoPopupOpen`
-  (listed in docs/upstream-touchpoints.md).
+- **Core touchpoints**: `src/routes/Player/Player.js` renders the slot, ORs `creditsStarted` into `nextVideoPopupOpen` and passes
+  the marks to `ControlBar` -> `SeekBar` (listed in docs/upstream-touchpoints.md).
 - Tests: `test/skip.nt.js` (server, fake IntroDB and ffprobe), `test/skip.spec.js` (timing logic).
-- Not done yet: segment marks on the seek bar; anime (AniSkip needs MAL ids); submitting times back to IntroDB.
+- Seek-bar marks: `reportMarks(toMarks(segments))`; the player keeps them per stream and SeekBar draws them (label in the hover time).
+- Not done yet: anime (AniSkip needs MAL ids); submitting times back to IntroDB.

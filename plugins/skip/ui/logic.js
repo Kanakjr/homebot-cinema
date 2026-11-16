@@ -74,6 +74,13 @@ function creditsStart(segments, durationMs) {
     return credits.start;
 }
 
+const MARK_LABELS = { intro: 'Intro', recap: 'Recap', credits: 'Credits', postcredits: 'Post-credits scene' };
+
+/** Player segments -> seek-bar marks ({ start, end, label } in ms). */
+function toMarks(segments) {
+    return (segments || []).map((s) => ({ start: s.start, end: s.end, label: MARK_LABELS[s.type] || s.type }));
+}
+
 /** The library file id behind a server stream (…/api/downloads/stream/lf_12/video.mp4) -> 'lf_12', else null. */
 function libraryFileParam(streamUrl) {
     const m = /\/api\/downloads\/stream\/(lf_\d{1,12})(?:$|[/?#])/.exec(String(streamUrl || ''));
@@ -85,5 +92,5 @@ const lookupVideoId = (videoId) => (/^tt\d{1,10}(:\d{1,4}:\d{1,5})?$/.test(Strin
 
 module.exports = {
     DEFAULT_PREFS, AUTO_SKIP_WINDOW, readPrefs, toPlayerSegments, segmentKey, activeSegment, shouldAutoSkip, skipAction,
-    creditsStart, libraryFileParam, lookupVideoId,
+    creditsStart, libraryFileParam, lookupVideoId, toMarks,
 };

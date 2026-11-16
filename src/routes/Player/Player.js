@@ -131,6 +131,9 @@ const Player = () => {
     // HomeBot: a playerOverlays plugin may report when the end credits start ({ stream, at } in ms); Up Next then opens
     // there instead of a fixed time before the end. Tied to the stream so it never carries over to the next episode.
     const [creditsHint, setCreditsHint] = React.useState(null);
+    // HomeBot: seek-bar marks reported by a playerOverlays plugin ({ stream, marks }), shown only for that stream
+    const [marksHint, setMarksHint] = React.useState(null);
+    const seekBarMarks = marksHint !== null && marksHint.stream === video.state.stream ? marksHint.marks : null;
     const creditsStarted = !isEpg && creditsHint !== null && creditsHint.stream === video.state.stream &&
         video.state.time !== null && video.state.time >= creditsHint.at;
     const nextVideoPopupOpen = upcomingVideo !== null &&
@@ -406,6 +409,11 @@ const Player = () => {
     // HomeBot: credits start reported by a playerOverlays plugin (ms, or null)
     const onCreditsStartReported = React.useCallback((at) => {
         setCreditsHint(Number.isFinite(at) ? { stream: video.state.stream, at } : null);
+    }, [video.state.stream]);
+
+    // HomeBot: seek-bar marks reported by a playerOverlays plugin ([{ start, end, label }] in ms, or null)
+    const onMarksReported = React.useCallback((marks) => {
+        setMarksHint(Array.isArray(marks) && marks.length ? { stream: video.state.stream, marks } : null);
     }, [video.state.stream]);
 
     const onDismissNextVideoPopup = React.useCallback(() => {
@@ -1198,6 +1206,7 @@ const Player = () => {
                 onMouseMove={onBarMouseMove}
                 onMouseOver={onBarMouseMove}
                 onTouchEnd={onContainerMouseLeave}
+                markers={seekBarMarks}
             />
             <Indicator
                 className={classnames(styles['layer'], styles['indicator-layer'])}
@@ -1207,6 +1216,11 @@ const Player = () => {
             {/* HomeBot: plugin overlays (skip intro, ...) above the control bar, below the popups and menus */}
             <PluginSlot
                 name={'playerOverlays'}
+                title={player.title ?? null}
+                type={urlParams.type ?? null}
+                metaId={urlParams.id ?? null}
+                poster={metaItemContent?.poster ?? null}
+                stream={player.selected?.stream ?? null}
                 videoId={urlParams.videoId ?? null}
                 streamUrl={player.selected?.stream?.url ?? null}
                 timeMs={video.state.time}
@@ -1219,6 +1233,7 @@ const Player = () => {
                 seekTo={commitSeek}
                 playNext={onNextVideoRequested}
                 reportCreditsStart={onCreditsStartReported}
+                reportMarks={onMarksReported}
             />
             {
                 nextVideoPopupOpen ?

@@ -8,7 +8,9 @@ a plugin off removes its routes, its UI and its background work. Core never impo
 |---|---|---|---|
 | `find` | Smart filters page (`#/find`) and its link on Discover | on | `TMDB_API_KEY` |
 | `themes` | Settings > Appearance per profile and ten extra accent colours | on | nothing |
-| `skip` | Skip intro / recap / credits buttons in the player, auto-skip per profile, Up Next when the credits start | on | nothing (`SKIP_INTRODB_URL=off` for no outside lookups) |
+| `skip` | Skip intro / recap / credits buttons in the player, intro and credits marks on the seek bar, auto-skip per profile, Up Next when the credits start | on | nothing (`SKIP_INTRODB_URL=off` for no outside lookups) |
+| `nowplaying` | Admin > Now playing: who watches what, on which device, direct play or transcoding | on | nothing |
+| `collections` | "Part of the X collection" on movie pages | on | `TMDB_API_KEY` |
 | `ai` | AI copilot drawer (sparkle button): recommendations, server questions, staged downloads | off | `GEMINI_API_KEY` |
 | `telegram` | Household alerts (for example Sentinel queued an episode) to a Telegram chat | off | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
 | `gdrive` | Mounted cloud folders as extra library roots, plus a plan for moving watched files there | off | `LIBRARY_EXTRA_MOVIES_DIRS` / `LIBRARY_EXTRA_TV_DIRS` |
@@ -92,8 +94,10 @@ nothing. Each contribution renders inside an error boundary: a crashing plugin h
 | `appOverlays` | `{ id, Component }` | Always mounted (drawers, toasters) |
 | `navButtons` | `{ id, order, Component({ className, iconClassName }) }` | Top bar, left of the profile menu |
 | `discoverActions` | `{ id, Component({ className }) }` | Discover header |
-| `playerOverlays` | `{ id, Component(props) }`: `videoId`, `streamUrl`, `timeMs`, `durationMs` (ms), `paused`, `live`, `controlsHidden`, `menusOpen`, `hasNextVideo`, `seekTo(ms)`, `playNext()`, `reportCreditsStart(ms \| null)` | Player, above the control bar, below popups and menus |
+| `playerOverlays` | `{ id, Component(props) }`: `title`, `type`, `metaId`, `videoId`, `poster`, `stream`, `streamUrl`, `timeMs`, `durationMs` (ms), `paused`, `live`, `controlsHidden`, `menusOpen`, `hasNextVideo`, `seekTo(ms)`, `playNext()`, `reportCreditsStart(ms \| null)`, `reportMarks([{ start, end, label }] \| null)` | Player, above the control bar, below popups and menus |
 | `settingsSections` | `{ id, label, Component }` (forwardRef to a Settings `Section`) | Settings, after General, with a menu entry |
+| `adminTabs` | `{ id, label, order, Component({ onError }) }` | Admin, tabs after Overview |
+| `metaDetailsSections` | `{ id, Component({ type, id, videoId, meta }) }` | Title page, under the description |
 | `accents` | `{ key, label, color, secondary }` | Accent palette (profile editor, Appearance) |
 
 Import core UI through the `stremio/...` alias (`stremio/components`, `stremio/common/serverApi`, ...). Never import another

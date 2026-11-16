@@ -16,12 +16,12 @@ Search, Library, Calendar and Settings (playback not exercised), plus a search o
 
 | Host | Who runs it | Used for | Sees |
 |---|---|---|---|
-| `v3-cinemeta.strem.io`, `cinemeta-catalogs.strem.io` | Stremio (Cinemeta addon) | Catalogs, title details, search; the server also uses it to match library files and for Sentinel episode lists | Titles browsed and searched; titles parsed from library file names |
+| `v3-cinemeta.strem.io`, `cinemeta-catalogs.strem.io` | Stremio (Cinemeta addon) | Catalogs, title details, search; the server also uses it to match library files, for Sentinel episode lists and for Continue watching "next up" and the Upcoming row (episode lists of the profile's shows, cached 6 h) | Titles browsed and searched; titles parsed from library file names |
 | `images.metahub.space`, `live.`/`episodes.metahub.space` | Stremio | Posters, backgrounds, logos | Titles shown |
 | `v3-channels.strem.io`, `watchhub.strem.io`, `caching.stremio.net` | Stremio | YouTube channels addon, "where to watch", public-domain catalog | Titles browsed |
 | `opensubtitles-v3.strem.io` | Stremio | Subtitles (when listed for a video) | Title and file hash of what is played |
 | `anime-kitsu.strem.fun` | Community | Anime catalogs | Catalog requests |
-| `api.tmdb.org`, `image.tmdb.org` | TMDB | Smart filters, copilot (server-side key) | Filters and titles |
+| `api.tmdb.org`, `image.tmdb.org` | TMDB | Smart filters, copilot, movie collections (server-side key) | Filters and titles |
 | `api.introdb.app` | IntroDB (community) | `skip` plugin, server-side: intro, recap and credits times when the file has no chapter markers. Asked once per episode or movie when it is played, cached in SQLite. `SKIP_INTRODB_URL=off` turns it off | IMDb id, season and episode of what is played (from the server's IP) |
 | `generativelanguage.googleapis.com`, `api.telegram.org` | Google, Telegram | `ai` and `telegram` plugins, server-side | Copilot prompts (titles only); alert text |
 | Your addons and stream sources | You choose | Whatever you add to `data/addons.json` / `STREAM_ADDON_URL` | Their requests |

@@ -1,0 +1,7 @@
+{
+    "id": "nowplaying",
+    "name": "Now playing",
+    "description": "Admin > Now playing: who is watching what right now, on which device, and whether it plays directly or is transcoded by the streaming server.",
+    "version": "1.0.0",
+    "defaultEnabled": true
+}

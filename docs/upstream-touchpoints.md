@@ -23,7 +23,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/MetaDetails/StreamsList/StreamsList.js` | 274 | Quality-profile sort, swarm health, Save button (fork identity). |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
-| `src/routes/Player/Player.js` | 166 | Server library playback, HUD notices, external player links; slot playerOverlays and Up Next at the credits start a plugin reports (skip intro). |
+| `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays, Up Next at the credits start and seek-bar marks a plugin reports (skip intro). |
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (same-origin). |
@@ -33,7 +33,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `CONTRIBUTING.md` | 68 | Fork contributing guide. |
 | `src/components/NavBar/HorizontalNavBar/NavMenu/NavMenuContent.js` | 64 | Profile switch, sign out, dashboard link. |
 | `src/routes/Calendar/Calendar.tsx` | 63 | On-server / auto-download markers. |
-| `src/routes/MetaDetails/MetaDetails.js` | 60 | MediaDownloadBar (downloads + Sentinel). |
+| `src/routes/MetaDetails/MetaDetails.js` | 72 | MediaDownloadBar (downloads + Sentinel); slot metaDetailsSections under the description (collections). |
 | `src/App/useInterfaceScale.ts` | 55 | Default zoom 90%. |
 | `src/routes/Settings/General/User/User.tsx` | 50 | SSO identity instead of a Stremio account. |
 | `manifest.json` | 41 | PWA name, icons, colours (branding). |
@@ -45,7 +45,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 30 | Brand mark, profile avatar, slot navButtons. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 27 | Badge. |
 | `webpack.config.js` | 28 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API). |
-| `src/routes/Board/Board.js` | 25 | Hero carousel, continue-watching cards. |
+| `src/routes/Board/Board.js` | 44 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row. |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 15 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
 | `src/App/styles.less` | 24 | Branding. |
@@ -78,7 +78,9 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/core/createTransport.ts` | 6 | Analytics disabled. |
 | `src/common/interfaceScale.ts` | 6 | Zoom default. |
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
-| `src/routes/Player/ControlBar/ControlBar.js` | 5 | Small control changes. |
+| `src/routes/Player/ControlBar/ControlBar.js` | 8 | Small control changes; passes seek-bar marks to SeekBar. |
+| `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
+| `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
 | `src/components/MetaPreview/MetaPreview.js` | 4 | Small fix. |
 | `src/routes/Settings/Streaming/Streaming.tsx` | 17 | Server URL list hidden (`SERVER_URL_EDITING`): the app always uses its own origin. Server settings read-only for non-admins. |
 | `src/routes/Settings/Interface/useInterfaceOptions.ts` | 3 | Zoom choices. |

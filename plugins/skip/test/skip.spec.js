@@ -85,6 +85,12 @@ describe('skip plugin: timing logic', () => {
         expect(L.libraryFileParam(null)).toBe(null);
     });
 
+    it('turns segments into labelled seek-bar marks', () => {
+        expect(L.toMarks([{ type: 'intro', start: 0, end: 30000 }, { type: 'credits', start: 90000, end: 120000 }]))
+            .toEqual([{ start: 0, end: 30000, label: 'Intro' }, { start: 90000, end: 120000, label: 'Credits' }]);
+        expect(L.toMarks(null)).toEqual([]);
+    });
+
     it('contributes to known slots only', () => {
         expect(SLOTS).toContain('playerOverlays');
     });

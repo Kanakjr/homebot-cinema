@@ -57,6 +57,7 @@ const ControlBar = React.forwardRef(({
     onToggleStatisticsMenu,
     onToggleShortcutsModal,
     onTouchEnd,
+    markers, // HomeBot: intro/credits marks for the seek bar (slot playerOverlays)
     ...props
 }, ref) => {
     const { chromecast } = useServices();
@@ -148,6 +149,7 @@ const ControlBar = React.forwardRef(({
                 onPlayRequested={onPlayRequested}
                 seekable={seekable}
                 buffering={buffering}
+                markers={markers}
             />
             <div className={styles['control-bar-buttons-container']}>
                 <Button className={classnames(styles['control-bar-button'], { 'disabled': typeof paused !== 'boolean' })} title={paused ? t('PLAYER_PLAY') : t('PLAYER_PAUSE')} tabIndex={-1} onClick={onPlayPauseButtonClick}>
@@ -271,6 +273,7 @@ ControlBar.propTypes = {
     onMouseOver: PropTypes.func,
     onMouseMove: PropTypes.func,
     onTouchEnd: PropTypes.func,
+    markers: PropTypes.array, // HomeBot
 };
 
 module.exports = ControlBar;

@@ -7,6 +7,9 @@ const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalo
 const { useStreamingServer, useNotifications, withCoreSuspender, useProfile } = require('stremio/common');
 const { EventModal, LiveTvContinueWatchingItem, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
 const ContinueWatchingCard = require('stremio/components/ContinueWatchingCard');
+const UpcomingCard = require('stremio/components/UpcomingCard');
+const useUpNext = require('./useUpNext');
+const useUpcoming = require('./useUpcoming');
 const HeroCarousel = require('./HeroCarousel');
 const { pickHeroItems } = require('./HeroCarousel/pickHeroItems');
 const useBoard = require('./useBoard');
@@ -29,13 +32,18 @@ const Board = () => {
         items: (Array.isArray(liveTvContinueWatching.items) ? liveTvContinueWatching.items : [])
             .map((item) => ({ ...item, posterShape: 'landscape' })),
     }), [liveTvContinueWatching.items]);
-    // Nuvio-style landscape "Continue watching" cards
+    // Nuvio-style landscape "Continue watching" cards, with time left and "next up" after the furthest episode watched
+    const upNext = useUpNext(continueWatchingPreview.items);
     const continueWatchingLandscape = React.useMemo(() => ({
         ...continueWatchingPreview,
-        items: continueWatchingPreview.items.map((item) => ({ ...item, posterShape: 'landscape' })),
-    }), [continueWatchingPreview]);
+        items: continueWatchingPreview.items.map((item) => ({ ...item, posterShape: 'landscape', upNext: upNext.get(item._id) || null })),
+    }), [continueWatchingPreview, upNext]);
+    // episodes of this profile's shows airing in the next two weeks
+    const upcoming = useUpcoming(continueWatchingPreview.items.length);
+    const upcomingCatalog = React.useMemo(() => ({ items: upcoming, deepLinks: { discover: '#/calendar' } }), [upcoming]);
     const boardCatalogsOffset =
         (continueWatchingPreview.items.length > 0 ? 1 : 0) +
+        (upcoming.length > 0 ? 1 : 0) +
         (liveTvCatalog.items.length > 0 ? 1 : 0);
     const showStreamingServerWarning = React.useMemo(() => {
         return streamingServer.settings !== null && streamingServer.settings.type === 'Err' && (
@@ -70,6 +78,17 @@ const Board = () => {
                                 catalog={continueWatchingLandscape}
                                 itemComponent={ContinueWatchingCard}
                                 notifications={notifications}
+                            />
+                            :
+                            null
+                    }
+                    {
+                        upcoming.length > 0 ?
+                            <MetaRow
+                                className={classnames(styles['board-row'], styles['board-row-landscape'], 'animation-fade-in')}
+                                title={'Upcoming'}
+                                catalog={upcomingCatalog}
+                                itemComponent={UpcomingCard}
                             />
                             :
                             null
