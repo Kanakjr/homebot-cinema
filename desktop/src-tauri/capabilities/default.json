@@ -1,0 +1,16 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "spike capability",
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:default",
+        "allow-shell-ipc",
+        "allow-mpv-load",
+        "allow-mpv-command",
+        "allow-mpv-status",
+        "allow-spike-reorder"
+    ]
+}

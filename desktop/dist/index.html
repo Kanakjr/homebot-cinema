@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cinema spike overlay</title>
+<style>
+    /* The whole point: nothing here may paint an opaque page background, or the native video behind is hidden. */
+    html, body { margin: 0; height: 100%; background: transparent; font: 14px -apple-system, system-ui, sans-serif; color: #fff; overflow: hidden; }
+    .badge { position: fixed; top: 16px; left: 16px; padding: 8px 14px; border-radius: 999px; background: rgba(20, 20, 24, .72); border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(10px); }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #E8892B; margin-right: 8px; animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(1.6); opacity: .5; } }
+    .bar { position: fixed; left: 24px; right: 24px; bottom: 24px; padding: 14px 18px; border-radius: 16px; background: rgba(15, 15, 18, .62); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(14px); display: flex; gap: 10px; align-items: center; }
+    button { background: #E8892B; color: #111; border: 0; padding: 8px 14px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    #info { margin-left: auto; font: 12px ui-monospace, Menlo, monospace; opacity: .9; text-align: right; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="badge"><span class="dot"></span>WEB UI LAYER (transparent webview)</div>
+<div class="bar">
+    <button id="pp">Pause / Play</button>
+    <button id="back">-10 s</button>
+    <button id="fwd">+10 s</button>
+    <button id="z">Move video below webview</button>
+    <div id="info">waiting for mpv…</div>
+</div>
+<script>
+    const invoke = (c, a) => window.__TAURI__.core.invoke(c, a);
+    const cmd = (...args) => invoke('mpv_command', { args: args.map(String) }).catch(e => console.error(e));
+    document.getElementById('pp').onclick = () => cmd('cycle', 'pause');
+    document.getElementById('back').onclick = () => cmd('seek', -10, 'relative');
+    document.getElementById('fwd').onclick = () => cmd('seek', 10, 'relative');
+    document.getElementById('z').onclick = () => invoke('spike_reorder');
+    const info = document.getElementById('info');
+    setInterval(async () => {
+        try {
+            const s = await invoke('mpv_status');
+            info.textContent = `${s['video-format']} ${s['video-params/pixelformat']} ${s['video-params/w']}x${s['video-params/h']} | hwdec ${s['hwdec-current']} | ${s['audio-codec-name']} | t=${Number(s['time-pos'] || 0).toFixed(1)}s`;
+        } catch (e) { info.textContent = String(e); }
+    }, 500);
+</script>
+</body>
+</html>
