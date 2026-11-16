@@ -56,8 +56,8 @@ Read this file instead of exploring; open only the files named here.
   time left, or "Next up" after the furthest episode watched (core itself keeps a finished episode at ~0%); the Upcoming row
   lists the profile's shows airing in the next 14 days (`server/upnext.js`).
 - Branding sources: `assets/brand/*.svg`; `scripts/brand/build.js` regenerates icons and splash images.
-- Avatars: the repo ships 16 original presets (`server/avatars/`). An install's own set in `data/avatar-presets/` (gitignored) replaces them
-  (`resolvePresetDir` in `server/profiles.js`). Never commit third-party character images; they belong in that private folder.
+- Avatars: preset avatars live in `server/avatars/`. An install's own set in `data/avatar-presets/` (gitignored) replaces them
+  (`resolvePresetDir` in `server/profiles.js`).
 
 ## Commands
 ```bash
