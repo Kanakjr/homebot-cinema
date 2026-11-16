@@ -3,8 +3,9 @@
 import React from 'react';
 import routes from 'stremio/routes';
 import { PLAYER_PATH, META_DETAILS_PATH, LEGACY_META_DETAILS_PATH } from './getBackFallback';
+import { onPluginsLoaded, slot, renderPlugin } from 'stremio/plugins';
 
-export default [
+const routerPaths = [
     {
         path: '/intro',
         view: 1,
@@ -29,11 +30,6 @@ export default [
         path: '/admin',
         view: 1,
         element: <routes.Admin />,
-    },
-    {
-        path: '/find',
-        view: 1,
-        element: <routes.Find />,
     },
     {
         path: '/server/:id?',
@@ -91,3 +87,15 @@ export default [
         element: <routes.NotFound />,
     },
 ];
+
+// Plugin routes (slot "routes", e.g. /find) go in before the catch-all once the active plugin list is known (boot waits for it).
+onPluginsLoaded(() => {
+    const extra = slot('routes').map((r: any) => ({
+        path: r.path,
+        view: Math.min(3, Math.max(1, Number(r.view) || 1)),
+        element: renderPlugin(r, 'routes', {}),
+    }));
+    routerPaths.splice(routerPaths.length - 1, 0, ...extra);
+});
+
+export default routerPaths;

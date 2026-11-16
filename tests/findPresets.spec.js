@@ -1,6 +1,6 @@
 // Copyright (C) 2017-2026 HomeBot Cinema
 
-const { RATINGS, VOTES, YEARS, RUNTIMES, SORTS, PRESET_GROUPS, PRESETS } = require('../src/routes/Find/presets');
+const { RATINGS, VOTES, YEARS, RUNTIMES, SORTS, PRESET_GROUPS, PRESETS } = require('../plugins/find/ui/presets');
 
 // TMDB's genre names, as listed by /api/find/options for each type
 const GENRES = {

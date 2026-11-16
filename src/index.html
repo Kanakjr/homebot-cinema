@@ -10,6 +10,8 @@
     <meta name="apple-mobile-web-app-title" content="HomeBot Cinema">
     <meta name="theme-color" content="#000000">
     <meta name="color-scheme" content="dark">
+    <!-- never tell outside services (addons, image CDNs, TMDB) which host the app runs on -->
+    <meta name="referrer" content="same-origin">
     <meta name="application-name" content="HomeBot Cinema">
     <meta name="description" content="HomeBot Cinema: stream, download and auto-fetch movies and shows from your own home server.">
     <link rel="icon" type="image/svg+xml" sizes="any" href="<%= htmlWebpackPlugin.options.faviconsPath %>/favicon.svg">

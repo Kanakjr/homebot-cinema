@@ -11,7 +11,7 @@ const { Chromecast, ServicesProvider, GamepadProvider } = require('stremio/servi
 const { FullscreenProvider, ToastProvider, TooltipProvider, ShortcutsProvider, DiscordProvider, CONSTANTS, useBinaryState, useProfile, useStreamingServer, withCoreSuspender, usePlatform } = require('stremio/common');
 const ServicesToaster = require('./ServicesToaster');
 const NewOnServerToaster = require('./NewOnServerToaster');
-const Copilot = require('stremio/components/Copilot');
+const { PluginSlot } = require('stremio/plugins');
 const SearchParamsHandler = require('./SearchParamsHandler');
 const AutoAddonsLoader = require('./AutoAddonsLoader');
 const DeepLinkHandler = require('./DeepLinkHandler');
@@ -233,7 +233,7 @@ const App = () => {
                                     }
                                     <ServicesToaster />
                                     <NewOnServerToaster />
-                                    <Copilot />
+                                    <PluginSlot name={'appOverlays'} />
                                     <SearchParamsHandler />
                                     <AutoAddonsLoader />
                                     <DeepLinkHandler />

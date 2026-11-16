@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>com.homebot.gdrive-mount</string>
+<key>ProgramArguments</key><array><string>/bin/bash</string><string>REPO_PATH/plugins/gdrive/scripts/mount-drive.sh</string></array>
+<key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin</string><key>GDRIVE_REMOTE</key><string>gdrive:Media</string><key>GDRIVE_MOUNT</key><string>MOUNT_PATH</string></dict>
+<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+<key>StandardOutPath</key><string>/tmp/gdrive-mount.log</string><key>StandardErrorPath</key><string>/tmp/gdrive-mount.log</string>
+</dict></plist>

@@ -13,6 +13,10 @@ type Props = {
     streamingServer: StreamingServer,
 };
 
+// HomeBot: the app always uses its own origin as the streaming server (src/App/App.js resets anything else), so the URL list
+// with "Add URL" only confuses. Hidden instead of deleted to keep upstream merges small.
+const SERVER_URL_EDITING = false;
+
 const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer }: Props, ref) => {
     const { t } = useTranslation();
     const toast = useToast();
@@ -42,7 +46,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
 
     return (
         <Section ref={ref} label={'SETTINGS_NAV_STREAMING'}>
-            <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />
+            {SERVER_URL_EDITING && <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />}
             {
                 streamingServerRemoteUrlInput.value !== null &&
                     <Option className={styles['configure-input-container']} label={'SETTINGS_REMOTE_URL'}>

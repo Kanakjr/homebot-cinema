@@ -12,6 +12,10 @@ type Props = {
     profile: Profile,
 };
 
+// HomeBot: Stremio-account features (data export, calendar subscription, Trakt via strem.io) need a Stremio login, which this
+// app does not use (Cloudflare Access + household profiles). Hidden instead of deleted to keep upstream merges small.
+const STREMIO_ACCOUNT_FEATURES = false;
+
 const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
     const { t } = useTranslation();
     // optional companion dashboard link, configured on the server (DASHBOARD_URL) and delivered with /api/me
@@ -105,14 +109,14 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
 
         <Section>
             {
-                profile?.auth?.user &&
+                STREMIO_ACCOUNT_FEATURES && profile?.auth?.user &&
                     <Link
                         label={t('SETTINGS_DATA_EXPORT')}
                         onClick={onExportData}
                     />
             }
             {
-                profile?.auth?.user &&
+                STREMIO_ACCOUNT_FEATURES && profile?.auth?.user &&
                     <Link
                         label={t('SETTINGS_SUBSCRIBE_CALENDAR')}
                         onClick={onCalendarSubscribe}
@@ -129,11 +133,14 @@ const General = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                 label={'HomeBot Cinema Documentation'}
                 href={'https://github.com/Kanakjr/homebot-cinema#readme'}
             />
-            <Option className={styles['trakt-container']} icon={'trakt'} label={t('SETTINGS_TRAKT')}>
-                <Button className={'button'} title={isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')} disabled={profile.auth === null} tabIndex={-1} onClick={onToggleTrakt}>
-                    {isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')}
-                </Button>
-            </Option>
+            {
+                STREMIO_ACCOUNT_FEATURES &&
+                    <Option className={styles['trakt-container']} icon={'trakt'} label={t('SETTINGS_TRAKT')}>
+                        <Button className={'button'} title={isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')} disabled={profile.auth === null} tabIndex={-1} onClick={onToggleTrakt}>
+                            {isTraktAuthenticated ? t('LOG_OUT') : t('SETTINGS_TRAKT_AUTHENTICATE')}
+                        </Button>
+                    </Option>
+            }
             {
                 discord.available &&
                     <Option className={styles['discord-container']} icon={'discord'} label={'SETTINGS_DISCORD'}>

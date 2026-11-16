@@ -61,6 +61,8 @@
     .quota { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: @muted; input { width: 5rem; padding: 0.35rem 0.5rem; border: 1px solid @border; border-radius: 0.5rem; background: @surface-2; color: @fg; font: inherit; } }
     .row-actions { display: flex; gap: 0.4rem; }
     .log { grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 1.2fr); }
+    .plugin { grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.6fr) auto; .tmain { flex-wrap: wrap; } }
+    .hint code { font-size: 0.85em; }
     .payload { font-size: 0.8rem; color: @muted; font-family: ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .panel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border: 1px solid @border; border-radius: 1rem; background: @surface; }

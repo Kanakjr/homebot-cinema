@@ -20,30 +20,62 @@ async function defaultFetchJson(url) {
 }
 
 class Library {
-    constructor({ db, roots = { movie: '/Movies', series: '/TV' }, fetchJson = defaultFetchJson, minBytes = MIN_VIDEO_BYTES, now = () => Date.now() }) {
+    // extraRoots: { movie: [dirs], series: [dirs] }, or a function returning that (read on every use: the "library.roots" plugin
+    // hook, e.g. the gdrive plugin). These are "cold" roots: removable or network mounts. A cold root only counts as online when it
+    // holds the marker file (.cinema-root), so an unmounted (empty) mount point is never read as "everything deleted".
+    constructor({ db, roots = { movie: '/Movies', series: '/TV' }, extraRoots = {}, fetchJson = defaultFetchJson, minBytes = MIN_VIDEO_BYTES, now = () => Date.now() }) {
         this.raw = db.raw;
         this.db = db;
         this.roots = roots;
+        this.extraRoots = extraRoots;
         this.fetchJson = fetchJson;
         this.minBytes = minBytes;
         this.now = now;
         this.scanning = false;
-        this.status = { running: false, startedAt: null, finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null };
+        this.status = { running: false, startedAt: null, finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null, offlineRoots: [], walkErrors: 0 };
+    }
+
+    get coldRoots() {
+        const src = typeof this.extraRoots === 'function' ? this.extraRoots() : this.extraRoots;
+        const pick = (k) => [...new Set(((src && src[k]) || []).filter((d) => typeof d === 'string' && path.isAbsolute(d)))];
+        return { movie: pick('movie'), series: pick('series') };
+    }
+
+    coldRootList() {
+        return [...this.coldRoots.movie, ...this.coldRoots.series];
+    }
+
+    // A cold root is online only when the mount answers a listing AND carries the marker (created on the Drive side, never locally).
+    coldRootOnline(root) {
+        try {
+            fs.readdirSync(root);
+            return fs.existsSync(path.join(root, COLD_MARKER));
+        } catch (_) {
+            return false;
+        }
+    }
+
+    offlineColdRoots() {
+        return this.coldRootList().filter((r) => !this.coldRootOnline(r));
+    }
+
+    isOffline(p) {
+        return this.offlineColdRoots().some((r) => p === r || p.startsWith(r + path.sep));
     }
 
     // True when the last scan finished cleanly and the media drives are mounted and non-empty, so "this file is not in
     // the library" can be trusted to mean "it was deleted" (not "the drive is unplugged" / "the scan failed").
     scanTrusted() {
         const s = this.status;
-        return !!s.finishedAt && !s.running && !s.error && s.files > 0 && Object.values(this.roots).every((r) => fs.existsSync(r));
+        return !!s.finishedAt && !s.running && !s.error && s.files > 0 && !s.walkErrors && Object.values(this.roots).every((r) => fs.existsSync(r)) && this.offlineColdRoots().length === 0;
     }
 
     allowedRoots() {
-        return Object.values(this.roots);
+        return [...Object.values(this.roots), ...this.coldRootList()];
     }
 
     // ---------- scanning ----------
-    walk(root, type) {
+    walk(root, type, errors = []) {
         const found = [];
         const stack = [''];
         while (stack.length) {
@@ -52,6 +84,7 @@ class Library {
             try {
                 entries = fs.readdirSync(path.join(root, rel), { withFileTypes: true });
             } catch (_) {
+                if (rel) errors.push(rel); // a folder that cannot be listed mid-scan: do not trust this scan to prune rows
                 continue;
             }
             const names = new Set(entries.map((e) => e.name.toLowerCase()));
@@ -79,12 +112,23 @@ class Library {
     async scan() {
         if (this.scanning) return this.status;
         this.scanning = true;
-        this.status = { running: true, startedAt: new Date(this.now()).toISOString(), finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null };
+        this.status = { running: true, startedAt: new Date(this.now()).toISOString(), finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null, offlineRoots: [], walkErrors: 0 };
         try {
             const files = [];
-            for (const [type, root] of Object.entries(this.roots)) files.push(...this.walk(root, type));
+            const errors = [];
+            for (const [type, root] of Object.entries(this.roots)) files.push(...this.walk(root, type, errors));
+            const offline = [];
+            for (const type of ['movie', 'series']) {
+                for (const root of this.coldRoots[type]) {
+                    if (this.coldRootOnline(root)) files.push(...this.walk(root, type, errors));
+                    else offline.push(root);
+                }
+            }
+            this.status.offlineRoots = offline;
+            this.status.walkErrors = errors.length;
             this.status.files = files.length;
-            this.persist(files);
+            // rows under an offline cold root (or a folder we could not list) are kept, never judged as deleted
+            this.persist(files, offline, errors.length > 0);
             await this.matchPending();
             const c = this.raw.prepare('SELECT COUNT(*) n, SUM(matched > 0) m FROM media_items').get();
             this.status.items = c.n;
@@ -101,7 +145,7 @@ class Library {
         return this.status;
     }
 
-    persist(files) {
+    persist(files, keepUnder = [], skipPrune = false) {
         const raw = this.raw;
         const nowIso = new Date(this.now()).toISOString();
         const findItem = raw.prepare('SELECT id, year, matched FROM media_items WHERE type = ? AND norm = ?');
@@ -128,7 +172,8 @@ class Library {
             // drop rows for files that disappeared, then items left without files
             const all = raw.prepare('SELECT id, path FROM media_files').all();
             const del = raw.prepare('DELETE FROM media_files WHERE id = ?');
-            for (const r of all) if (!seen.has(r.path)) del.run(r.id);
+            const kept = (p) => keepUnder.some((r) => p === r || p.startsWith(r + path.sep));
+            if (!skipPrune) for (const r of all) if (!seen.has(r.path) && !kept(r.path)) del.run(r.id);
             raw.exec('DELETE FROM media_items WHERE id NOT IN (SELECT DISTINCT media_item_id FROM media_files)');
             raw.exec('COMMIT');
         } catch (e) {
@@ -318,6 +363,7 @@ class Library {
         if (!row) return null;
         const owner = this.raw.prepare('SELECT type, imdb_id FROM media_items WHERE id = ?').get(row.media_item_id) || {};
         const roots = this.allowedRoots();
+        if (this.isOffline(row.path)) throw Object.assign(new Error('root_offline'), { status: 503 }); // never drop the row while the drive is away
         if (fs.existsSync(row.path)) {
             if (!isInsideRoots(row.path, roots)) throw Object.assign(new Error('path_outside_media_roots'), { status: 403 });
             fs.unlinkSync(row.path);
@@ -346,4 +392,6 @@ class Library {
     }
 }
 
-module.exports = { Library, MIN_VIDEO_BYTES };
+const COLD_MARKER = '.cinema-root';
+
+module.exports = { Library, COLD_MARKER, MIN_VIDEO_BYTES };

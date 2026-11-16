@@ -19,9 +19,11 @@
         "start": "webpack serve --mode development",
         "start-prod": "webpack serve --mode production",
         "build": "webpack --mode production",
-        "test": "jest --testPathIgnorePatterns tests/i18nScan.test.js",
+        "test": "jest --roots tests plugins --testPathIgnorePatterns tests/i18nScan.test.js",
         "test:server": "sh scripts/test-server.sh",
-        "lint": "eslint src --max-warnings 287",
+        "plugin:new": "node scripts/new-plugin.js",
+        "check:upstream": "node scripts/upstream-check.js",
+        "lint": "eslint src plugins --max-warnings 287",
         "scan-translations": "pnpx jest ./tests/i18nScan.test.js"
     },
     "engines": {

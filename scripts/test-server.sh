@@ -1,5 +1,5 @@
 #!/bin/sh
-# Backend tests (node:test). The server needs only express + jose, which the Dockerfile installs the same way,
+# Backend tests (node:test): core (server/test) and every plugin (plugins/*/test). The server needs only express + jose, which the Dockerfile installs the same way,
 # so they are cached in .cache/server-deps instead of being added to the UI lockfile.
 set -e
 cd "$(dirname "$0")/.."
@@ -8,4 +8,4 @@ if [ ! -d "$DEPS/node_modules/express" ] || [ ! -d "$DEPS/node_modules/jose" ]; 
     echo "Installing express@4 + jose@5 into $DEPS (once)..."
     npm install --silent --no-audit --no-fund --prefix "$DEPS" express@4 jose@5 >/dev/null
 fi
-NODE_PATH="$PWD/$DEPS/node_modules" exec node --disable-warning=ExperimentalWarning --test server/test/*.nt.js
+NODE_PATH="$PWD/$DEPS/node_modules" exec node --disable-warning=ExperimentalWarning --test server/test/*.nt.js plugins/*/test/*.nt.js

@@ -1,6 +1,6 @@
 'use strict';
 // "Pick the best release and queue it", shared by the Save button (POST /api/grabber/grab) and by the AI copilot,
-// whose staged download is only queued when the user presses Confirm (server/ai/).
+// whose staged download is only queued when the user presses Confirm (plugins/ai).
 
 const { pickBest } = require('./quality');
 const { buildMagnet } = require('./magnet');

@@ -1,0 +1,14 @@
+{
+    "id": "gdrive",
+    "name": "Google Drive library",
+    "description": "Adds mounted cloud folders (Google Drive through rclone, or any network mount) as extra library roots, with offline safety and a plan for moving watched files off the local disk.",
+    "version": "1.0.0",
+    "defaultEnabled": false,
+    "env": [
+        { "name": "LIBRARY_EXTRA_MOVIES_DIRS", "required": true, "description": "Colon-separated movie folders on the mount (inside the container), e.g. /GDriveMovies." },
+        { "name": "LIBRARY_EXTRA_TV_DIRS", "description": "Colon-separated TV folders on the mount, e.g. /GDriveTV." },
+        { "name": "MEDIA_ROOTS", "description": "Add the same folders here so files on the drive can be played (core setting)." },
+        { "name": "TIERING_MIN_AGE_DAYS", "description": "Files younger than this stay local (default 14)." },
+        { "name": "TIERING_WATCHED", "description": "\"any\" (default): watched by one profile; \"all\": by every profile." }
+    ]
+}

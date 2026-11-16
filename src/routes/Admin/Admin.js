@@ -9,9 +9,10 @@ const PageHeader = require('stremio/components/PageHeader');
 const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const useServerEvents = require('stremio/common/useServerEvents');
 const QualityProfiles = require('./QualityProfiles');
+const Plugins = require('./Plugins');
 const styles = require('./styles');
 
-const TABS = [['overview', 'Overview'], ['people', 'People'], ['quality', 'Quality profiles'], ['library', 'Library'], ['activity', 'Activity log']];
+const TABS = [['overview', 'Overview'], ['people', 'People'], ['quality', 'Quality profiles'], ['library', 'Library'], ['plugins', 'Plugins'], ['activity', 'Activity log']];
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const ago = (iso) => {
     const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -221,7 +222,8 @@ const Admin = () => {
                             {tab === 'quality' ? <QualityProfiles onError={setError} /> : null}
                             {tab === 'library' && o ? <LibraryTab o={o} onScan={scan} /> : null}
                             {tab === 'activity' ? <Activity onError={setError} /> : null}
-                            {!o && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && !error ? <div className={styles['empty']}>Loading…</div> : null}
+                            {tab === 'plugins' ? <Plugins onError={setError} /> : null}
+                            {!o && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && tab !== 'plugins' && !error ? <div className={styles['empty']}>Loading…</div> : null}
                         </>
                     )}
                 </div>

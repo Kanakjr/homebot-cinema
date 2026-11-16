@@ -14,8 +14,7 @@ class SentinelDaemon {
         this.dataPath = dataPath;
         this.monitoredFile = path.join(dataPath, 'monitored_series.json');
         this.monitored = this.loadMonitored();
-        this.telegramToken = process.env.TELEGRAM_BOT_TOKEN || '';
-        this.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
+        this.notifier = null;
         this.intervalHandle = null;
         this.library = null;
     }
@@ -95,30 +94,17 @@ class SentinelDaemon {
         });
     }
 
-    // Send Telegram alert
-    async sendTelegramNotification(message) {
-        if (!this.telegramToken || !this.telegramChatId) return;
-        try {
-            const postData = JSON.stringify({
-                chat_id: this.telegramChatId,
-                text: message,
-                parse_mode: 'Markdown'
-            });
+    // Household notification through the "notify" hook (plugins such as chat alerts forward it). Never throws.
+    setNotifier(fn) {
+        this.notifier = typeof fn === 'function' ? fn : null;
+    }
 
-            const req = https.request({
-                hostname: 'api.telegram.org',
-                path: `/bot${this.telegramToken}/sendMessage`,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(postData)
-                }
-            });
-            req.on('error', (err) => console.warn('[Sentinel] Telegram alert failed:', err.message));
-            req.write(postData);
-            req.end();
+    async notify(title, text) {
+        if (!this.notifier) return;
+        try {
+            await this.notifier({ source: 'sentinel', title, text });
         } catch (e) {
-            console.warn('[Sentinel] Telegram alert exception:', e.message);
+            console.warn('[Sentinel] notification failed:', e.message);
         }
     }
 
@@ -335,14 +321,7 @@ class SentinelDaemon {
                         (item.downloadedAt = item.downloadedAt || {})[epTag] = new Date().toISOString();
                         queuedEpisodes.push({ epTag, title: dlRecord.title });
 
-                        // Send Telegram push notification
-                        await this.sendTelegramNotification(
-                            `🍿 *HomeBot Cinema Sentinel*\n` +
-                            `Auto-downloading new episode:\n` +
-                            `*Show:* ${item.title}\n` +
-                            `*Episode:* ${epTag} ("${ep.title || 'Episode ' + episode}")\n` +
-                            `*Target:* HomeServer Cinema SSD`
-                        );
+                        await this.notify('HomeBot Cinema Sentinel', `Auto-downloading a new episode of ${item.title}: ${epTag} ("${ep.title || 'Episode ' + episode}")`);
                     }
                 } catch (scrapeErr) {
                     console.warn(`[Sentinel] Scrape stream failed for ${epTag}:`, scrapeErr.message);

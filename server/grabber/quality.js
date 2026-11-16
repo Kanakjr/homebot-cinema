@@ -188,11 +188,11 @@ const BUILTIN = [
         key: 'space-saver',
         config: {
             name: 'Space Saver',
-            description: 'Small files for a full disk: 720p first, compact HEVC encodes (YTS, PSA, …) preferred.',
+            description: 'Small files for a full disk: 720p first, compact HEVC (x265) encodes preferred.',
             qualities: ['720p', '1080p'],
             sizes: { '720p': { movie: { minGB: 0.3, maxGB: 2.5 }, episode: { minGB: 0.08, maxGB: 0.9 } }, '1080p': { movie: { minGB: 0.5, maxGB: 3.5 }, episode: { minGB: 0.15, maxGB: 1.2 } } },
             minSeeders: 3, hdr: 'avoid', codec: 'prefer-hevc', sizeBias: 'smaller',
-            preferredKeywords: ['x265', 'hevc', 'yts', 'psa', 'pahe'], bannedKeywords: KW_BANNED, requiredKeywords: [],
+            preferredKeywords: ['x265', 'hevc'], bannedKeywords: KW_BANNED, requiredKeywords: [],
         },
     },
 ];

@@ -199,7 +199,7 @@ const QualityProfiles = ({ onError }) => {
                         <select className={styles['input']} value={form.sizeBias} onChange={(e) => set({ sizeBias: e.target.value })}>{BIAS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
                     </Field>
 
-                    <Field label="Must contain one of" hint="Comma separated, e.g. yts, psa. Leave empty for no requirement.">
+                    <Field label="Must contain one of" hint="Comma separated, e.g. web-dl, x265. Leave empty for no requirement.">
                         <textarea className={styles['input']} rows={2} value={form.required} onChange={(e) => set({ required: e.target.value })} />
                     </Field>
                     <Field label="Never contain" hint="Releases containing any of these words are rejected, e.g. hindi dub, dts, 10bit.">
