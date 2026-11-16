@@ -9,7 +9,7 @@ raw_dir (default assets/brand/mascot/raw) holds PNG/JPG/WEBP files named after t
                                         enclosed white gaps (between an arm and a leg), so white parts of the drawing survive.
   library_placeholder, calendar_placeholder   full-bleed illustrations (no keying), fitted to 500x286.
 The subject is cropped and centred on a transparent square. With --sticker (default for the three characters) it gets a white
-die-cut edge and a soft amber glow, so it reads on dark and light backgrounds. Outputs keep the filenames the app already uses.
+die-cut edge (add --glow for a soft amber glow), so it reads on dark and light backgrounds. Outputs keep the filenames the app already uses.
 Needs Pillow (pip install pillow).
 """
 import sys
@@ -112,8 +112,11 @@ def sticker(img: Image.Image, outline: int, glow: int, glow_rgb=(255, 184, 48), 
     """White die-cut edge of `outline` px and a soft amber glow of `glow` px around the subject."""
     a = img.getchannel('A')
     edge = dilate(a, outline) if outline else a
-    halo = dilate(edge, max(2, glow // 2)).filter(ImageFilter.GaussianBlur(glow / 1.6))
-    out = Image.merge('RGBA', (*Image.new('RGB', img.size, glow_rgb).split(), halo.point(lambda v: int(v * glow_alpha))))
+    if glow:
+        halo = dilate(edge, max(2, glow // 2)).filter(ImageFilter.GaussianBlur(glow / 1.6))
+        out = Image.merge('RGBA', (*Image.new('RGB', img.size, glow_rgb).split(), halo.point(lambda v: int(v * glow_alpha))))
+    else:
+        out = Image.new('RGBA', img.size, (0, 0, 0, 0))
     out.alpha_composite(Image.merge('RGBA', (*Image.new('RGB', img.size, (255, 255, 255)).split(), edge.filter(ImageFilter.GaussianBlur(0.8)))))
     out.alpha_composite(img)
     return out
@@ -148,6 +151,7 @@ def main(argv):
     ap.add_argument('--sticker', dest='sticker', action='store_true', default=True)
     ap.add_argument('--no-sticker', dest='sticker', action='store_false')
     ap.add_argument('--tol', type=float, default=26.0, help='--bg white: how close to the corner colour counts as background (lower keeps pale edges)')
+    ap.add_argument('--glow', action='store_true', help='also add a soft amber glow around the sticker (off by default)')
     ap.add_argument('--already-sticker', default='', help='comma list of names that already have a white edge (only the glow is added)')
     args = ap.parse_args(argv)
     raw, out = Path(args.raw), Path(args.out)
@@ -158,7 +162,7 @@ def main(argv):
         if not src:
             continue
         cut = key_out(Image.open(src)) if args.bg == 'green' else cut_flood(Image.open(src), tol=args.tol if name not in skip_edge else min(args.tol, 14.0))
-        glow = max(14, size // 12)
+        glow = max(14, size // 12) if args.glow else 0
         edge = 0 if name in skip_edge else max(4, size // 55)
         res = fit_square(cut, size, pad=0.06 + ((edge + glow) / size if args.sticker else 0))
         if args.sticker:
