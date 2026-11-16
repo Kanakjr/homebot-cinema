@@ -10,6 +10,7 @@ const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const useServerEvents = require('stremio/common/useServerEvents');
 const QualityProfiles = require('./QualityProfiles');
 const Plugins = require('./Plugins');
+const { slot, renderPlugin } = require('stremio/plugins');
 const styles = require('./styles');
 
 const TABS = [['overview', 'Overview'], ['people', 'People'], ['quality', 'Quality profiles'], ['library', 'Library'], ['plugins', 'Plugins'], ['activity', 'Activity log']];
@@ -182,6 +183,10 @@ Activity.propTypes = { onError: PropTypes.func.isRequired };
 const Admin = () => {
     const admin = isAdmin();
     const [tab, setTab] = React.useState('overview');
+    // plugin tabs (slot adminTabs) go right after Overview
+    const pluginTabs = React.useMemo(() => slot('adminTabs'), []);
+    const tabs = React.useMemo(() => [TABS[0], ...pluginTabs.map((p) => [`plugin:${p.pluginId}:${p.id}`, p.label]), ...TABS.slice(1)], [pluginTabs]);
+    const activePlugin = pluginTabs.find((p) => `plugin:${p.pluginId}:${p.id}` === tab) || null;
     const [o, setO] = React.useState(null);
     const [error, setError] = React.useState('');
     const loadOverview = React.useCallback(() => api('GET', '/api/admin/overview').then((d) => { setO(d); setError(''); }).catch((e) => setError(e.message)), []);
@@ -212,7 +217,7 @@ const Admin = () => {
                     {!admin ? null : (
                         <>
                             <div className={styles['tabs']}>
-                                {TABS.map(([id, label]) => (
+                                {tabs.map(([id, label]) => (
                                     <button key={id} type="button" className={classnames(styles['tab'], { [styles['active']]: tab === id })} onClick={() => setTab(id)}>{label}</button>
                                 ))}
                             </div>
@@ -223,7 +228,8 @@ const Admin = () => {
                             {tab === 'library' && o ? <LibraryTab o={o} onScan={scan} /> : null}
                             {tab === 'activity' ? <Activity onError={setError} /> : null}
                             {tab === 'plugins' ? <Plugins onError={setError} /> : null}
-                            {!o && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && tab !== 'plugins' && !error ? <div className={styles['empty']}>Loading…</div> : null}
+                            {activePlugin ? renderPlugin(activePlugin, 'adminTabs', { onError: setError }) : null}
+                            {!o && !activePlugin && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && tab !== 'plugins' && !error ? <div className={styles['empty']}>Loading…</div> : null}
                         </>
                     )}
                 </div>

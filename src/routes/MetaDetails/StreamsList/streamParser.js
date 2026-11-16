@@ -1,6 +1,15 @@
 // Copyright (C) 2017-2026 HomeBot Cinema
 // Robust stream parser for smart filtering & badge metadata
 
+const isHttp = (u) => typeof u === 'string' && /^https?:\/\//i.test(u);
+
+// A direct stream is a plain http(s) link to the video: no torrent behind it, so it starts at once and needs no peers.
+// (Debrid links from other addons count too.) Torrents never do, and neither do links to a web page (externalUrl:
+// "watch on ...", donation notes), which carry no url of their own.
+function isDirectStream(stream) {
+    return Boolean(stream) && !stream.infoHash && isHttp(stream.url);
+}
+
 function parseStream(stream) {
     if (!stream) return null;
 
@@ -79,7 +88,7 @@ function parseStream(stream) {
     // 6. Size in GB
     let sizeGB = null;
     let sizeLabel = null;
-    const sizeMatch = combined.match(/(?:💾\s*|size:\s*|\[)?(\d+(?:\.\d+)?)\s*(GB|GiB|MB|MiB)/i);
+    const sizeMatch = combined.match(/(?:💾\s*|size:\s*|\[)?(\d+(?:\.\d+)?)\s*(GB|GiB|MB|MiB)\b/i); // \b: a bitrate such as "3.0 Mbps" is not a size
     if (sizeMatch) {
         const val = parseFloat(sizeMatch[1]);
         const unit = sizeMatch[2].toUpperCase();
@@ -132,9 +141,10 @@ function parseStream(stream) {
         seeders,
         leechers,
         isCam,
+        isDirect: isDirectStream(stream),
         rawTitle: title || desc,
         rawName: name,
     };
 }
 
-module.exports = { parseStream };
+module.exports = { parseStream, isDirectStream };

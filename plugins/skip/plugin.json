@@ -1,0 +1,13 @@
+{
+    "id": "skip",
+    "name": "Skip intro",
+    "description": "Skip intro, recap and credits buttons in the player (optional auto-skip per profile), and Up Next when the credits start. Timestamps come from chapter markers in server files, then from IntroDB.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "env": [
+        {
+            "name": "SKIP_INTRODB_URL",
+            "description": "IntroDB API base (default https://api.introdb.app). Set to off to use only chapter markers in your own files (no outside lookups)."
+        }
+    ]
+}

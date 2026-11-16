@@ -1,0 +1,91 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+// Plugin "skip": the skip button sits bottom right, above the control bar (lower when the controls are hidden).
+
+.skip-overlay {
+    position: absolute;
+    right: calc(4rem + var(--safe-area-inset-right, 0px));
+    bottom: 8.5rem;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    transition: bottom 200ms ease;
+
+    &.low {
+        bottom: calc(3rem + var(--safe-area-inset-bottom, 0px));
+    }
+
+    .skip-button {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.75);
+        border-radius: var(--border-radius);
+        background-color: rgba(10, 10, 14, 0.62);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        animation: skip-fade-in 200ms ease;
+
+        &:hover, &:focus-visible {
+            background-color: #fff;
+            color: #0a0a0e;
+            outline: none;
+        }
+
+        .icon {
+            width: 1.3rem;
+            height: 1.3rem;
+            flex: none;
+        }
+    }
+
+    .notice {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.6rem 0.6rem 0.6rem 1.1rem;
+        border-radius: var(--border-radius);
+        background-color: rgba(10, 10, 14, 0.72);
+        backdrop-filter: blur(8px);
+        color: #fff;
+        font-size: 1rem;
+        animation: skip-fade-in 200ms ease;
+
+        .undo {
+            padding: 0.4rem 0.9rem;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.16);
+            color: var(--primary-accent-color, #fff);
+            font-weight: 600;
+            cursor: pointer;
+
+            &:hover, &:focus-visible {
+                background-color: rgba(255, 255, 255, 0.28);
+                outline: none;
+            }
+        }
+    }
+}
+
+@keyframes skip-fade-in {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to { opacity: 1; transform: none; }
+}
+
+@media screen and (max-width: 640px) {
+    .skip-overlay {
+        right: calc(1rem + var(--safe-area-inset-right, 0px));
+        bottom: 7rem;
+
+        .skip-button {
+            padding: 0.65rem 1.1rem;
+            font-size: 1rem;
+        }
+    }
+}

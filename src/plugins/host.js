@@ -5,13 +5,16 @@
 //   appOverlays      { id, Component }                               -> always mounted inside the app (src/App/App.js)
 //   navButtons       { id, Component, order }                        -> top bar, left of the menu (HorizontalNavBar)
 //   discoverActions  { id, Component }                               -> Discover header (src/routes/Discover/Discover.js)
+//   playerOverlays   { id, Component(player props) }                 -> over the video, above the control bar (src/routes/Player/Player.js)
 //   settingsSections { id, label, Component (forwardRef) }           -> Settings, after General (Settings.tsx + Menu.tsx)
+//   adminTabs        { id, label, order, Component({ onError }) }      -> Admin, after Overview (src/routes/Admin/Admin.js)
+//   metaDetailsSections { id, Component({ type, id, videoId, meta }) } -> title page, under the description (MetaDetails.js)
 //   accents          { key, label, color, secondary }                -> accent palette (src/common/theme.js)
 // Adding a slot = one entry here + one call site in core; list it in docs/plugins.md.
 
 const registry = require('./registry');
 
-const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'settingsSections', 'accents'];
+const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'playerOverlays', 'settingsSections', 'adminTabs', 'metaDetailsSections', 'accents'];
 
 let active = new Set();
 let loaded = false;

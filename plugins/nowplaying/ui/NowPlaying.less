@@ -1,0 +1,22 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+.list { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; }
+.muted { color: var(--primary-foreground-color); opacity: 0.55; font-size: 0.9rem; }
+.card {
+    display: flex; gap: 1rem; padding: 0.9rem; border-radius: var(--border-radius);
+    background-color: var(--overlay-color);
+}
+.poster { flex: none; width: 4.2rem; height: 6.2rem; border-radius: calc(var(--border-radius) / 2); object-fit: cover; background-color: rgba(255, 255, 255, 0.06); }
+.body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; color: var(--primary-foreground-color); }
+.who { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.avatar { width: 1.6rem; height: 1.6rem; border-radius: 50%; object-fit: cover; }
+.name { font-weight: 700; }
+.tag { padding: 0.05rem 0.45rem; border-radius: 1rem; font-size: 0.75rem; background-color: rgba(255, 255, 255, 0.12); }
+.title { font-size: 1.1rem; font-weight: 700; color: var(--primary-foreground-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+a.title:hover { text-decoration: underline; }
+.bar { height: 0.3rem; border-radius: 0.3rem; background-color: rgba(255, 255, 255, 0.12); overflow: hidden; }
+.fill { height: 100%; background-color: var(--primary-accent-color); }
+.meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.9rem; opacity: 0.9; }
+.playing { color: #4ade80; font-weight: 600; }
+.paused { color: #facc15; font-weight: 600; }
+.direct { font-weight: 600; }
+.transcode { color: #fb923c; font-weight: 600; }
