@@ -12,6 +12,7 @@ const { HorizontalNavBar, DelayedRenderer, Image, MetaPreview } = require('strem
 const StreamsList = require('./StreamsList');
 const VideosList = require('./VideosList');
 const MediaDownloadBar = require('./MediaDownloadBar');
+const { PluginSlot } = require('stremio/plugins'); // HomeBot: slot metaDetailsSections (collections, ...)
 const { default: LiveTvDetails } = require('./LiveTvDetails');
 const { default: LiveTvPlaceholder } = require('./LiveTvDetails/Placeholder');
 const useMetaDetails = require('./useMetaDetails');
@@ -243,7 +244,16 @@ const MetaDetails = () => {
                                             toggleWatched={toggleWatched}
                                             metaId={metaDetails.metaItem.content.content.id}
                                             ratingInfo={metaDetails.ratingInfo}
-                                        />
+                                        >
+                                            {/* HomeBot: plugin sections under the description */}
+                                            <PluginSlot
+                                                name={'metaDetailsSections'}
+                                                type={metaPath.type}
+                                                id={metaPath.id}
+                                                videoId={streamPath?.id ?? null}
+                                                meta={metaDetails.metaItem.content.content}
+                                            />
+                                        </MetaPreview>
                                     </React.Fragment>
                 }
                 <div className={styles['spacing']} />
