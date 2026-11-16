@@ -45,9 +45,13 @@ prompt "in the style of" a named character or studio.
 5. **Process and rebuild:**
    ```sh
    pip install pillow
-   python3 scripts/brand/process-mascot.py            # keys out the green, crops, writes assets/images/*.png
+   python3 scripts/brand/process-mascot.py            # keys out the green, crops, adds the sticker edge + amber glow, writes assets/images/*.png
+   python3 scripts/brand/process-mascot.py --bg white # renders on a white background: only white connected to the edge or in enclosed gaps goes
+   python3 scripts/brand/process-mascot.py --no-sticker
    npx webpack --mode production                      # check the empty states in the app
    ```
+   The sticker look (white die-cut edge, soft amber glow) is baked into the PNG so it reads on the app's dark background without
+   touching Stremio's components. `--tol N` tunes how close to the corner colour counts as background (default 26).
 6. **Record where it came from** in `assets/brand/mascot/SOURCE.txt`: tool and model, date, and the exact prompts. Commit the raw
    renders and the processed images together.
 
