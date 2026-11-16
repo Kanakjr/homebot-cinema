@@ -20,7 +20,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 |---|---|---|
 | `http_server.js` | 562 | Our backend entry (upstream has a tiny static server here). Core wiring only; features live in server/ and plugins/. |
 | `src/routes/MetaDetails/StreamsList/Stream/styles.less` | 327 | Same. |
-| `src/routes/MetaDetails/StreamsList/StreamsList.js` | 274 | Quality-profile sort, swarm health, Save button (fork identity). |
+| `src/routes/MetaDetails/StreamsList/StreamsList.js` | 277 | Quality-profile sort, swarm health, Save button (fork identity); Direct filter. |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
 | `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays, Up Next at the credits start and seek-bar marks a plugin reports (skip intro). |
