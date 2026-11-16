@@ -1,0 +1,17 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+.collection { margin-top: 1.6rem; color: var(--primary-foreground-color); }
+.heading { font-size: 1rem; font-weight: 600; opacity: 0.85; margin-bottom: 0.7rem; }
+.name { font-weight: 800; opacity: 1; }
+.count { font-weight: 400; opacity: 0.7; }
+.row { display: flex; gap: 0.7rem; overflow-x: auto; padding-bottom: 0.4rem; scrollbar-width: thin; }
+.item {
+    flex: none; width: 5.6rem; display: flex; flex-direction: column; gap: 0.3rem;
+    color: var(--primary-foreground-color); text-decoration: none; opacity: 0.8; transition: opacity 0.15s, transform 0.15s;
+    &:hover, &:focus-visible { opacity: 1; transform: translateY(-2px); outline: none; }
+    &.current { opacity: 1; .poster { box-shadow: 0 0 0 2px var(--primary-accent-color); } }
+}
+.poster {
+    width: 100%; aspect-ratio: 2 / 3; border-radius: calc(var(--border-radius) / 1.5); object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.08); font-size: 0.7rem; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden;
+}
+.label { font-size: 0.8rem; text-align: center; opacity: 0.75; }

@@ -15,7 +15,7 @@ const styles = require('./styles');
 
 const formatLiveDelay = (delay) => `−${formatTime(Math.max(0, delay)).replace(/^00:/, '').replace(/^0(?=\d:)/, '')}`;
 
-const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayRequested, playbackSpeed, live, liveTiming, seekable, paused, buffering }) => {
+const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayRequested, playbackSpeed, live, liveTiming, seekable, paused, buffering, markers }) => {
     const { t } = useTranslation();
     const minimum = live && seekable ? liveTiming.start : 0;
     const maximum = live ? seekable ? liveTiming.end : 100 : duration;
@@ -74,6 +74,19 @@ const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayR
             resetTimeDebounced.cancel();
         };
     }, []);
+    // HomeBot: marks such as the intro and the end credits ({ start, end, label } in ms), drawn on the track
+    const marks = React.useMemo(() => {
+        if (live || disabled || !Array.isArray(markers)) return [];
+        const span = maximum - minimum;
+        return markers
+            .filter((m) => Number.isFinite(m.start) && Number.isFinite(m.end) && m.end > m.start && m.start < maximum)
+            .map((m) => ({
+                ...m,
+                left: Math.max(0, (m.start - minimum) / span) * 100,
+                width: (Math.min(m.end, maximum) - Math.max(m.start, minimum)) / span * 100,
+            }));
+    }, [markers, live, disabled, minimum, maximum]);
+    const hoverMark = hover !== null ? marks.find((m) => hover.time >= m.start && hover.time < m.end) : null;
     return (
         <div className={classnames(className, styles['seek-bar-container'], { 'active': seekTime !== null })}>
             <div className={styles['label']}>
@@ -112,10 +125,20 @@ const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayR
                     onComplete={onComplete}
                 />
                 {
+                    marks.length > 0 ?
+                        <div className={styles['marks']} aria-hidden={'true'}>
+                            {marks.map((m) => (
+                                <div key={`${m.label}@${m.start}`} className={styles['mark']} style={{ left: `${m.left}%`, width: `${m.width}%` }} />
+                            ))}
+                        </div>
+                        :
+                        null
+                }
+                {
                     hover !== null && seekTime === null && !disabled ?
                         ReactDOM.createPortal(
                             <div className={styles['seek-tooltip']} style={{ left: `${hover.x}px`, top: `${hover.y}px` }}>
-                                {live ? maximum - hover.time <= liveTiming.tolerance ? t('PLAYER_LIVE') : formatLiveDelay(maximum - hover.time) : formatTime(hover.time)}
+                                {live ? maximum - hover.time <= liveTiming.tolerance ? t('PLAYER_LIVE') : formatLiveDelay(maximum - hover.time) : formatTime(hover.time)}{hoverMark ? ` · ${hoverMark.label}` : ''}
                             </div>,
                             document.body
                         )
@@ -150,7 +173,8 @@ SeekBar.propTypes = {
     liveTiming: PropTypes.shape({ start: PropTypes.number, end: PropTypes.number, tolerance: PropTypes.number }),
     seekable: PropTypes.bool,
     paused: PropTypes.bool,
-    buffering: PropTypes.bool
+    buffering: PropTypes.bool,
+    markers: PropTypes.arrayOf(PropTypes.shape({ start: PropTypes.number, end: PropTypes.number, label: PropTypes.string }))
 };
 
 module.exports = SeekBar;

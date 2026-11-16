@@ -30,13 +30,14 @@ Read this file instead of exploring; open only the files named here.
 | `server/auth.js`, `db.js` | Cloudflare Access JWT; SQLite (`data/cinema.db`, migrations, `audit()`, `migratePlugin`) |
 | `server/profiles.js`, `profile_routes.js` | Household profiles (max 8, PIN, avatars), `/api/sync/*` |
 | `server/library/` | Filename parsing, scan/match/delete, `scanTrusted()`, extra "cold" roots (online only with `.cinema-root`, never pruned offline) |
-| `server/tmdb.js`, `watch_history.js` | TMDB client (key server-side, `tmdb_ids` cache); per-profile watch history |
+| `server/tmdb.js`, `watch_history.js` | TMDB client (key server-side, `tmdb_ids` cache, `collectionFor`); per-profile watch history |
+| `server/upnext.js` | Continue watching "next up" after the furthest episode watched (decodes core's watched bitfield against Cinemeta), Upcoming row |
 | `server/grabber/` | Quality profiles (`pickBest`), stream info, magnets, swarm probe (`/api/streams/probe`), `/api/grabber/*` |
 | `server/sentinel*.js` | Auto-download monitored shows: scope `new`/`seasons`/`all`, deleted episodes never re-fetched |
 | `server/downloads_manager.js`, `transmission.js` | Download records, Transmission RPC, ffmpeg remux |
 | `server/events.js`, `snapshots.js` | SSE hints (`/api/events`); daily DB snapshot (keeps 7) |
 | `server/proxy_rewrite.js`, `streamlinks.js` | Host rewriting for proxied URLs, HEVC→H.264 for HLS; signed stream links (`.../video.mp4/?exp&sig`, trailing slash on purpose) |
-| `plugins/` | `ai`, `find`, `themes`, `telegram`, `gdrive` |
+| `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `telegram`, `gdrive` |
 | `src/plugins/` | UI plugin host: registry, `slot()`, `<PluginSlot>` |
 | `src/worker/` | Core worker entry with the Stremio API fetch guard |
 | `src/common/` | `ssoManager.js` (per-profile storage; complete `DEFAULT_SETTINGS` or the core crashes), `profileManager.js`, `profileGate.js`, `serverApi.js`, `theme.js`, `useServerEvents.js`, `newOnServer.js` |
@@ -51,7 +52,9 @@ Read this file instead of exploring; open only the files named here.
 - Every profile gets the addons in `data/addons.json` (`/api/addons`, `AutoAddonsLoader`). Bundled defaults carry only metadata, subtitle and public-domain addons.
 - Player: HLS buffer 90–240 s (`src/common/hlsConfig.js` via webpack replacement); HEVC forced to H.264 for HLS.
 - Interface zoom defaults to 90%. No "new version" banner: updates apply on the next load.
-- Home hero: `src/routes/Board/HeroCarousel/pickHeroItems.js`. No "recently added" row by design.
+- Home hero: `src/routes/Board/HeroCarousel/pickHeroItems.js`. No "recently added" row by design. Continue watching cards show
+  time left, or "Next up" after the furthest episode watched (core itself keeps a finished episode at ~0%); the Upcoming row
+  lists the profile's shows airing in the next 14 days (`server/upnext.js`).
 - System artwork (empty states, default/signed-out avatar, library/calendar placeholders): the captain mascot, `docs/mascot-art.md`
   (`scripts/brand/process-mascot.py`). An install can override them privately with `data/art/<name>.png`.
 - Branding sources: `assets/brand/*.svg`; `scripts/brand/build.js` regenerates icons and splash images. Avatars are original artwork; never commit character images.

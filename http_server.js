@@ -323,6 +323,10 @@ registerLibraryRoutes(app, {
         if (rec) await downloadsManager.actionDownload(rec.id, 'delete', false);
     }
 });
+// Home screen: Continue watching "next up" (after the furthest episode watched) and the Upcoming row (per profile)
+const upnextApi = require('./server/upnext');
+upnextApi.registerUpNextRoutes(app, { upnext: upnextApi.createUpNext({ raw: cinemaDb.raw }), requireProfile: profileApi.requireProfile });
+
 // TMDB client: a core service (smart filters and the AI copilot use it). Without TMDB_API_KEY it reports "not configured".
 const tmdb = require('./server/tmdb').createTmdb({ apiKey: process.env.TMDB_API_KEY, apiBase: process.env.TMDB_API_BASE || undefined, raw: cinemaDb.raw, region: process.env.WATCH_REGION || 'IN' });
 

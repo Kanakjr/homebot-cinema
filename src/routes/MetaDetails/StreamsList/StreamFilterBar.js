@@ -10,6 +10,7 @@ const FILTER_PILLS = [
     { id: 'ALL', label: 'All', count: 'all' },
     { id: 'PROFILE', label: 'Fits profile', count: 'profile' },
     { id: 'BEST', label: 'Best' },
+    { id: 'DIRECT', label: 'Direct', count: 'direct', title: 'Plain links that start at once: no torrent, no peers needed' },
     { id: '4K', label: '4K', count: '4k' },
     { id: '1080P', label: '1080p', count: '1080p' },
     { id: '720P', label: '720p', count: '720p' },
@@ -63,6 +64,7 @@ const StreamFilterBar = ({ activePill, onSelectPill, searchQuery, onSearchChange
                         key={pill.id}
                         type="button"
                         className={classnames(styles['pill'], { [styles['active']]: activePill === pill.id })}
+                        title={pill.title}
                         onClick={() => onSelectPill(pill.id)}
                     >
                         {pill.id === 'PROFILE' && profileName ? `Fits ${profileName}` : pill.label}

@@ -243,7 +243,36 @@ function createTmdb({ apiKey, apiBase, raw, fetchJson, region = 'IN', now = () =
         };
     }
 
-    return { configured, options, discover, search, byImdb, details, externalIds, region };
+    /**
+     * The collection (franchise) a movie belongs to, with every part that has an IMDb id, oldest first and the unreleased
+     * ones last: { id, name, items: [{ id, tmdbId, name, year, released, poster, rating }] }. null when it is in none.
+     */
+    async function collectionFor(imdbId) {
+        const found = await byImdb(imdbId, 'movie');
+        if (!found || found.kind !== 'movie') return null;
+        const movie = await memo(`mv:${found.tmdbId}`, DAY, () => get(`/movie/${found.tmdbId}`, { language: 'en-US' }));
+        const ref = movie && movie.belongs_to_collection;
+        if (!ref || !ref.id) return null;
+        const col = await memo(`col:${ref.id}`, DAY, () => get(`/collection/${ref.id}`, { language: 'en-US' }));
+        const parts = ((col && col.parts) || []).filter((p) => p && p.id && (p.media_type === undefined || p.media_type === 'movie'));
+        const imdb = await externalIds('movie', parts.map((p) => p.id));
+        const when = (p) => Date.parse(p.release_date || '') || Infinity;
+        const items = parts
+            .filter((p) => imdb.get(p.id))
+            .sort((a, b) => when(a) - when(b))
+            .map((p) => ({
+                id: imdb.get(p.id),
+                tmdbId: p.id,
+                name: p.title || p.name || '',
+                year: Number(String(p.release_date || '').slice(0, 4)) || null,
+                released: p.release_date || null,
+                poster: p.poster_path ? POSTER + p.poster_path : null,
+                rating: Math.round((Number(p.vote_average) || 0) * 10) / 10,
+            }));
+        return items.length > 1 ? { id: ref.id, name: (col && col.name) || ref.name || '', items } : null;
+    }
+
+    return { configured, options, discover, search, byImdb, details, externalIds, collectionFor, region };
 }
 
 module.exports = { createTmdb, httpFetchJson, buildQuery, kidSafe, MAX_PAGE, LANGUAGES, DEFAULT_API };

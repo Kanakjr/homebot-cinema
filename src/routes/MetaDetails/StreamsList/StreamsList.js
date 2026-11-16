@@ -223,6 +223,8 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
             result = result.filter(({ parsed }) => parsed?.sizeGB !== null && parsed.sizeGB > 0 && parsed.sizeGB < 3);
         } else if (filterPill === 'HDR') {
             result = result.filter(({ parsed }) => Boolean(parsed?.hdr));
+        } else if (filterPill === 'DIRECT') {
+            result = result.filter(({ parsed }) => Boolean(parsed?.isDirect));
         } else if (filterPill === 'PROFILE' && matchByStream) {
             result = result.filter(({ stream }) => matchByStream.get(stream)?.accepted);
         } else if (filterPill === 'SEEDS') {
@@ -263,7 +265,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
     };
     // counts shown on the quality filters
     const counts = React.useMemo(() => {
-        const c = { all: filteredStreams.length, '4k': 0, '1080p': 0, '720p': 0, hdr: 0, compact: 0, seeds: 0 };
+        const c = { all: filteredStreams.length, '4k': 0, '1080p': 0, '720p': 0, hdr: 0, compact: 0, seeds: 0, direct: 0 };
         for (const st of filteredStreams) {
             const p = parseStream(st);
             if (!p) continue;
@@ -271,6 +273,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
             else if (p.resolution === '1080p') c['1080p']++;
             else if (p.resolution === '720p') c['720p']++;
             if (p.hdr) c.hdr++;
+            if (p.isDirect) c.direct++;
             if (p.sizeGB !== null && p.sizeGB > 0 && p.sizeGB < 3) c.compact++;
             if (typeof p.seeders === 'number' && p.seeders >= 30) c.seeds++;
         }
