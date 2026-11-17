@@ -279,7 +279,29 @@ function createTmdb({ apiKey, apiBase, raw, fetchJson, region: regionIn = 'IN', 
         return items.length > 1 ? { id: ref.id, name: (col && col.name) || ref.name || '', items } : null;
     }
 
-    return { configured, options, discover, search, byImdb, details, externalIds, collectionFor, region };
+    /**
+     * "More like this": TMDB recommendations (what people who liked it also liked), topped up with "similar" (same genres and
+     * keywords) when there are few. Same items as discover; the title itself is never included. Empty when TMDB has none.
+     */
+    async function similarFor(imdbId, type, { limit = 20 } = {}) {
+        const found = await byImdb(imdbId, type);
+        if (!found) return { items: [] };
+        const kind = found.kind === 'tv' ? 'tv' : 'movie';
+        const list = async (what) => {
+            const data = await memo(`${what}:${kind}:${found.tmdbId}`, DAY, () => get(`/${kind}/${found.tmdbId}/${what}`, { language: 'en-US', page: 1 }));
+            return (data && data.results) || [];
+        };
+        let results = await list('recommendations');
+        if (results.length < limit) {
+            const have = new Set(results.map((r) => r.id));
+            results = results.concat((await list('similar')).filter((r) => !have.has(r.id)));
+        }
+        results = results.filter((r) => r && r.id !== found.tmdbId && r.poster_path).slice(0, limit + 8);
+        const shaped = await shapeResults(kind, results, false);
+        return { items: shaped.items.filter((i) => i.id !== imdbId).slice(0, limit) };
+    }
+
+    return { configured, options, discover, search, byImdb, details, externalIds, collectionFor, similarFor, region };
 }
 
 module.exports = { normalizeRegion, createTmdb, httpFetchJson, buildQuery, kidSafe, MAX_PAGE, LANGUAGES, DEFAULT_API };
