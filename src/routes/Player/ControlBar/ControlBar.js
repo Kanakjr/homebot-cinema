@@ -10,6 +10,7 @@ const SeekBar = require('./SeekBar');
 const VolumeSlider = require('./VolumeSlider');
 const styles = require('./styles');
 const { useBinaryState, usePlatform } = require('stremio/common');
+const { PluginSlot } = require('stremio/plugins');
 const { t } = require('i18next');
 
 const VIDEO_SCALE_ICONS = {
@@ -223,6 +224,8 @@ const ControlBar = React.forwardRef(({
                     <Button className={classnames(styles['control-bar-button'], { 'disabled': !stream })} tabIndex={-1} onMouseDown={onOptionsButtonMouseDown} onClick={onToggleOptionsMenu}>
                         <Icon className={styles['icon']} name={'more-horizontal'} />
                     </Button>
+                    {/* HomeBot: player controls slot (MetalFX 4K AI upscaler button, ...) */}
+                    <PluginSlot name={'playerControls'} stream={stream} />
                     <Button className={styles['control-bar-button']} title="Keyboard Shortcuts (?)" tabIndex={-1} onClick={onToggleShortcutsModal}>
                         <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFD700', lineHeight: 1 }}>?</span>
                     </Button>

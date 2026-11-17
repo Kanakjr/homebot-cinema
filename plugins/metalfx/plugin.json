@@ -1,0 +1,7 @@
+{
+    "id": "metalfx",
+    "name": "MetalFX 4K AI Upscaler",
+    "description": "Real-time Apple MetalFX AI 4K Spatial Super-Resolution for the macOS native desktop app. Transforms 1080p and 720p streams into crisp 4K UHD locally on Apple Silicon GPU with zero server transcode load.",
+    "version": "1.0.0",
+    "defaultEnabled": true
+}

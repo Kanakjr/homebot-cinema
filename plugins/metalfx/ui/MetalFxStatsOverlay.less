@@ -1,0 +1,248 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+// Styling for MetalFX interactive settings & live telemetry overlay panel.
+
+.metalfx-overlay-layer {
+    position: absolute;
+    right: 4rem;
+    bottom: 7.5rem;
+    z-index: 20;
+    pointer-events: auto;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(8px);
+    }
+}
+
+.overlay-card {
+    width: 28rem;
+    max-width: calc(100vw - 5rem);
+    background: rgba(14, 14, 18, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    color: #f4f4f5;
+    box-shadow: 0 1.5rem 3.5rem rgba(0, 0, 0, 0.7), 0 0.5rem 1.2rem rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    user-select: none;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .header-title-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .chip-4k {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.35rem;
+            background: linear-gradient(135deg, #F27A24, #FFD700);
+            color: #111;
+            letter-spacing: 0.04em;
+        }
+
+        .title-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+        }
+
+        .chip-native {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #a1a1aa;
+        }
+    }
+
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: #71717a;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.4rem;
+        transition: color 0.15s ease, background-color 0.15s ease;
+
+        &:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+.toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .toggle-text-area {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        .toggle-main-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .toggle-sub-label {
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            line-height: 1.35;
+        }
+    }
+
+    .ios-switch {
+        position: relative;
+        flex: none;
+        width: 3.2rem;
+        height: 1.85rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 9999px;
+        transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+        &.switch-active {
+            background: linear-gradient(135deg, #F27A24, #FFD700);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+
+            .switch-handle {
+                transform: translateX(1.35rem);
+                background: #111;
+            }
+        }
+
+        .switch-handle {
+            position: absolute;
+            top: 0.2rem;
+            left: 0.25rem;
+            width: 1.45rem;
+            height: 1.45rem;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+        }
+    }
+}
+
+.diagnostics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    .diagnostics-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #71717a;
+
+        .heading-tag {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #34d399;
+        }
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+
+        .stat-cell {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 0.75rem;
+            padding: 0.7rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+
+            .stat-label {
+                font-size: 0.7rem;
+                font-weight: 600;
+                color: #8e8e93;
+            }
+
+            .stat-value {
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: #f4f4f5;
+                font-variant-numeric: tabular-nums;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+
+                &.engine-accent {
+                    font-size: 0.85rem;
+                    color: #FFD700;
+                }
+            }
+
+            .stat-footnote {
+                font-size: 0.65rem;
+                color: #71717a;
+            }
+        }
+    }
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    .status-indicator-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #71717a;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
+
+        &.active {
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+        }
+    }
+
+    .status-caption {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #a1a1aa;
+    }
+}

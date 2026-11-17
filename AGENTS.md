@@ -73,6 +73,9 @@ pnpm test:server                 # backend (node:test: server/test, plugins/*/te
 pnpm lint                        # src/ and plugins/, 0 errors expected
 pnpm plugin:new <id> "Name"      # scaffold a plugin
 pnpm check:upstream              # needs the upstream-base tag (docs/upstream-sync.md)
+# Desktop app:
+zsh desktop/scripts/package-dmg.sh                     # public build (first-run setup wizard)
+CINEMA_ORIGIN=<url> CINEMA_LOCAL_ORIGIN=<local> zsh desktop/scripts/package-dmg.sh  # private build (URLs baked in; see data/LOCAL.md)
 ```
 Dev run: `CINEMA_DATA_DIR=<scratch> PORT=3099 NODE_ENV=development DEV_EMAIL=<admin> ADMIN_EMAILS=<admin> CINEMA_PLUGINS=all node http_server.js`
 (`NODE_PATH=.cache/server-deps/node_modules` after one `pnpm test:server`). Headless browsers report no window focus: use CDP

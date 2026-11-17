@@ -15,6 +15,8 @@
 
 mod glview;
 mod home;
+mod metal;
+mod metalview;
 mod mpv;
 mod server;
 mod shell;
@@ -365,6 +367,22 @@ fn spike_reorder(window: WebviewWindow) {
     reorder_below(&window);
 }
 
+#[tauri::command]
+fn metalfx_toggle(enable: bool) -> Result<metalview::MetalFXBridgeStatus, String> {
+    if !metalview::is_supported() {
+        return Err("Apple MetalFX is not supported on this device".into());
+    }
+    eprintln!("[metalfx] metalfx_toggle command: {enable}");
+    metal::set_active(enable);
+    metalview::kick();
+    Ok(metalview::get_status())
+}
+
+#[tauri::command]
+fn metalfx_status() -> metalview::MetalFXBridgeStatus {
+    metalview::get_status()
+}
+
 /// Development only (cargo feature `dev-tools`, on by default, off for release builds): a file-based command
 /// channel for tests (snap | reorder | mpv <args> | eval <js> | quit ...). It can drive the logged-in page, so it
 /// must never ship.
@@ -471,7 +489,17 @@ fn main() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![mpv_load, mpv_command, mpv_status, spike_reorder, shell_ipc, get_server, set_server])
+        .invoke_handler(tauri::generate_handler![
+            mpv_load,
+            mpv_command,
+            mpv_status,
+            spike_reorder,
+            shell_ipc,
+            get_server,
+            set_server,
+            metalfx_toggle,
+            metalfx_status
+        ])
         .on_menu_event(|app, event| {
             if event.id() == "change-server" {
                 server::clear(app);
@@ -508,9 +536,14 @@ fn main() {
             }
             let wid = wid_of(&win).ok_or("no AppKit window handle")?;
             eprintln!("[spike] wid (contentView NSView*) = {wid:#x}");
+            let legacy_gl = std::env::var("SPIKE_LEGACY_GL").is_ok();
             let render_mode = remote || std::env::var("SPIKE_RENDER").is_ok();
             if render_mode {
-                let _ = win.with_webview(|wv| unsafe { glview::install(wv.inner() as *mut objc2::runtime::AnyObject) });
+                if legacy_gl {
+                    let _ = win.with_webview(|wv| unsafe { glview::install(wv.inner() as *mut objc2::runtime::AnyObject) });
+                } else {
+                    let _ = win.with_webview(|wv| unsafe { metalview::install(wv.inner() as *mut objc2::runtime::AnyObject) });
+                }
             }
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -571,13 +604,23 @@ fn main() {
                 shell::spawn_event_loop(handle.clone(), m.clone());
                 eprintln!("[spike] mpv initialised");
                 if render_mode {
-                    let _ = glview::MPV.set(m.clone());
-                    glview::kick(); // first draw creates the render context with the GL context current
-                    let t0 = std::time::Instant::now();
-                    while !glview::render_ready() && t0.elapsed() < Duration::from_secs(6) {
-                        std::thread::sleep(Duration::from_millis(50));
+                    if legacy_gl {
+                        let _ = glview::MPV.set(m.clone());
+                        glview::kick(); // first draw creates the render context with the GL context current
+                        let t0 = std::time::Instant::now();
+                        while !glview::render_ready() && t0.elapsed() < Duration::from_secs(6) {
+                            std::thread::sleep(Duration::from_millis(50));
+                        }
+                        eprintln!("[spike] render context ready={} after {} ms (legacy GL)", glview::render_ready(), t0.elapsed().as_millis());
+                    } else {
+                        let _ = metalview::MPV.set(m.clone());
+                        metalview::kick(); // first draw creates the render context with CGL/MetalFX
+                        let t0 = std::time::Instant::now();
+                        while !metalview::render_ready() && t0.elapsed() < Duration::from_secs(6) {
+                            std::thread::sleep(Duration::from_millis(50));
+                        }
+                        eprintln!("[metalfx] render context ready={} after {} ms (MetalFX/CAMetalLayer)", metalview::render_ready(), t0.elapsed().as_millis());
                     }
-                    eprintln!("[spike] render context ready={} after {} ms", glview::render_ready(), t0.elapsed().as_millis());
                 }
                 if let Ok(clip) = std::env::var("SPIKE_CLIP") {
                     if let Err(e) = m.command(&["loadfile".into(), clip, "replace".into()]) {

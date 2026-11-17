@@ -1,0 +1,86 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+// Settings styling for MetalFX 4K AI Upscaler.
+
+.hint {
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.benchmark-card {
+    margin-top: 1.25rem;
+    padding: 1.15rem 1.35rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.benchmark-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .chip {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: linear-gradient(135deg, rgba(0, 122, 255, 0.25), rgba(0, 210, 255, 0.25));
+        border: 1px solid rgba(0, 190, 255, 0.4);
+        border-radius: 9999px;
+        color: #00d2ff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .target {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat {
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+
+    .value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 0.25rem;
+    }
+
+    .label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+.footer {
+    font-size: 0.78rem;
+    line-height: 1.4;
+
+    .status-active {
+        color: #34c759;
+        font-weight: 600;
+    }
+
+    .status-web {
+        color: rgba(255, 255, 255, 0.45);
+    }
+}

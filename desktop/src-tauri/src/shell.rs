@@ -93,7 +93,21 @@ fn invoke(app: &AppHandle, window: &WebviewWindow, method: &str, args: &[Value])
             let Some(name) = args.first().and_then(Value::as_str) else { return };
             observe(app, name);
         }
-        "mpv-set-gpu-video-processing" => {} // d3d11 only
+        "mpv-set-gpu-video-processing" | "metalfx-set-upscale" => {
+            let enabled = args
+                .first()
+                .and_then(Value::as_bool)
+                .or_else(|| args.first().and_then(Value::as_str).map(|s| s == "true" || s == "1" || s == "yes"))
+                .unwrap_or(false);
+            eprintln!("[metalfx] toggling Apple MetalFX AI 4K Upscale: {enabled}");
+            crate::metal::set_active(enabled);
+            crate::metalview::kick();
+            emit(app, "gpu-video-processing-changed", json!({ "enabled": enabled }));
+            emit(app, "metalfx-status-changed", json!(crate::metalview::get_status()));
+        }
+        "metalfx-get-status" => {
+            emit(app, "metalfx-status-changed", json!(crate::metalview::get_status()));
+        }
         "win-set-visibility" => {
             if let Some(fs) = args.first().and_then(|a| a.get("fullscreen")).and_then(Value::as_bool) {
                 eprintln!("[shell] win-set-visibility fullscreen={fs}");
@@ -254,16 +268,19 @@ fn observe(app: &AppHandle, name: &str) {
 }
 
 fn send_init(app: &AppHandle, window: &WebviewWindow) {
+    let supported = crate::metalview::is_supported();
+    let gpu_proc_str = if supported { "true" } else { "false" };
     let props = [
         ("shellVersion", SHELL_VERSION),
-        ("gpuVideoProcessing", "false"),
+        ("gpuVideoProcessing", gpu_proc_str),
+        ("metalfx", gpu_proc_str),
         ("nativeAssSubtitles", "false"),
         ("cacheDirectoryPicker", "false"),
         ("nativeInterfaceScale", "false"),
     ];
     let props: Vec<Value> = props.iter().enumerate().map(|(i, (k, v))| json!([i, k, [], v])).collect();
     dispatch_raw(app, &json!({ "id": 0, "type": 3, "data": { "transport": { "properties": props } } }));
-    eprintln!("[shell] INIT answered");
+    eprintln!("[shell] INIT answered (gpuVideoProcessing={gpu_proc_str}, metalfx={gpu_proc_str})");
     window_state_changed(app, window);
 }
 

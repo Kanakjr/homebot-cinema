@@ -35,10 +35,35 @@ fn main() {
     );
     fs::write("capabilities/remote.json", capability).expect("write capabilities/remote.json");
 
+    // Compile Apple MetalFX bridge (Objective-C / Metal)
+    cc::Build::new()
+        .file("src/metal/metalfx_bridge.m")
+        .flag("-fobjc-arc")
+        .flag("-DGL_SILENCE_DEPRECATION")
+        .compile("metalfx_bridge");
+
+    println!("cargo:rustc-link-lib=framework=Metal");
+    println!("cargo:rustc-link-lib=framework=MetalFX");
+    println!("cargo:rustc-link-lib=framework=MetalPerformanceShaders");
+    println!("cargo:rustc-link-lib=framework=IOSurface");
+    println!("cargo:rustc-link-lib=framework=OpenGL");
+    println!("cargo:rustc-link-lib=framework=QuartzCore");
+    println!("cargo:rustc-link-lib=framework=Cocoa");
+
     // Declaring the app commands makes Tauri's ACL cover them: each gets an `allow-<name>` permission.
     // Only `shell_ipc` is granted to the remote web UI; see capabilities/.
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
-        tauri_build::AppManifest::new().commands(&["shell_ipc", "mpv_load", "mpv_command", "mpv_status", "spike_reorder", "get_server", "set_server"]),
+        tauri_build::AppManifest::new().commands(&[
+            "shell_ipc",
+            "mpv_load",
+            "mpv_command",
+            "mpv_status",
+            "spike_reorder",
+            "get_server",
+            "set_server",
+            "metalfx_toggle",
+            "metalfx_status",
+        ]),
     ))
     .expect("failed to run tauri-build");
 }

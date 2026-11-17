@@ -31,10 +31,24 @@ the Cookie header).
 ## Build
 ```sh
 cargo test --no-default-features --manifest-path src-tauri/Cargo.toml   # address checks
+
+# 1. Public release build (shows setup wizard on first run to prompt user for server):
 zsh scripts/package-dmg.sh                                              # release/HomeBot-Cinema-<version>-arm64.dmg (+ .sha256)
 VERSION=1.2.0 zsh scripts/package-dmg.sh                                # version from a tag
-CINEMA_ORIGIN=https://your-host zsh scripts/package-dmg.sh              # private build with the address baked in (skips first run)
+
+# 2. Private/household build (bakes in public and local URLs, skips first-run wizard):
+# First, rebuild frontend assets if UI or plugins changed:
+npx webpack --mode production
+# Package with both public HTTPS origin and optional local LAN origin:
+CINEMA_ORIGIN=https://your-host CINEMA_LOCAL_ORIGIN=http://localhost:3002 zsh scripts/package-dmg.sh
 ```
+
+### Build Environment Flags
+- **`CINEMA_ORIGIN`**: Public HTTPS address (e.g. `https://cinema.example.com`). When omitted, defaults to `https://cinema.example.com`, which deliberately presents the "Connect to your server" setup wizard on first run. Baking this in skips the setup screen and registers the origin for `shell_ipc` in `capabilities/remote.json`.
+- **`CINEMA_LOCAL_ORIGIN`**: Direct home-network address (defaults to `http://localhost:3002`). When reachable, the desktop app talks directly to this local address instead of routing video streams through Cloudflare. Pass `none` to disable home mode.
+- **Frontend bundling**: Always run `npx webpack --mode production` before packaging if any web files or UI plugins (`plugins/*/ui/`) have been created or modified, ensuring the server or bundled assets include all plugin chunks.
+- For this specific installation's exact URLs and build command, see `data/LOCAL.md`.
+
 Needs Rust and macOS. CI does the same on every change here, and attaches the DMG to the GitHub Release when you push a tag
 (`git tag v1.2.0 && git push origin v1.2.0`); see `.github/workflows/desktop.yml`.
 
