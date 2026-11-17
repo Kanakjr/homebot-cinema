@@ -51,7 +51,7 @@ test('boots with no plugins: core routes answer, plugin routes do not exist', { 
     try {
         const me = await s.get('/api/me');
         assert.equal(me.status, 200);
-        assert.equal(me.headers.get('referrer-policy'), 'same-origin', 'our hostname must not leak to outside services');
+        assert.equal(me.headers.get('referrer-policy'), 'strict-origin-when-cross-origin', 'only the origin, never a path, goes to outside services; trailers need it (YouTube error 153)');
         assert.equal(me.body.isAdmin, true);
         const pl = await s.get('/api/plugins');
         assert.equal(pl.status, 200);

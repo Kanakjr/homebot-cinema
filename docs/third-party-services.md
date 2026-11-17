@@ -9,7 +9,7 @@ Search, Library, Calendar and Settings (playback not exercised), plus a search o
   Cloudflare Access, sync lives in our SQLite.
 - **No calls to Stremio's own API.** The core's worker `fetch` is guarded (`src/worker/fetchGuard.js`): announcements are
   answered locally, every other call to `api.strem.io`, `likes.stremio.com` or `link.stremio.com` is refused.
-- **Your hostname is not sent** to any outside service (`Referrer-Policy: same-origin`).
+- **Only your origin is sent**, never a path or query, to outside hosts such as image CDNs and YouTube (`Referrer-Policy: strict-origin-when-cross-origin`). YouTube trailers need it: with `same-origin` the desktop app (WebKit) gets embed error 153.
 - **Public catalog services still see what is browsed** (title ids, search terms) and the viewer's IP, like any website.
 
 ## Hosts
