@@ -42,6 +42,7 @@ A drive root counts as online only when it holds `.cinema-root`. While it is off
   with it). Keep `--dir-cache-time` long, and only enable the roots once the mount has proven stable.
 - **Start order.** If the mount starts after Docker, the containers keep seeing the empty folder underneath: restart them, or
   start the mount before Docker. The marker check turns that into "offline", not data loss.
+- **launchd and macOS privacy.** A launchd-started `/bin/bash` can get "Operation not permitted" when listing an external volume (seen on macOS, 2026-11). The mount job and the mover then need Full Disk Access for the shell or rclone binary they run with (System Settings > Privacy & Security > Full Disk Access). Run from a terminal they work without it.
 - A moved file keeps its old stream link and download record until the next library rescan.
 
 Not built yet: running the plan on a schedule, async listing with a timeout, a per-file "on Drive" badge, and Sentinel

@@ -93,7 +93,7 @@ plugins/metalfx/
 
 ## Empirical Benchmark Performance
 
-Benchmarked on Apple M4 (10-core GPU, macOS 26 / Sonoma+):
+Reference measurements taken once on an Apple M4 (10-core GPU). They are static figures shown in Settings and returned by `/api/metalfx/status`, not live readings; live GPU time comes from the desktop app's telemetry while playing:
 
 | Metric | Measurement | Frame Budget Consumed (24 FPS) |
 |---|---|---|

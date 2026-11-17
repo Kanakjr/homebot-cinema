@@ -88,3 +88,6 @@ flowchart TD
    Consult [`EVALUATION_AND_SELECTION.md`](EVALUATION_AND_SELECTION.md) for the comparative analysis matrix, scoring methodology, and tradeoff analysis across all 20 technologies.
 4. **The Top 5 Elite Recommendations & Implementation Blueprints:**
    Explore [`TOP_5_RECOMMENDATIONS.md`](TOP_5_RECOMMENDATIONS.md) for the exhaustive, publication-grade blueprints, patent claims, and integration roadmaps for the 5 selected flagship innovations.
+
+
+> The MetalFX benchmark images (film stills and their 4K outputs, ~68 MB) were removed from the repo; `metalfx_benchmark/` keeps the Swift harness and `benchmark_results.json`. Re-run the harness on your own frames to reproduce.

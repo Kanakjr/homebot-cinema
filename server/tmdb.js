@@ -76,7 +76,14 @@ function buildQuery(kind, f, genreIds) {
     return q;
 }
 
-function createTmdb({ apiKey, apiBase, raw, fetchJson, region = 'IN', now = () => Date.now(), concurrency = 8 }) {
+/** WATCH_REGION as TMDB wants it: two uppercase letters; anything else falls back to IN. */
+function normalizeRegion(v) {
+    const r = String(v == null ? '' : v).trim().toUpperCase();
+    return /^[A-Z]{2}$/.test(r) ? r : 'IN';
+}
+
+function createTmdb({ apiKey, apiBase, raw, fetchJson, region: regionIn = 'IN', now = () => Date.now(), concurrency = 8 }) {
+    const region = normalizeRegion(regionIn);
     const key = String(apiKey || '').trim();
     const get = fetchJson || (key ? httpFetchJson(key, apiBase || DEFAULT_API) : null);
     const configured = () => !!get;
@@ -275,4 +282,4 @@ function createTmdb({ apiKey, apiBase, raw, fetchJson, region = 'IN', now = () =
     return { configured, options, discover, search, byImdb, details, externalIds, collectionFor, region };
 }
 
-module.exports = { createTmdb, httpFetchJson, buildQuery, kidSafe, MAX_PAGE, LANGUAGES, DEFAULT_API };
+module.exports = { normalizeRegion, createTmdb, httpFetchJson, buildQuery, kidSafe, MAX_PAGE, LANGUAGES, DEFAULT_API };

@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { openDb } = require('../db');
-const { createTmdb, kidSafe } = require('../tmdb');
+const { createTmdb, kidSafe, normalizeRegion } = require('../tmdb');
 
 const calls = [];
 const GENRES = [{ id: 99, name: 'Documentary' }];
@@ -103,4 +103,13 @@ test('without a key every new lookup says tmdb_not_configured', async () => {
     for (const call of [() => t.search('toy story'), () => t.byImdb('tt0114709'), () => t.details('movie', 1)]) {
         await assert.rejects(call, (e) => e.message === 'tmdb_not_configured' && e.status === 503);
     }
+});
+
+test('WATCH_REGION is normalised: case and whitespace fixed, junk falls back to IN', () => {
+    assert.equal(normalizeRegion('us'), 'US');
+    assert.equal(normalizeRegion(' gb '), 'GB');
+    assert.equal(normalizeRegion('USA'), 'IN');
+    assert.equal(normalizeRegion(''), 'IN');
+    assert.equal(normalizeRegion(undefined), 'IN');
+    assert.equal(createTmdb({ raw: openDb(':memory:', ':memory:').raw, region: 'de', fetchJson }).region, 'DE');
 });
