@@ -64,9 +64,14 @@
     --primary-foreground-color: rgba(255, 255, 255, 0.95);
     --secondary-foreground-color: #0a0d12;
     --primary-accent-color: #F27A24;
-    --secondary-accent-color: #FFD700;
-    --tertiary-accent-color: #FFB800;
-    --quaternary-accent-color: #F5B027;
+    // HomeBot: one accent (common/theme.js repoints these per profile); text/thumb colours on accent fills;
+    // tertiary (the episode "watched" badge) is a neutral so it no longer competes with the accent
+    --secondary-accent-color: #F27A24;
+    --tertiary-accent-color: #E4E4E7;
+    --quaternary-accent-color: #F27A24;
+    --primary-accent-rgb: 242, 122, 36;
+    --accent-foreground-color: #000000;
+    --accent-thumb-color: #FFFFFF;
     --overlay-color: rgba(255, 255, 255, 0.05);
     --modal-background-color: #0e0e10;
     --outer-glow: 0px 0px 15px rgba(242, 122, 36, 0.35);

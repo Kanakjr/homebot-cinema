@@ -19,9 +19,9 @@
     max-width: 680px;
     max-height: 85vh;
     background: #0d1117;
-    border: 1px solid rgba(242, 122, 36, 0.5);
+    border: 1px solid rgba(var(--primary-accent-rgb), 0.5);
     border-radius: 16px;
-    box-shadow: 0 0 35px rgba(242, 122, 36, 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 35px rgba(var(--primary-accent-rgb), 0.3), 0 20px 40px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -33,8 +33,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid rgba(242, 122, 36, 0.25);
-    background: rgba(242, 122, 36, 0.08);
+    border-bottom: 1px solid rgba(var(--primary-accent-rgb), 0.25);
+    background: rgba(var(--primary-accent-rgb), 0.08);
 
     .title-group {
         display: flex;
@@ -42,7 +42,7 @@
         gap: 0.6rem;
 
         .icon {
-            color: #F27A24;
+            color: var(--primary-accent-color);
             font-size: 1.3rem;
         }
 
@@ -90,7 +90,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: #F27A24;
+        color: var(--primary-accent-color);
         margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
@@ -120,8 +120,8 @@
 
             kbd {
                 background: #161b22;
-                border: 1px solid rgba(242, 122, 36, 0.4);
-                color: #FFD700;
+                border: 1px solid rgba(var(--primary-accent-rgb), 0.4);
+                color: rgba(255, 255, 255, 0.85); // HomeBot: neutral key label (was #FFD700)
                 padding: 0.15rem 0.45rem;
                 border-radius: 5px;
                 font-family: monospace;

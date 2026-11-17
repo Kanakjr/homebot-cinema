@@ -38,6 +38,8 @@
 
             &::before {
                 transform: translateX(calc(@width - @thumb-size - @thumb-margin));
+                // HomeBot: stays visible on very light accents (e.g. White)
+                background-color: var(--accent-thumb-color, var(--primary-foreground-color));
             }
         }
     }

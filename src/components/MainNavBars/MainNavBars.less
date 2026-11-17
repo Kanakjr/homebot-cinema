@@ -17,6 +17,15 @@
         right: 0;
         left: 0;
         z-index: 1;
+        // HomeBot: scroll edge (see MainNavBars.tsx)
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+        &.scrolled {
+            background-color: var(--primary-background-color);
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0.6rem 1.2rem -0.8rem rgba(0, 0, 0, 0.9);
+        }
     }
 
     .vertical-nav-bar {

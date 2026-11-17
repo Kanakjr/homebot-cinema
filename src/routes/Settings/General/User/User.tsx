@@ -20,7 +20,7 @@ const User = ({ profile }: Props) => {
             <div className={styles['user-info-content']}>
                 <div
                     className={styles['avatar-container']}
-                    style={{ backgroundImage: avatar, border: '2px solid #F27A24' }}
+                    style={{ backgroundImage: avatar, border: '2px solid var(--primary-accent-color)' }}
                 />
                 <div className={styles['email-logout-container']}>
                     <div className={styles['email-label-container']} title={ssoEmail}>
@@ -28,7 +28,7 @@ const User = ({ profile }: Props) => {
                             {ssoEmail}
                         </div>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#F27A24', marginTop: '0.2rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--primary-accent-color)', marginTop: '0.2rem' }}>
                         {/* HomeBot: plain wording instead of the sign-in mechanism */}
                         {(window as unknown as { ssoIsAdmin?: boolean }).ssoIsAdmin ? 'Signed in · admin' : 'Signed in'}
                     </div>

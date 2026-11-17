@@ -26,14 +26,14 @@
     &:hover,
     &:focus,
     &:global(.selected) {
-        background-color: rgba(242, 122, 36, 0.1);
-        border-color: rgba(242, 122, 36, 0.35);
+        background-color: rgba(var(--primary-accent-rgb), 0.1);
+        border-color: rgba(var(--primary-accent-rgb), 0.35);
 
         .stream-actions {
             .stream-play-action {
-                background: #F27A24;
-                color: #000000;
-                box-shadow: 0 0 14px rgba(242, 122, 36, 0.5);
+                background: var(--primary-accent-color);
+                color: var(--accent-foreground-color);
+                box-shadow: 0 0 14px rgba(var(--primary-accent-rgb), 0.5);
             }
         }
     }
@@ -86,7 +86,7 @@
         .addon-sub {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #F27A24;
+            color: var(--primary-accent-color);
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
@@ -154,9 +154,9 @@
                 border: 1px solid rgba(255, 255, 255, 0.1);
 
                 &.badge-4k {
-                    background: rgba(242, 122, 36, 0.25);
-                    border-color: #F27A24;
-                    color: #FFD700;
+                    background: rgba(var(--primary-accent-rgb), 0.25);
+                    border-color: var(--primary-accent-color);
+                    color: var(--accent-foreground-color); // HomeBot: readable on any accent
                 }
 
                 &.badge-1080p {
@@ -239,11 +239,11 @@
             transition: all 0.2s ease;
 
             &:hover {
-                background: rgba(242, 122, 36, 0.25);
-                border-color: #F27A24;
-                color: #F27A24;
+                background: rgba(var(--primary-accent-rgb), 0.25);
+                border-color: var(--primary-accent-color);
+                color: var(--primary-accent-color);
                 transform: scale(1.08);
-                box-shadow: 0 0 10px rgba(242, 122, 36, 0.4);
+                box-shadow: 0 0 10px rgba(var(--primary-accent-rgb), 0.4);
             }
         }
 
@@ -254,9 +254,9 @@
             width: 2.3rem;
             height: 2.3rem;
             border-radius: 8px;
-            background: rgba(242, 122, 36, 0.2);
-            border: 1px solid rgba(242, 122, 36, 0.5);
-            color: #F27A24;
+            background: rgba(var(--primary-accent-rgb), 0.2);
+            border: 1px solid rgba(var(--primary-accent-rgb), 0.5);
+            color: var(--primary-accent-color);
             cursor: pointer;
             transition: all 0.2s ease;
 
@@ -266,10 +266,10 @@
             }
 
             &:hover {
-                background: #F27A24;
-                color: #000000;
+                background: var(--primary-accent-color);
+                color: var(--accent-foreground-color);
                 transform: scale(1.08);
-                box-shadow: 0 0 14px rgba(242, 122, 36, 0.6);
+                box-shadow: 0 0 14px rgba(var(--primary-accent-rgb), 0.6);
             }
         }
     }

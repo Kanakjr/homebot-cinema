@@ -117,7 +117,7 @@
                 font-weight: 500;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                opacity: 0.44;
+                opacity: 0.65; // HomeBot: 0.44 measured 4.0:1 for this small text
             }
 
             .upcoming-watched-container {
@@ -165,6 +165,11 @@
 
                 .upcoming-container {
                     background-color: var(--secondary-accent-color);
+
+                    // HomeBot: readable on any accent
+                    .flag-icon, .flag-label {
+                        color: var(--accent-foreground-color, var(--secondary-foreground-color));
+                    }
                 }
 
                 .watched-container {

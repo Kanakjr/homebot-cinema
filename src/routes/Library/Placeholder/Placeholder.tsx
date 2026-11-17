@@ -10,7 +10,7 @@ const Placeholder = () => {
 
     return (
         <div className={styles['placeholder']}>
-            <div className={styles['title']} style={{ color: '#F27A24' }}>
+            <div className={styles['title']} style={{ color: 'var(--primary-accent-color)' }}>
                 HomeBot Cinema Library
             </div>
             <div className={styles['image-container']}>

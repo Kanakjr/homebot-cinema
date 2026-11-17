@@ -38,10 +38,12 @@
         margin-top: 1.5rem;
         padding: 0 2rem;
         background-color: var(--secondary-accent-color);
+        color: var(--accent-foreground-color, var(--primary-foreground-color)); // HomeBot: readable on any accent
 
         &:hover {
             outline: var(--focus-outline-size) solid var(--secondary-accent-color);
             background-color: transparent;
+            color: var(--primary-foreground-color);
         }
 
         .icon {
@@ -49,7 +51,7 @@
             width: 1.5rem;
             height: 1.5rem;
             margin-right: 1rem;
-            color: var(--primary-foreground-color);
+            color: currentColor;
         }
 
         .label {
@@ -57,7 +59,7 @@
             max-height: 2.4em;
             font-size: 1.1rem;
             font-weight: 500;
-            color: var(--primary-foreground-color);
+            color: currentColor;
             text-align: center;
         }
     }
@@ -75,21 +77,21 @@
             gap: 0.6rem;
             padding: 0.7rem 1.4rem;
             border-radius: 9999px;
-            background: rgba(242, 122, 36, 0.18);
-            border: 1px solid rgba(242, 122, 36, 0.6);
+            background: rgba(var(--primary-accent-rgb), 0.18);
+            border: 1px solid rgba(var(--primary-accent-rgb), 0.6);
             color: #ffffff;
             font-size: 0.95rem;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 0 16px rgba(242, 122, 36, 0.3);
+            box-shadow: 0 0 16px rgba(var(--primary-accent-rgb), 0.3);
 
             &:hover {
-                background: #F27A24;
-                color: #000000;
+                background: var(--primary-accent-color);
+                color: var(--accent-foreground-color);
                 transform: translateY(-2px);
-                box-shadow: 0 0 24px rgba(242, 122, 36, 0.6);
+                box-shadow: 0 0 24px rgba(var(--primary-accent-rgb), 0.6);
             }
         }
     }

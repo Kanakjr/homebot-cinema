@@ -25,13 +25,24 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
     const tabs = React.useMemo(() => navTabs(isAdmin)
         .map((tab: { id: string, label: string, icon: string, href: string }) => (tab.id === 'library' && fresh.length > 0 ? { ...tab, badge: fresh.length, badgeTitle: `New on your server: ${fresh.map((i: { title: string }) => i.title).join(', ')}` } : tab)), [isAdmin, fresh]);
     const navRoute = route === 'continue_watching' ? 'library' : (route ?? '');
+    // HomeBot: once the page is scrolled, the header gets a divider and shadow so the content's top edge reads as a
+    // scroll edge (vertical scrollers only: the horizontal rows scroll sideways and must not reset it)
+    const [scrolled, setScrolled] = React.useState(false);
+    const onContentScroll = React.useCallback((event: React.UIEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement;
+        if (target.scrollHeight <= target.clientHeight + 1) return;
+        setScrolled(target.scrollTop > 4);
+    }, []);
+    React.useEffect(() => {
+        setScrolled(false);
+    }, [route]);
     useContentGamepadNavigation(contentRef, navRoute);
     useVerticalNavGamepadNavigation(navRef, navRoute);
 
     return (
         <div className={classnames(className, styles['main-nav-bars-container'])}>
             <HorizontalNavBar
-                className={styles['horizontal-nav-bar']}
+                className={classnames(styles['horizontal-nav-bar'], { [styles['scrolled']]: scrolled })}
                 route={route}
                 query={query}
                 backButton={false}
@@ -45,7 +56,7 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
                 selected={route}
                 tabs={tabs}
             />
-            <div ref={contentRef} className={styles['nav-content-container']}>{children}</div>
+            <div ref={contentRef} className={styles['nav-content-container']} onScrollCapture={onContentScroll}>{children}</div>
         </div>
     );
 });

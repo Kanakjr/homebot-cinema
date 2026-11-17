@@ -19,7 +19,21 @@
         &.active { opacity: 1; pointer-events: auto; }
     }
 
-    .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 20%; }
+    .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 20%; transition: opacity 0.4s ease; }
+
+    // still loading: a soft shimmer instead of a black box, the backdrop fades in when it arrives
+    .slide.loading {
+        .backdrop { opacity: 0; }
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(100deg, #0e0e10 30%, #1a1a1f 50%, #0e0e10 70%);
+            background-size: 200% 100%;
+            animation: hero-shimmer 1.6s linear infinite;
+        }
+    }
 
     .shade {
         position: absolute;
@@ -41,6 +55,8 @@
     }
 
     .logo { max-width: 24rem; max-height: 8rem; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.6)); }
+    // loading in the background (kept in layout so it still loads) while the text title shows
+    .logo.pending { position: absolute; opacity: 0; pointer-events: none; }
     .title { font-size: 2.8rem; font-weight: 800; line-height: 1.1; color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6); }
 
     .meta { display: flex; align-items: center; gap: 0.7rem; font-size: 1.05rem; color: rgba(255, 255, 255, 0.85); .dot { opacity: 0.6; } }
@@ -109,4 +125,13 @@
 
 @media (max-width: 640px) {
     .hero { .content { left: 3.4rem; max-width: 80%; } .logo { max-width: 14rem; } }
+}
+
+@keyframes hero-shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero .slide.loading::before { animation: none; }
 }

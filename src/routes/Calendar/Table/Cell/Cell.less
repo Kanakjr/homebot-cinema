@@ -95,7 +95,7 @@
                 height: 2rem;
                 padding: 0.5rem;
                 border-radius: 50%;
-                color: var(--primary-foreground-color);
+                color: var(--accent-foreground-color, var(--primary-foreground-color)); // HomeBot: readable on any accent
                 background-color: var(--secondary-accent-color);
                 opacity: 0;
             }
@@ -138,6 +138,7 @@
         .heading {
             padding: 0.3rem;
             .day {
+                color: var(--accent-foreground-color, var(--primary-foreground-color)); // HomeBot: readable on any accent
                 background-color: var(--primary-accent-color);
                 height: 1.5rem;
                 width: 1.5rem;

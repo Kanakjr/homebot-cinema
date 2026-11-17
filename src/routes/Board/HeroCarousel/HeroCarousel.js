@@ -14,7 +14,10 @@ const SWIPE_PX = 40;
 const imdbArt = (kind, id) => `https://images.metahub.space/${kind}/medium/${id}/img`;
 
 const Slide = ({ item, active, onBackdropBroken }) => {
-    const [logoFailed, setLogoFailed] = React.useState(false);
+    // the text title shows until the logo image has loaded (or for good if it fails); a shimmer until the backdrop arrives
+    const [logoState, setLogoState] = React.useState('loading'); // loading | ok | failed
+    const [backdropReady, setBackdropReady] = React.useState(false);
+    const logoSrc = item.logo || imdbArt('logo', item.id);
     const href = getMetaDetailsHref(item.deepLinks) || `#/detail/${item.type}/${item.id}`;
     const meta = [
         item.type === 'series' ? 'Series' : item.type === 'movie' ? 'Movie' : item.type,
@@ -22,19 +25,26 @@ const Slide = ({ item, active, onBackdropBroken }) => {
         item.releaseInfo
     ].filter(Boolean);
     return (
-        <div className={classnames(styles['slide'], { [styles['active']]: active })} aria-hidden={!active}>
+        <div className={classnames(styles['slide'], { [styles['active']]: active, [styles['loading']]: !backdropReady })} aria-hidden={!active}>
             <img
                 className={styles['backdrop']}
                 src={imdbArt('background', item.id)}
                 alt=""
+                onLoad={() => setBackdropReady(true)}
                 onError={() => onBackdropBroken(item.id)}
             />
             <div className={styles['shade']} />
             <div className={styles['content']}>
-                {logoFailed ?
-                    <div className={styles['title']}>{item.name}</div>
-                    :
-                    <img className={styles['logo']} src={item.logo || imdbArt('logo', item.id)} alt={item.name} onError={() => setLogoFailed(true)} />}
+                {logoState !== 'ok' ? <div className={styles['title']}>{item.name}</div> : null}
+                {logoState !== 'failed' ?
+                    <img
+                        className={classnames(styles['logo'], { [styles['pending']]: logoState === 'loading' })}
+                        src={logoSrc}
+                        alt={logoState === 'ok' ? item.name : ''}
+                        onLoad={() => setLogoState('ok')}
+                        onError={() => setLogoState('failed')}
+                    />
+                    : null}
                 <div className={styles['meta']}>
                     {meta.map((m, i) => <React.Fragment key={m}>{i > 0 ? <span className={styles['dot']}>•</span> : null}<span>{m}</span></React.Fragment>)}
                 </div>

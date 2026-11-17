@@ -103,6 +103,11 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
     const renderLogoFallback = React.useCallback(() => (
         <div className={styles['logo-placeholder']}>{name}</div>
     ), [name]);
+    // HomeBot: the text title shows until the logo image has loaded (tracked per URL, so switching items never shows a blank frame)
+    const [loadedLogo, setLoadedLogo] = React.useState(null);
+    const [failedLogo, setFailedLogo] = React.useState(null);
+    const hasLogo = typeof logo === 'string' && logo.length > 0;
+    const logoReady = hasLogo && loadedLogo === logo;
     const metaItemActions = React.useMemo(() => [
         {
             icon: inLibrary ? 'remove-from-library' : 'add-to-library',
@@ -126,17 +131,19 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
                     null
             }
             <div className={styles['meta-info-container']}>
+                {!logoReady ? renderLogoFallback() : null}
                 {
-                    typeof logo === 'string' && logo.length > 0 ?
+                    hasLogo && failedLogo !== logo ?
                         <Image
-                            className={styles['logo']}
+                            className={classnames(styles['logo'], { [styles['logo-pending']]: !logoReady })}
                             src={logo}
                             alt={' '}
                             title={name}
-                            renderFallback={renderLogoFallback}
+                            onLoad={() => setLoadedLogo(logo)}
+                            onError={() => setFailedLogo(logo)}
                         />
                         :
-                        renderLogoFallback()
+                        null
                 }
                 {
                     metadata !== undefined ? metadata : (typeof releaseInfo === 'string' && releaseInfo.length > 0) || (released instanceof Date && !isNaN(released.getTime())) || (typeof runtime === 'string' && runtime.length > 0) || linksGroups.has(CONSTANTS.IMDB_LINK_CATEGORY) ?

@@ -19,7 +19,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | File | Lines changed | Why |
 |---|---|---|
 | `http_server.js` | 562 | Our backend entry (upstream has a tiny static server here). Core wiring only; features live in server/ and plugins/. |
-| `src/routes/MetaDetails/StreamsList/Stream/styles.less` | 327 | Same. |
+| `src/routes/MetaDetails/StreamsList/Stream/styles.less` | 345 | Same; Phase 2: all hard-coded #F27A24 → --primary-accent-color/rgb tokens; accent-foreground text on play and hover buttons; 4K badge colour. |
 | `src/routes/MetaDetails/StreamsList/StreamsList.js` | 277 | Quality-profile sort, swarm health, Save button (fork identity); Direct filter; "1 addon is still loading" (singular). |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
@@ -40,24 +40,24 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | 38 | Fork issue template. |
 | `src/routes/MetaDetails/styles.less` | 37 | Download bar layout. |
 | `src/routes/Settings/General/General.tsx` | 45 | Dashboard link; Stremio-account features (data export, calendar subscription, Trakt) hidden behind `STREMIO_ACCOUNT_FEATURES`. |
-| `src/routes/Player/Error/styles.less` | 32 | Same. |
+| `src/routes/Player/Error/styles.less` | 44 | Same; Phase 2: accent-foreground text on accent-fill buttons, tokens for translucent oranges. |
 | `src/router/routerPaths.tsx` | 30 | Core routes (/downloads, /admin, /server) + slot routes. |
 | `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 30 | Brand mark, profile avatar, slot navButtons. |
-| `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 27 | Badge. |
+| `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 29 | Badge; Phase 2: inactive-icon opacity 0.35→0.55 (3:1 non-text minimum). |
 | `webpack.config.js` | 30 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API); five system images left out of the offline cache (private `data/art/` override). |
 | `src/routes/Board/Board.js` | 44 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row. |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 15 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
-| `src/App/styles.less` | 24 | Branding. |
+| `src/App/styles.less` | 35 | Branding; Phase 2: :root token defaults (--secondary/tertiary/quaternary-accent-color unified to primary; --primary-accent-rgb, --accent-foreground-color, --accent-thumb-color). |
 | `src/App/WebUpdateScreen/WebUpdateScreen.tsx` | 22 | No update banner. |
 | `src/routes/Calendar/Episode/Episode.less` | 18 | Markers. |
-| `src/routes/Library/Placeholder/Placeholder.tsx` | 17 | No Stremio sign-in prompt. |
+| `src/routes/Library/Placeholder/Placeholder.tsx` | 18 | No Stremio sign-in prompt; Phase 2: accent token for title colour. |
 | `src/routes/Library/styles.less` | 15 | Same. |
 | `src/routes/Discover/styles.less` | 15 | Pill style for discoverActions. |
 | `package.json` | 15 | Name, scripts (test:server, plugin:new), lint covers plugins/. |
 | `src/routes/MetaDetails/StreamsList/styles.less` | 14 | Same. |
-| `src/components/MainNavBars/MainNavBars.tsx` | 18 | Core tabs (Downloads, Server, Admin), from `common/navTabs.js`. |
-| `src/routes/Player/Indicator/Indicator.less` | 13 | Same. |
+| `src/components/MainNavBars/MainNavBars.tsx` | 33 | Core tabs (Downloads, Server, Admin), from `common/navTabs.js`; Phase 2: scroll-edge state (scrolled class on HorizontalNavBar, reset on route change). |
+| `src/routes/Player/Indicator/Indicator.less` | 15 | Same; Phase 2: accent tokens for border and glow. |
 | `src/routes/Player/Indicator/Indicator.tsx` | 12 | HUD notices. |
 | `src/components/NavBar/HorizontalNavBar/styles.less` | 12 | Avatar styles. |
 | `Dockerfile` | 12 | Adds the server, plugins and ffmpeg. |
@@ -90,7 +90,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.less` | 13 | Styling for matched badge pill on variant item. |
 | `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
 | `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
-| `src/components/MetaPreview/MetaPreview.js` | 4 | Small fix. |
+| `src/components/MetaPreview/MetaPreview.js` | 15 | Small fix; Phase 2: text title shown until logo URL loads (tracked per URL to avoid blank frames on item switch). |
 | `src/routes/Settings/Streaming/Streaming.tsx` | 17 | Server URL list hidden (`SERVER_URL_EDITING`): the app always uses its own origin. Server settings read-only for non-admins. |
 | `src/routes/Settings/Interface/useInterfaceOptions.ts` | 3 | Zoom choices. |
 | `src/components/UpdateBanner/UpdateBanner.less` | 3 | Hidden banner. |
@@ -99,6 +99,19 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/App/WebUpdateScreen/useServiceWorkerUpdater.ts` | 2 | Apply SW update on next load. |
 | `src/App/SearchParamsHandler.js` | 1 | Small fix. |
 | `assets/favicons/favicon.ico` | 0 | Branding. |
+
+<!-- Phase 2: Visual system (tokens) - new upstream file edits -->
+| `src/components/Toggle/Toggle.less` | 42 | Phase 2: toggle thumb uses --accent-thumb-color (stays visible on very light accents like White). |
+| `src/routes/Board/HeroCarousel/HeroCarousel.js` | 55 | Phase 2: backdrop shimmer while loading; text title shown until logo loads; logo state tracked (loading/ok/failed). |
+| `src/routes/Board/HeroCarousel/styles.less` | 110 | Phase 2: loading shimmer keyframe; backdrop fade-in; logo-pending hidden-but-loading state. |
+| `src/components/MainNavBars/MainNavBars.less` | 46 | Phase 2: .scrolled class adds translucent background, hairline border and shadow once the page is scrolled. |
+| `src/components/MetaPreview/styles.less` | 220 | Phase 2: .logo-pending hides logo out of sight while text title shows (image still loads). |
+| `src/components/ModalDialog/styles.less` | 135 | Phase 2: accent-foreground text on accent-fill action buttons. |
+| `src/components/Chips/Chip/Chip.less` | 50 | Phase 2: active chip uses --accent-foreground-color for legible text on any accent. |
+| `src/components/Video/styles.less` | 290 | Phase 2: air-date opacity raised from 0.44 to 0.65 (small text needs 4.5:1); upcoming flag text uses --accent-foreground-color. |
+| `src/routes/Calendar/Table/Cell/Cell.less` | 160 | Phase 2: today dot text uses --accent-foreground-color on --secondary-accent-color background. |
+| `src/routes/Player/ShortcutsModal/ShortcutsModal.less` | 185 | Phase 2: hard-coded #F27A24 → tokens; kbd key uses neutral foreground instead of #FFD700. |
+| `src/routes/Settings/Menu/Menu.less` | 55 | Phase 2: version-info opacity 0.3→0.6 (was 2.3:1, now passes 4.5:1). |
 
 ## Replaced images (branding: `scripts/brand/build.js` regenerates them)
 

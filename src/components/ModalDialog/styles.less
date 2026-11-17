@@ -119,10 +119,12 @@
     border-radius: 3.5rem;
     padding: 1.2rem;
     background-color: var(--secondary-accent-color);
+    color: var(--accent-foreground-color, var(--primary-foreground-color)); // HomeBot: readable on any accent
 
     &:hover {
         background-color: transparent;
         outline: var(--focus-outline-size) solid var(--secondary-accent-color);
+        color: var(--primary-foreground-color);
     }
 
     &:focus {
@@ -138,7 +140,7 @@
         width: 1.2rem;
         height: 1.2rem;
         margin-right: .5rem;
-        color: var(--primary-foreground-color);
+        color: currentColor;
     }
 
     .label {

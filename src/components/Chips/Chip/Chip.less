@@ -29,6 +29,8 @@
 
     &.active {
         opacity: 1;
+        // HomeBot: readable text on any accent
+        color: var(--accent-foreground-color, var(--primary-foreground-color));
         background-color: var(--quaternary-accent-color);
         transition: background-color 0.1s ease-in;
     }

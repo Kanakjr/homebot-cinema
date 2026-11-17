@@ -31,8 +31,9 @@
         background: #fff;
         transition: transform 0.15s, background 0.15s;
     }
-    &:checked { background: #fff; }
-    &:checked::after { transform: translateX(1.1rem); background: #000; }
+    // same look as the app's toggles: accent track, white thumb (this screen renders before a profile theme applies)
+    &:checked { background: var(--primary-accent-color, #F27A24); }
+    &:checked::after { transform: translateX(1.1rem); background: var(--accent-thumb-color, #fff); }
 }
 
 .picker {

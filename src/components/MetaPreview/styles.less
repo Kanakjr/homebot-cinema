@@ -103,6 +103,13 @@
             color: @color-surface-light5-90;
         }
 
+        // HomeBot: the logo loads out of sight while the text title shows (kept in layout: the image is lazy-loaded)
+        .logo-pending {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .runtime-release-info-container {
             display: flex;
             flex-direction: row;
