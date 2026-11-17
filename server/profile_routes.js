@@ -13,7 +13,7 @@ const AVATAR_MAX_BYTES = 400 * 1024;
 const MIME_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 const EXT_MIME = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
 
-function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', adminEmails = [], presetDir = path.join(__dirname, 'avatars') }) {
+function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', adminEmails = [], presetDir = P.resolvePresetDir(dataPath, path.join(__dirname, 'avatars')) }) {
     const raw = db.raw;
     const tokens = P.createTokens(secret);
     const avatarDir = path.join(dataPath, 'avatars');
