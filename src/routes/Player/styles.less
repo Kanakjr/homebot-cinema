@@ -41,8 +41,9 @@ html:not(.active-slider-within) {
         bottom: 0;
         z-index: 0;
 
-        &.buffering-layer, &.error-layer {
+        &.buffering-layer, &.error-layer, &.background-layer {
             background: transparent;
+            pointer-events: none;
         }
 
         &.background-layer {
@@ -138,7 +139,20 @@ html:not(.active-slider-within) {
             right: 0;
             left: initial;
             bottom: initial;
+            z-index: 2;
         }
+    }
+
+    .side-drawer-scrim {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1;
+        cursor: pointer;
+        backdrop-filter: blur(2px);
     }
 }
 

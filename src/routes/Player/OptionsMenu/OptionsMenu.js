@@ -5,11 +5,30 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { usePlatform, useToast } = require('stremio/common');
+const { isAdmin } = require('stremio/common/serverApi');
 const { default: usePlayOnDevice } = require('../usePlayOnDevice');
 const Option = require('./Option');
 const styles = require('./styles');
 
-const OptionsMenu = React.memo(React.forwardRef(({ className, stream, playbackDevices, extraSubtitlesTracks, selectedExtraSubtitlesTrackId }, ref) => {
+const VIDEO_SCALE_ICONS = {
+    contain: 'video-scale-fit',
+    cover: 'video-scale-crop',
+    fill: 'video-scale-stretch'
+};
+
+const OptionsMenu = React.memo(React.forwardRef(({
+    className,
+    stream,
+    playbackDevices,
+    extraSubtitlesTracks,
+    selectedExtraSubtitlesTrackId,
+    videoScale,
+    videoScaleLabel,
+    onVideoScaleChanged,
+    statisticsAvailable,
+    onToggleStatisticsMenu,
+    onToggleShortcutsModal
+}, ref) => {
     const { t } = useTranslation();
     const platform = usePlatform();
     const toast = useToast();
@@ -106,7 +125,7 @@ const OptionsMenu = React.memo(React.forwardRef(({ className, stream, playbackDe
                     null
             }
             {
-                magnetUrl ?
+                magnetUrl && isAdmin() ?
                     <Option
                         icon={'magnet-link'}
                         label={t('CTX_COPY_MAGNET_LINK')}
@@ -139,6 +158,37 @@ const OptionsMenu = React.memo(React.forwardRef(({ className, stream, playbackDe
                     null
             }
             {
+                typeof onVideoScaleChanged === 'function' ?
+                    <Option
+                        icon={VIDEO_SCALE_ICONS[videoScale || 'contain'] || 'aspect-ratio'}
+                        label={`Aspect ratio: ${videoScaleLabel || 'Fit'}`}
+                        disabled={videoScale === null}
+                        onClick={onVideoScaleChanged}
+                    />
+                    :
+                    null
+            }
+            {
+                statisticsAvailable && typeof onToggleStatisticsMenu === 'function' ?
+                    <Option
+                        icon={'network'}
+                        label={t('PLAYER_STATISTICS') || 'Network statistics'}
+                        onClick={onToggleStatisticsMenu}
+                    />
+                    :
+                    null
+            }
+            {
+                typeof onToggleShortcutsModal === 'function' ?
+                    <Option
+                        icon={'help'}
+                        label={'Keyboard shortcuts (?)'}
+                        onClick={onToggleShortcutsModal}
+                    />
+                    :
+                    null
+            }
+            {
                 streamingUrl && externalDevices.map(({ id, name }) => (
                     <Option
                         key={id}
@@ -160,6 +210,12 @@ OptionsMenu.propTypes = {
     playbackDevices: PropTypes.array,
     extraSubtitlesTracks: PropTypes.array,
     selectedExtraSubtitlesTrackId: PropTypes.string,
+    videoScale: PropTypes.string,
+    videoScaleLabel: PropTypes.string,
+    onVideoScaleChanged: PropTypes.func,
+    statisticsAvailable: PropTypes.bool,
+    onToggleStatisticsMenu: PropTypes.func,
+    onToggleShortcutsModal: PropTypes.func,
 };
 
 module.exports = OptionsMenu;

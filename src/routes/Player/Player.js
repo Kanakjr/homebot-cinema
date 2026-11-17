@@ -49,6 +49,35 @@ const GAMEPAD_HANDLER_ID = 'player';
 
 const CAST_DEVICES_REFRESH_INTERVAL = 5000;
 
+const formatPlayerTitle = (title, seriesInfo, metaItem) => {
+    if (!title || typeof title !== 'string') return '';
+    // Format: "Show - Episode (SxEP)" or "Show - (SxEP)" with × or x
+    const match = title.match(/^(.*?)\s*-\s*(.*?)\s*\(([0-9]+)[×x]([0-9]+)\)$/i);
+    if (match) {
+        const show = match[1].trim();
+        const epTitle = match[2].trim();
+        const s = match[3];
+        const e = match[4];
+        if (epTitle) {
+            return `${show} · S${s} E${e} · ${epTitle}`;
+        }
+        return `${show} · S${s} E${e}`;
+    }
+    const matchSimple = title.match(/^(.*?)\s*\(([0-9]+)[×x]([0-9]+)\)$/i);
+    if (matchSimple) {
+        return `${matchSimple[1].trim()} · S${matchSimple[2]} E${matchSimple[3]}`;
+    }
+    if (seriesInfo && typeof seriesInfo.season === 'number' && typeof seriesInfo.episode === 'number') {
+        const show = metaItem?.name || title.split(' - ')[0].trim();
+        const epTitle = metaItem?.videos?.find((v) => v.season === seriesInfo.season && v.episode === seriesInfo.episode)?.title;
+        if (epTitle) {
+            return `${show} · S${seriesInfo.season} E${seriesInfo.episode} · ${epTitle}`;
+        }
+        return `${show} · S${seriesInfo.season} E${seriesInfo.episode}`;
+    }
+    return title;
+};
+
 const Player = () => {
     const { stream, streamTransportUrl, metaTransportUrl, type, id, videoId } = useParams();
     const urlParams = React.useMemo(() => ({
@@ -730,6 +759,10 @@ const Player = () => {
         discord.setActivity(activity);
     }, [discord.setActivity, player?.title, metaItemContent, video.state.duration, video.state.paused, video.state.stream, video.state.time]);
 
+    const formattedTitle = React.useMemo(() => {
+        return formatPlayerTitle(player.title, player.seriesInfo, metaItemContent);
+    }, [player.title, player.seriesInfo, metaItemContent]);
+
     React.useEffect(() => {
         return () => {
             discord.setActivity(null);
@@ -1111,7 +1144,7 @@ const Player = () => {
             }
             {
                 menusOpen ?
-                    <div className={styles['layer']} />
+                    <div className={styles['layer']} onClick={closeMenus} />
                     :
                     null
             }
@@ -1131,11 +1164,17 @@ const Player = () => {
                     playbackDevices={playbackDevices}
                     extraSubtitlesTracks={extraSubtitleTracks}
                     selectedExtraSubtitlesTrackId={selectedExtraSubtitleTrackId}
+                    videoScale={video.state.videoScale}
+                    videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
+                    onVideoScaleChanged={onVideoScaleChanged}
+                    statisticsAvailable={statisticsMenuAvailable}
+                    onToggleStatisticsMenu={toggleStatisticsMenu}
+                    onToggleShortcutsModal={toggleShortcutsModal}
                 />
             </ContextMenu>
             <HorizontalNavBar
                 className={classnames(styles['layer'], styles['nav-bar-layer'])}
-                title={player.title !== null ? player.title : ''}
+                title={formattedTitle}
                 backButton={true}
                 fullscreenButton={true}
                 hdrInfo={video.state.hdrInfo}
@@ -1167,6 +1206,8 @@ const Player = () => {
                 nextVideo={isEpg ? null : player.nextVideo}
                 stream={player.selected !== null ? player.selected.stream : null}
                 statisticsAvailable={statisticsMenuAvailable}
+                fullscreen={fullscreen}
+                onToggleFullscreen={toggleFullscreen}
                 onPlayRequested={onPlayRequested}
                 onPauseRequested={onPauseRequested}
                 onNextVideoRequested={onNextVideoRequested}
@@ -1180,16 +1221,11 @@ const Player = () => {
                 onToggleSubtitlesMenu={toggleSubtitlesMenu}
                 onToggleAudioMenu={toggleAudioMenu}
                 onToggleSpeedMenu={toggleSpeedMenu}
-                videoScale={video.state.videoScale}
-                videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
+                onToggleSideDrawer={toggleSideDrawer}
                 live={livePlayback}
                 liveTiming={video.state.live}
                 seekable={canSeek}
                 buffering={video.state.buffering || !video.state.loaded}
-                onVideoScaleChanged={onVideoScaleChanged}
-                onToggleStatisticsMenu={toggleStatisticsMenu}
-                onToggleSideDrawer={toggleSideDrawer}
-                onToggleShortcutsModal={toggleShortcutsModal}
                 onMouseMove={onBarMouseMove}
                 onMouseOver={onBarMouseMove}
                 onTouchEnd={onContainerMouseLeave}
@@ -1250,6 +1286,12 @@ const Player = () => {
                     onDeviceSelected={onCastDeviceSelected}
                 />
             </Transition>
+            {sideDrawerOpen ? (
+                <div
+                    className={styles['side-drawer-scrim']}
+                    onClick={closeSideDrawer}
+                />
+            ) : null}
             <Transition when={sideDrawerOpen} name={'slide-left'}>
                 <SideDrawer
                     className={classnames(styles['layer'], styles['side-drawer-layer'])}
@@ -1258,6 +1300,8 @@ const Player = () => {
                     isEpg={isEpg}
                     closeSideDrawer={closeSideDrawer}
                     selected={player.selected?.streamRequest?.path?.id}
+                    currentTime={keyboardSeekTime ?? video.state.time}
+                    duration={video.state.duration}
                 />
             </Transition>
             <Transition when={subtitlesMenuOpen} name={'fade'}>
@@ -1288,6 +1332,12 @@ const Player = () => {
                     playbackDevices={playbackDevices}
                     extraSubtitlesTracks={extraSubtitleTracks}
                     selectedExtraSubtitlesTrackId={selectedExtraSubtitleTrackId}
+                    videoScale={video.state.videoScale}
+                    videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
+                    onVideoScaleChanged={onVideoScaleChanged}
+                    statisticsAvailable={statisticsMenuAvailable}
+                    onToggleStatisticsMenu={toggleStatisticsMenu}
+                    onToggleShortcutsModal={toggleShortcutsModal}
                 />
             </Transition>
             <Transition when={shortcutsModalOpen} name={'fade'}>

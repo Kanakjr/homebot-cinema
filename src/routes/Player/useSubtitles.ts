@@ -807,17 +807,28 @@ const useSubtitles = ({
         }
     }, [closeSubtitlesMenu, hasTracks]);
 
+    const isInitialPlaybackRef = useRef(true);
+    useEffect(() => {
+        isInitialPlaybackRef.current = true;
+        const timer = setTimeout(() => {
+            isInitialPlaybackRef.current = false;
+        }, 6000);
+        return () => clearTimeout(timer);
+    }, [video.state.stream]);
+
     useEffect(() => {
         const onSubtitlesTrackLoaded = () => {
+            if (isInitialPlaybackRef.current) return;
             toast.show({
                 type: 'success',
                 title: t('PLAYER_SUBTITLES_LOADED'),
                 message: t('PLAYER_SUBTITLES_LOADED_EMBEDDED'),
-                timeout: 3000,
+                timeout: 2000,
             });
         };
 
         const onExtraSubtitlesTrackLoaded = (track: SubtitleTrack) => {
+            if (isInitialPlaybackRef.current && !track.local) return;
             toast.show({
                 type: 'success',
                 title: t('PLAYER_SUBTITLES_LOADED'),
@@ -828,7 +839,7 @@ const useSubtitles = ({
                         t('PLAYER_SUBTITLES_LOADED_LOCAL')
                         :
                         t('PLAYER_SUBTITLES_LOADED_ORIGIN', { origin: track.origin }),
-                timeout: 3000,
+                timeout: 2000,
             });
         };
 

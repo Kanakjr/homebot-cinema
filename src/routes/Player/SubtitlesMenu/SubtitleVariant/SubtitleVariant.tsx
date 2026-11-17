@@ -39,7 +39,11 @@ const SubtitleVariant = ({ track, selected, isAutoSynced, onSelect }: Props) => 
     const triggers = useMemo(() => [buttonRef], []);
 
     const downloadUrl = track.fallbackUrl || track.url;
-    const variantLabel = hasValidLabel(track.label) ? track.label : languages.label(track.lang);
+    const langLabel = languages.label(track.lang) || track.lang;
+    const hasCustomLabel = hasValidLabel(track.label) && track.label !== track.lang && track.label !== langLabel;
+    const variantLabel = hasCustomLabel
+        ? (track.label!.toLowerCase().includes(langLabel.toLowerCase()) ? track.label! : `${langLabel} · ${track.label}`)
+        : langLabel;
     const downloadFileName = hasValidLabel(track.label) ? track.label : `subtitle-${track.lang || 'unknown'}`;
     const canCopyUrl = typeof downloadUrl === 'string' && !downloadUrl.startsWith('blob:');
     const hoverTitle = hasValidLabel(track.label)

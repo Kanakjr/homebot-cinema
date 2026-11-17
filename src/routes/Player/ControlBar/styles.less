@@ -33,6 +33,12 @@
                 background-color: var(--overlay-color);
             }
 
+            &:active:not(:global(.disabled)) {
+                .icon {
+                    transform: scale(0.92);
+                }
+            }
+
             &:global(.disabled) {
                 .icon {
                     opacity: 0.4;

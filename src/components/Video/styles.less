@@ -236,16 +236,8 @@
     }
 
     &.selected {
-        animation: border 3s ease-in-out forwards;
-    }
-
-    @keyframes border {
-        0% {
-            border: 0.15rem solid var(--primary-accent-color);
-        }
-        100% {
-            border: 0.15rem solid transparent;
-        }
+        border: 0.15rem solid var(--primary-accent-color);
+        background-color: var(--overlay-color);
     }
 
 

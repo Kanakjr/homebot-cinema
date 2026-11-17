@@ -17,9 +17,11 @@ type Props = {
     closeSideDrawer: () => void;
     selected: string;
     isEpg: boolean;
+    currentTime?: number | null;
+    duration?: number | null;
 };
 
-const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, className, closeSideDrawer, selected, isEpg, ...props }: Props, ref) => {
+const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, className, closeSideDrawer, selected, isEpg, currentTime, duration, ...props }: Props, ref) => {
     const core = useCore();
     const [season, setSeason] = useState<number>(seriesInfo?.season);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
@@ -147,7 +149,11 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
                         <div ref={videosRef} className={styles['videos']}>
                             {videos.map((video, index) => {
                                 const range = isEpg ? getEpgTimeRange(video) : null;
-                                const progress = isEpg ? getEpgProgress(video, now) : video.progress;
+                                const isSelected = video.id === selectedId;
+                                let progress = isEpg ? getEpgProgress(video, now) : video.progress;
+                                if (isSelected && (progress === undefined || progress === null || progress === 0) && currentTime && duration && duration > 0) {
+                                    progress = Math.min(100, Math.max(0, (currentTime / duration) * 100));
+                                }
                                 const isNow = isEpg && progress !== null;
                                 const upcoming = isEpg ?
                                     range !== null && range.startTime > now
@@ -170,7 +176,7 @@ const SideDrawer = memo(forwardRef<HTMLDivElement, Props>(({ seriesInfo, classNa
                                         progress={progress}
                                         deepLinks={isEpg ? undefined : video.deepLinks}
                                         scheduled={video.scheduled}
-                                        selected={video.id === selectedId}
+                                        selected={isSelected}
                                         isEpg={isEpg}
                                         isNow={isNow}
                                         startTime={video.startTime}

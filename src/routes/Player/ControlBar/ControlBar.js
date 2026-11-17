@@ -13,10 +13,28 @@ const { useBinaryState, usePlatform } = require('stremio/common');
 const { PluginSlot } = require('stremio/plugins');
 const { t } = require('i18next');
 
-const VIDEO_SCALE_ICONS = {
-    contain: 'video-scale-fit',
-    cover: 'video-scale-crop',
-    fill: 'video-scale-stretch'
+const Skip10BackIcon = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 4.5A7.5 7.5 0 1 0 19.5 12" />
+        <polyline points="12 1 12 5 8 5" />
+        <text x="12" y="15" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7.5" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    </svg>
+);
+
+Skip10BackIcon.propTypes = {
+    className: PropTypes.string,
+};
+
+const Skip10ForwardIcon = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 4.5A7.5 7.5 0 1 1 4.5 12" />
+        <polyline points="12 1 12 5 16 5" />
+        <text x="12" y="15" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7.5" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    </svg>
+);
+
+Skip10ForwardIcon.propTypes = {
+    className: PropTypes.string,
 };
 
 const ControlBar = React.forwardRef(({
@@ -33,7 +51,8 @@ const ControlBar = React.forwardRef(({
     metaItem,
     nextVideo,
     stream,
-    statisticsAvailable,
+    fullscreen,
+    onToggleFullscreen,
     onPlayRequested,
     onPauseRequested,
     onNextVideoRequested,
@@ -48,15 +67,10 @@ const ControlBar = React.forwardRef(({
     onToggleOptionsMenu,
     shellCastSupported,
     onToggleCastDevicesMenu,
-    videoScale,
-    videoScaleLabel,
     live,
     liveTiming,
     seekable,
     buffering,
-    onVideoScaleChanged,
-    onToggleStatisticsMenu,
-    onToggleShortcutsModal,
     onTouchEnd,
     markers, // HomeBot: intro/credits marks for the seek bar (slot playerOverlays)
     ...props
@@ -80,9 +94,6 @@ const ControlBar = React.forwardRef(({
     const onOptionsButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.optionsMenuClosePrevented = true;
     }, []);
-    const onStatisticsButtonMouseDown = React.useCallback((event) => {
-        event.nativeEvent.statisticsMenuClosePrevented = true;
-    }, []);
     const onCastDevicesButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.castDevicesMenuClosePrevented = true;
     }, []);
@@ -97,6 +108,16 @@ const ControlBar = React.forwardRef(({
             }
         }
     }, [paused, onPlayRequested, onPauseRequested]);
+    const onRewind10Click = React.useCallback(() => {
+        if (typeof onSeekRequested === 'function') {
+            onSeekRequested(Math.max(0, (time || 0) - 10000));
+        }
+    }, [onSeekRequested, time]);
+    const onForward10Click = React.useCallback(() => {
+        if (typeof onSeekRequested === 'function') {
+            onSeekRequested(Math.min(duration || 0, (time || 0) + 10000));
+        }
+    }, [onSeekRequested, time, duration]);
     const onNextVideoButtonClick = React.useCallback(() => {
         if (nextVideo !== null && typeof onNextVideoRequested === 'function') {
             onNextVideoRequested();
@@ -153,18 +174,59 @@ const ControlBar = React.forwardRef(({
                 markers={markers}
             />
             <div className={styles['control-bar-buttons-container']}>
-                <Button className={classnames(styles['control-bar-button'], { 'disabled': typeof paused !== 'boolean' })} title={paused ? t('PLAYER_PLAY') : t('PLAYER_PAUSE')} tabIndex={-1} onClick={onPlayPauseButtonClick}>
+                <Button
+                    className={classnames(styles['control-bar-button'], { 'disabled': typeof paused !== 'boolean' })}
+                    role="button"
+                    aria-label={paused ? t('PLAYER_PLAY') : t('PLAYER_PAUSE')}
+                    title={paused ? `${t('PLAYER_PLAY')} (Space)` : `${t('PLAYER_PAUSE')} (Space)`}
+                    tabIndex={-1}
+                    onClick={onPlayPauseButtonClick}
+                >
                     <Icon className={styles['icon']} name={typeof paused !== 'boolean' || paused ? 'play' : 'pause'} />
+                </Button>
+                <Button
+                    className={classnames(styles['control-bar-button'], { 'disabled': !seekable })}
+                    role="button"
+                    aria-label="Rewind 10 seconds"
+                    title="Rewind 10 seconds (Left Arrow)"
+                    tabIndex={-1}
+                    onClick={onRewind10Click}
+                >
+                    <Skip10BackIcon className={styles['icon']} />
+                </Button>
+                <Button
+                    className={classnames(styles['control-bar-button'], { 'disabled': !seekable })}
+                    role="button"
+                    aria-label="Fast forward 10 seconds"
+                    title="Fast forward 10 seconds (Right Arrow)"
+                    tabIndex={-1}
+                    onClick={onForward10Click}
+                >
+                    <Skip10ForwardIcon className={styles['icon']} />
                 </Button>
                 {
                     nextVideo !== null ?
-                        <Button className={classnames(styles['control-bar-button'])} title={t('PLAYER_NEXT_VIDEO')} tabIndex={-1} onClick={onNextVideoButtonClick}>
+                        <Button
+                            className={classnames(styles['control-bar-button'])}
+                            role="button"
+                            aria-label={t('PLAYER_NEXT_VIDEO') || 'Next Video'}
+                            title={`${t('PLAYER_NEXT_VIDEO') || 'Next Video'} (N)`}
+                            tabIndex={-1}
+                            onClick={onNextVideoButtonClick}
+                        >
                             <Icon className={styles['icon']} name={'next'} />
                         </Button>
                         :
                         null
                 }
-                <Button className={classnames(styles['control-bar-button'], { 'disabled': typeof muted !== 'boolean' })} title={muted ? t('PLAYER_UNMUTE') : t('PLAYER_MUTE')} tabIndex={-1} onClick={onMuteButtonClick}>
+                <Button
+                    className={classnames(styles['control-bar-button'], { 'disabled': typeof muted !== 'boolean' })}
+                    role="button"
+                    aria-label={muted ? t('PLAYER_UNMUTE') : t('PLAYER_MUTE')}
+                    title={muted ? `${t('PLAYER_UNMUTE')} (M)` : `${t('PLAYER_MUTE')} (M)`}
+                    tabIndex={-1}
+                    onClick={onMuteButtonClick}
+                >
                     <Icon
                         className={styles['icon']}
                         name={
@@ -188,47 +250,104 @@ const ControlBar = React.forwardRef(({
                         : null
                 }
                 <div className={styles['spacing']} />
-                <Button className={styles['control-bar-buttons-menu-button']} onClick={toggleButtonsMenu}>
+                <Button
+                    className={styles['control-bar-buttons-menu-button']}
+                    role="button"
+                    aria-label="Toggle Controls Menu"
+                    title="Controls"
+                    onClick={toggleButtonsMenu}
+                >
                     <Icon className={styles['icon']} name={'more-vertical'} />
                 </Button>
                 <div className={classnames(styles['control-bar-buttons-menu-container'], { 'open': buttonsMenuOpen })}>
-                    {
-                        statisticsAvailable &&
-                            <Button className={styles['control-bar-button']} tabIndex={-1} onMouseDown={onStatisticsButtonMouseDown} onClick={onToggleStatisticsMenu}>
-                                <Icon className={styles['icon']} name={'network'} />
-                            </Button>
-                    }
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': playbackSpeed === null })} tabIndex={-1} onMouseDown={onSpeedButtonMouseDown} onClick={onToggleSpeedMenu}>
-                        <Icon className={styles['icon']} name={'speed'} />
-                    </Button>
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': castButtonDisabled })} tabIndex={-1} onMouseDown={onCastDevicesButtonMouseDown} onClick={onChromecastButtonClick}>
-                        <Icon className={styles['icon']} name={'cast'} />
-                    </Button>
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(subtitlesTracks) || subtitlesTracks.length === 0 })} tabIndex={-1} onMouseDown={onSubtitlesButtonMouseDown} onClick={onToggleSubtitlesMenu}>
+                    <Button
+                        className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(subtitlesTracks) || subtitlesTracks.length === 0 })}
+                        role="button"
+                        aria-label={t('SUBTITLES') || 'Subtitles'}
+                        title={`${t('SUBTITLES') || 'Subtitles'} (S)`}
+                        tabIndex={-1}
+                        onMouseDown={onSubtitlesButtonMouseDown}
+                        onClick={onToggleSubtitlesMenu}
+                    >
                         <Icon className={styles['icon']} name={'subtitles'} />
                     </Button>
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(audioTracks) || audioTracks.length === 0 })} tabIndex={-1} onMouseDown={onAudioButtonMouseDown} onClick={onToggleAudioMenu}>
+                    <Button
+                        className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(audioTracks) || audioTracks.length === 0 })}
+                        role="button"
+                        aria-label={t('AUDIO_TRACKS') || 'Audio Tracks'}
+                        title={`${t('AUDIO_TRACKS') || 'Audio Tracks'} (A)`}
+                        tabIndex={-1}
+                        onMouseDown={onAudioButtonMouseDown}
+                        onClick={onToggleAudioMenu}
+                    >
                         <Icon className={styles['icon']} name={'audio-tracks'} />
                     </Button>
                     {
                         metaItem?.content?.videos?.length > 0 ?
-                            <Button className={styles['control-bar-button']} tabIndex={-1} onMouseDown={onVideosButtonMouseDown} onClick={onToggleSideDrawer}>
+                            <Button
+                                className={styles['control-bar-button']}
+                                role="button"
+                                aria-label={t('EPISODES') || 'Episodes'}
+                                title={`${t('EPISODES') || 'Episodes'} (E)`}
+                                tabIndex={-1}
+                                onMouseDown={onVideosButtonMouseDown}
+                                onClick={onToggleSideDrawer}
+                            >
                                 <Icon className={styles['icon']} name={'episodes'} />
                             </Button>
                             :
                             null
                     }
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': videoScale === null })} title={videoScaleLabel} tabIndex={-1} onClick={onVideoScaleChanged}>
-                        <Icon className={styles['icon']} name={VIDEO_SCALE_ICONS[videoScale || 'contain']} />
+                    <Button
+                        className={classnames(styles['control-bar-button'], { 'disabled': playbackSpeed === null })}
+                        role="button"
+                        aria-label="Playback Speed"
+                        title={`Playback Speed (${playbackSpeed || 1}x)`}
+                        tabIndex={-1}
+                        onMouseDown={onSpeedButtonMouseDown}
+                        onClick={onToggleSpeedMenu}
+                    >
+                        <Icon className={styles['icon']} name={'speed'} />
                     </Button>
-                    <Button className={classnames(styles['control-bar-button'], { 'disabled': !stream })} tabIndex={-1} onMouseDown={onOptionsButtonMouseDown} onClick={onToggleOptionsMenu}>
+                    <Button
+                        className={classnames(styles['control-bar-button'], { 'disabled': castButtonDisabled })}
+                        role="button"
+                        aria-label="Cast to Device"
+                        title="Cast to Device"
+                        tabIndex={-1}
+                        onMouseDown={onCastDevicesButtonMouseDown}
+                        onClick={onChromecastButtonClick}
+                    >
+                        <Icon className={styles['icon']} name={'cast'} />
+                    </Button>
+                    {
+                        typeof onToggleFullscreen === 'function' ?
+                            <Button
+                                className={styles['control-bar-button']}
+                                role="button"
+                                aria-label={fullscreen ? 'Exit Full Screen' : 'Full Screen'}
+                                title={fullscreen ? 'Exit Full Screen (F)' : 'Full Screen (F)'}
+                                tabIndex={-1}
+                                onClick={onToggleFullscreen}
+                            >
+                                <Icon className={styles['icon']} name={fullscreen ? 'minimize' : 'maximize'} />
+                            </Button>
+                            :
+                            null
+                    }
+                    <Button
+                        className={classnames(styles['control-bar-button'], { 'disabled': !stream })}
+                        role="button"
+                        aria-label="More Options"
+                        title="More Options"
+                        tabIndex={-1}
+                        onMouseDown={onOptionsButtonMouseDown}
+                        onClick={onToggleOptionsMenu}
+                    >
                         <Icon className={styles['icon']} name={'more-horizontal'} />
                     </Button>
                     {/* HomeBot: player controls slot (MetalFX 4K AI upscaler button, ...) */}
                     <PluginSlot name={'playerControls'} stream={stream} />
-                    <Button className={styles['control-bar-button']} title="Keyboard Shortcuts (?)" tabIndex={-1} onClick={onToggleShortcutsModal}>
-                        <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFD700', lineHeight: 1 }}>?</span>
-                    </Button>
                 </div>
             </div>
         </div>
@@ -271,6 +390,8 @@ ControlBar.propTypes = {
     onToggleOptionsMenu: PropTypes.func,
     shellCastSupported: PropTypes.bool,
     onToggleCastDevicesMenu: PropTypes.func,
+    fullscreen: PropTypes.bool,
+    onToggleFullscreen: PropTypes.func,
     onToggleStatisticsMenu: PropTypes.func,
     onToggleShortcutsModal: PropTypes.func,
     onMouseOver: PropTypes.func,

@@ -137,7 +137,18 @@ const Slider = ({ className, value, buffered, minimumValue, maximumValue, disabl
     const thumbPosition = Math.max(0, Math.min(1, (currentValue - minimum) / (maximum - minimum)));
     const bufferedPosition = Math.max(0, Math.min(1, (bufferedValue - minimum) / (maximum - minimum)));
     return (
-        <div ref={sliderContainerRef} className={classnames(className, styles['slider-container'], { 'disabled': disabled })} onMouseDown={onMouseDown} onTouchStart={onTouchStart}>
+        <div
+            ref={sliderContainerRef}
+            role="slider"
+            aria-valuemin={minimum}
+            aria-valuemax={maximum}
+            aria-valuenow={Math.round(currentValue)}
+            aria-disabled={disabled}
+            tabIndex={disabled ? -1 : 0}
+            className={classnames(className, styles['slider-container'], { 'disabled': disabled })}
+            onMouseDown={onMouseDown}
+            onTouchStart={onTouchStart}
+        >
             <div className={styles['layer']}>
                 <div className={classnames(styles['track'], { [styles['audio-boost']]: audioBoost })} />
             </div>

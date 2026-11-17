@@ -150,7 +150,13 @@ const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayR
                 <div className={styles['live-action']}>
                     {seekable && (behindLive || paused) && <Button className={styles['go-live']} role={'button'} onClick={goLive}>{t('PLAYER_GO_LIVE', { defaultValue: 'Go live' })}</Button>}
                 </div>
-                : <Button onClick={toggleRemainingTimeMode} tabIndex={-1}>
+                : <Button
+                    onClick={toggleRemainingTimeMode}
+                    tabIndex={-1}
+                    role="button"
+                    aria-label="Toggle remaining time"
+                    title={remainingTimeMode ? 'Remaining time (click for total)' : 'Total duration (click for remaining)'}
+                >
                     <div className={styles['label']}>
                         {remainingTimeMode && duration !== null && !isNaN(duration)
                             ? formatTime((duration - currentTime)/playbackSpeed, '-')

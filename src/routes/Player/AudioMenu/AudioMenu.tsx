@@ -33,30 +33,38 @@ const AudioMenu = memo(forwardRef<HTMLDivElement, Props>(({ className, selectedA
                 </div>
                 <div className={styles['list']}>
                     {
-                        audioTracks.map(({ id, label, lang }, index) => (
-                            <Button
-                                key={index}
-                                title={label}
-                                className={classNames(styles['option'], { 'selected': selectedAudioTrackId === id })}
-                                data-id={id}
-                                onClick={onAudioTrackClick}
-                            >
-                                <div className={styles['info']}>
-                                    <div className={styles['lang']}>
-                                        {languages.label(lang)}
+                        audioTracks.map(({ id, label, lang }, index) => {
+                            const langLabel = languages.label(lang) || lang;
+                            const displayLabel = label && label !== lang && label !== langLabel
+                                ? label
+                                : (audioTracks.length > 1 ? `Track ${index + 1}` : '');
+                            return (
+                                <Button
+                                    key={index}
+                                    title={displayLabel ? `${langLabel} · ${displayLabel}` : langLabel}
+                                    className={classNames(styles['option'], { 'selected': selectedAudioTrackId === id })}
+                                    data-id={id}
+                                    onClick={onAudioTrackClick}
+                                >
+                                    <div className={styles['info']}>
+                                        <div className={styles['lang']}>
+                                            {langLabel}
+                                        </div>
+                                        {displayLabel ? (
+                                            <div className={styles['label']}>
+                                                {displayLabel}
+                                            </div>
+                                        ) : null}
                                     </div>
-                                    <div className={styles['label']}>
-                                        {label}
-                                    </div>
-                                </div>
-                                {
-                                    selectedAudioTrackId === id ?
-                                        <div className={styles['icon']} />
-                                        :
-                                        null
-                                }
-                            </Button>
-                        ))
+                                    {
+                                        selectedAudioTrackId === id ?
+                                            <div className={styles['icon']} />
+                                            :
+                                            null
+                                    }
+                                </Button>
+                            );
+                        })
                     }
                 </div>
             </div>

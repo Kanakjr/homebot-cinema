@@ -91,6 +91,16 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.less` | 13 | Styling for matched badge pill on variant item. |
 | `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
 | `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
+| `src/components/Slider/Slider.js` | 10 | Phase 5: accessibility attributes (role="slider", aria-valuemin, aria-valuemax, aria-valuenow, aria-disabled). |
+| `src/components/Slider/styles.less` | 5 | Phase 5: volume slider uses primary accent fill for normal levels (0-100%). |
+| `src/routes/Player/AudioMenu/AudioMenu.tsx` | 15 | Phase 5: rich audio track labels distinguishing multiple tracks of the same language with codec and channels. |
+| `src/routes/Player/Buffering/Buffering.tsx` | 20 | Phase 5: loading spinner and status label ("Connecting...", "Buffering X%"). |
+| `src/routes/Player/Buffering/Buffering.less` | 50 | Phase 5: styling for buffering spinner and frosted status badge. |
+| `src/routes/Player/ControlBar/VolumeSlider/styles.less` | 15 | Phase 5: primary accent fill for volume track and thumb. |
+| `src/routes/Player/ControlBar/styles.less` | 10 | Phase 5: tactile active state on control buttons. |
+| `src/routes/Player/OptionsMenu/OptionsMenu.js` | 35 | Phase 5: admin-only magnet link, aspect ratio, network statistics and keyboard shortcuts options. |
+| `src/routes/Player/SideDrawer/SideDrawer.tsx` | 15 | Phase 5: live watch progress on currently playing episode. |
+| `src/routes/Player/styles.less` | 20 | Phase 5: click-to-dismiss scrim for episodes drawer and pointer-events pass-through on background/buffering layers. |
 | `src/components/MetaPreview/MetaPreview.js` | 15 | Small fix; Phase 2: text title shown until logo URL loads (tracked per URL to avoid blank frames on item switch). |
 | `src/routes/Settings/Streaming/Streaming.tsx` | 17 | Server URL list hidden (`SERVER_URL_EDITING`): the app always uses its own origin. Server settings read-only for non-admins. |
 | `src/routes/Settings/Interface/useInterfaceOptions.ts` | 3 | Zoom choices. |
