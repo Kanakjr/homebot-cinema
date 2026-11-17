@@ -9,6 +9,7 @@ const { useCore } = require('stremio/core');
 const { useNavigateWithOrigin } = require('stremio-router');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { timeLeft, airLabel } = require('stremio/common/whenLabels');
+const MetaContextMenu = require('stremio/components/MetaContextMenu');
 const styles = require('./styles');
 
 const episodeLabel = (deepLinks) => {
@@ -65,8 +66,16 @@ const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, de
         }
     }, [href, navigateWithOrigin]);
 
+    const [contextMenuPos, setContextMenuPos] = React.useState(null);
+    const onContextMenu = React.useCallback((event) => {
+        if (event.shiftKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setContextMenuPos([event.clientX, event.clientY]);
+    }, []);
+
     return (
-        <a className={classnames(className, styles['card'])} href={href || undefined} title={name} onClick={onCardClick}>
+        <a className={classnames(className, styles['card'])} href={href || undefined} title={name} onClick={onCardClick} onContextMenu={onContextMenu}>
             <img className={styles['art']} src={backdrop} alt="" onError={() => setBgFailed(true)} loading="lazy" />
             <div className={styles['shade']} />
             {pill ? <div className={classnames(styles['pill'], { [styles['pill-accent']]: !!nextUp })}>{pill}</div> : null}
@@ -76,6 +85,26 @@ const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, de
                 <div className={styles['name']}>{name}</div>
             </div>
             {pct > 0 ? <div className={styles['bar']}><div className={styles['fill']} style={{ width: `${pct}%` }} /></div> : null}
+            {contextMenuPos ? (
+                <MetaContextMenu
+                    position={contextMenuPos}
+                    onClose={() => setContextMenuPos(null)}
+                    item={{
+                        id: _id,
+                        type,
+                        name,
+                        poster: backdrop,
+                        posterShape: 'landscape',
+                        videoId: nextUp ? nextUp.id : (state && state.video_id ? state.video_id : undefined),
+                        season: nextUp ? nextUp.season : undefined,
+                        episode: nextUp ? nextUp.episode : undefined,
+                        href,
+                        deepLinks,
+                        watched: pct >= 90,
+                        onDismissClick: onDismiss,
+                    }}
+                />
+            ) : null}
         </a>
     );
 };
@@ -92,6 +121,7 @@ ContinueWatchingCard.propTypes = {
     state: PropTypes.shape({
         duration: PropTypes.number,
         timeOffset: PropTypes.number,
+        video_id: PropTypes.string,
     }),
 };
 

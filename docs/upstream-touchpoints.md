@@ -120,6 +120,8 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/Video/Video.js` | 22 | Phase 4: renders Next up badge on current unwatched/in-progress episode and displays episode runtime tag. |
 | `src/routes/Board/styles.less` | 12 | Phase 4: max-width 1/4 constraint on board-row-landscape cards to maintain 16:9 aspect ratio and alignment with Upcoming row. |
 | `src/routes/MetaDetails/VideosList/VideosList.js` | 67 | Phase 4: episode watch progress tracking, runtime pass-through, next-up episode detection. |
+| `src/components/LibItem/LibItem.js` | 2 | Context menu: pass explicit id/_id to MetaItem for right-click actions. |
+| `src/components/MetaItem/MetaItem.js` | 30 | Context menu: right-click menu with Instant Play, Add/Remove Library, Mark Watched/Unwatched, Details, Copy Link. |
 
 ## Replaced images (branding: `scripts/brand/build.js` regenerates them)
 

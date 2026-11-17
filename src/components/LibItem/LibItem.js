@@ -132,6 +132,8 @@ const LibItem = ({ _id, removable, notifications, watched, detailsVideosFirst, .
     return (
         <MetaItem
             {...props}
+            id={_id}
+            _id={_id}
             href={detailsHref}
             watched={watched}
             newVideos={newVideos}

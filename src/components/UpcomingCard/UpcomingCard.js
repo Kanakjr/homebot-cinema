@@ -6,6 +6,7 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useNavigateWithOrigin } = require('stremio-router');
 const { airLabel } = require('stremio/common/whenLabels');
+const MetaContextMenu = require('stremio/components/MetaContextMenu');
 const styles = require('stremio/components/ContinueWatchingCard/styles');
 
 const UpcomingCard = ({ className, metaId, videoId, name, season, episode, title, released, thumbnail, background, poster }) => {
@@ -28,8 +29,16 @@ const UpcomingCard = ({ className, metaId, videoId, name, season, episode, title
         }
     }, [href, navigateWithOrigin]);
 
+    const [contextMenuPos, setContextMenuPos] = React.useState(null);
+    const onContextMenu = React.useCallback((event) => {
+        if (event.shiftKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setContextMenuPos([event.clientX, event.clientY]);
+    }, []);
+
     return (
-        <a className={classnames(className, styles['card'])} href={href} title={title ? `${name}: ${title}` : name} onClick={onCardClick}>
+        <a className={classnames(className, styles['card'])} href={href} title={title ? `${name}: ${title}` : name} onClick={onCardClick} onContextMenu={onContextMenu}>
             <img className={styles['art']} src={art} alt="" onError={() => setArtFailed(true)} loading="lazy" />
             <div className={styles['shade']} />
             {when ? <div className={classnames(styles['pill'], styles['pill-accent'])}>{when}</div> : null}
@@ -37,6 +46,23 @@ const UpcomingCard = ({ className, metaId, videoId, name, season, episode, title
                 <div className={styles['ep']}>S{season} E{episode}{title ? ` · ${title}` : ''}</div>
                 <div className={styles['name']}>{name}</div>
             </div>
+            {contextMenuPos ? (
+                <MetaContextMenu
+                    position={contextMenuPos}
+                    onClose={() => setContextMenuPos(null)}
+                    item={{
+                        id: metaId,
+                        type: 'series',
+                        name,
+                        poster: art,
+                        posterShape: 'landscape',
+                        videoId,
+                        season,
+                        episode,
+                        href,
+                    }}
+                />
+            ) : null}
         </a>
     );
 };

@@ -15,17 +15,26 @@ const Multiselect = require('stremio/components/Multiselect');
 const useBinaryState = require('stremio/common/useBinaryState');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { ICON_FOR_TYPE } = require('stremio/common/CONSTANTS');
+const MetaContextMenu = require('stremio/components/MetaContextMenu');
 const styles = require('./styles');
 
-const MetaItem = React.memo(({ className, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, ...props }) => {
+const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, ...props }) => {
     const { t } = useTranslation();
     const artwork = poster && typeof poster === 'object' ? poster : { src: poster, shape: posterShape, changeCursor: posterChangeCursor };
     const { navigateWithOrigin } = useNavigateWithOrigin();
     const [menuOpen, onMenuOpen, onMenuClose] = useBinaryState(false);
     const { hoverProps, isHovered } = useHover({});
+    const [contextMenuPos, setContextMenuPos] = React.useState(null);
     const href = React.useMemo(() => {
         return typeof customHref === 'string' ? customHref : getMetaDetailsHref(deepLinks);
     }, [customHref, deepLinks]);
+    const itemId = id || _id || (dataset && dataset.id) || (href ? (/tt\d+/.exec(href) || [])[0] : null);
+    const onContextMenu = React.useCallback((event) => {
+        if (event.shiftKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setContextMenuPos([event.clientX, event.clientY]);
+    }, []);
     const metaItemOnClick = React.useCallback((event) => {
         if (typeof props.onClick === 'function') {
             props.onClick(event);
@@ -77,7 +86,7 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
     ), []);
     const hasOptions = Array.isArray(options) && options.length > 0;
     return (
-        <div {...hoverProps} className={classnames(className, styles['meta-item-container'], styles['poster-shape-poster'], styles[`poster-shape-${artwork.shape}`], { 'active': menuOpen, 'hovered': isHovered })}>
+        <div {...hoverProps} onContextMenu={onContextMenu} className={classnames(className, styles['meta-item-container'], styles['poster-shape-poster'], styles[`poster-shape-${artwork.shape}`], { 'active': menuOpen, 'hovered': isHovered })}>
             <Button title={name} href={href} {...filterInvalidDOMProps(props)} className={styles['meta-item-link']} onClick={metaItemOnClick}>
                 <div className={classnames(styles['poster-container'], { 'poster-change-cursor': artwork.changeCursor })}>
                     {
@@ -187,6 +196,24 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
                     :
                     null
             }
+            {contextMenuPos && itemId ? (
+                <MetaContextMenu
+                    position={contextMenuPos}
+                    onClose={() => setContextMenuPos(null)}
+                    item={{
+                        id: itemId,
+                        type,
+                        name,
+                        poster: artwork.src,
+                        posterShape: artwork.shape,
+                        inLibrary,
+                        watched,
+                        href,
+                        deepLinks,
+                        onDismissClick,
+                    }}
+                />
+            ) : null}
         </div>
     );
 });
@@ -195,6 +222,9 @@ MetaItem.displayName = 'MetaItem';
 
 MetaItem.propTypes = {
     className: PropTypes.string,
+    id: PropTypes.string,
+    _id: PropTypes.string,
+    inLibrary: PropTypes.bool,
     type: PropTypes.string,
     name: PropTypes.string,
     poster: PropTypes.oneOfType([
