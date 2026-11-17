@@ -12,10 +12,10 @@ const routes = [PLAYER_PATH, META_DETAILS_PATH, LEGACY_META_DETAILS_PATH].map((p
 const getBackFallback = (location: Location): string => {
     const match = matchRoutes(routes, location)?.[0];
     if (match) {
-        const { type, id, videoId } = match.params;
+        const { type, id } = match.params;
         const isPlayer = match.route.path === PLAYER_PATH;
-        if (type && id && (isPlayer || videoId)) {
-            return `/metadetails/${encodeURIComponent(type)}/${encodeURIComponent(id)}${isPlayer ? '' : location.search}`;
+        if (isPlayer && type && id) {
+            return `/metadetails/${encodeURIComponent(type)}/${encodeURIComponent(id)}${location.search}`;
         }
     }
 

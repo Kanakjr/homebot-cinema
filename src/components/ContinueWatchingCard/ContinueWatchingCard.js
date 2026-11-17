@@ -6,6 +6,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useCore } = require('stremio/core');
+const { useNavigateWithOrigin } = require('stremio-router');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { timeLeft, airLabel } = require('stremio/common/whenLabels');
 const styles = require('./styles');
@@ -23,6 +24,7 @@ const episodeLabel = (deepLinks) => {
 
 const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, deepLinks, upNext, state }) => {
     const core = useCore();
+    const { navigateWithOrigin } = useNavigateWithOrigin();
     const [bgFailed, setBgFailed] = React.useState(false);
     const playerHref = deepLinks && typeof deepLinks.player === 'string' ? deepLinks.player : null;
     const detailsHref = getMetaDetailsHref(deepLinks);
@@ -50,8 +52,21 @@ const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, de
         }
     }, [_id, core]);
 
+    const onCardClick = React.useCallback((event) => {
+        if (
+            !event.defaultPrevented &&
+            event.button === 0 &&
+            !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+            (!event.currentTarget.target || event.currentTarget.target === '_self') &&
+            typeof href === 'string'
+        ) {
+            event.preventDefault();
+            navigateWithOrigin(href);
+        }
+    }, [href, navigateWithOrigin]);
+
     return (
-        <a className={classnames(className, styles['card'])} href={href || undefined} title={name}>
+        <a className={classnames(className, styles['card'])} href={href || undefined} title={name} onClick={onCardClick}>
             <img className={styles['art']} src={backdrop} alt="" onError={() => setBgFailed(true)} loading="lazy" />
             <div className={styles['shade']} />
             {pill ? <div className={classnames(styles['pill'], { [styles['pill-accent']]: !!nextUp })}>{pill}</div> : null}

@@ -6,6 +6,7 @@
 
 :import('~stremio/components/MetaRow/styles.less') {
     meta-item: meta-item;
+    meta-items-container: meta-items-container;
 }
 
 :import('~stremio/components/MetaRow/MetaRowPlaceholder/styles.less') {
@@ -53,10 +54,20 @@
                     display: flex;
                     flex-direction: row;
                     justify-content: flex-start;
+                    align-items: stretch;
+                    gap: 1.25rem;
+                    padding: 0.5rem 1rem 1rem 1rem;
+                    box-sizing: border-box;
+
+                    .meta-item:empty {
+                        display: none !important;
+                    }
                 }
 
                 .meta-item {
-                    max-width: calc(100% / 4);
+                    flex: 1 1 0;
+                    min-width: 0;
+                    max-width: calc((100% - 3 * 1.25rem) / 4);
                 }
             }
         }
@@ -91,6 +102,15 @@
                 }
 
                 .board-row-landscape {
+                    .meta-items-container {
+                        gap: 0.75rem;
+                        padding: 0.25rem 0.5rem;
+                    }
+
+                    .meta-item {
+                        max-width: none;
+                    }
+
                     .meta-item-placeholder {
                         &:nth-child(n+3) {
                             display: none;

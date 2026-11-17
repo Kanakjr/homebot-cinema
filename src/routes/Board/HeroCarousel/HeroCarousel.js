@@ -5,6 +5,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
+const { useNavigateWithOrigin } = require('stremio-router');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const usePlayResolve = require('stremio/common/usePlayResolve');
 const { MAX_SLIDES } = require('./pickHeroItems');
@@ -16,6 +17,7 @@ const imdbArt = (kind, id) => `https://images.metahub.space/${kind}/medium/${id}
 
 const Slide = ({ item, active, onBackdropBroken }) => {
     const { play, resolving } = usePlayResolve();
+    const { navigateWithOrigin } = useNavigateWithOrigin();
     // the text title shows until the logo image has loaded (or for good if it fails); a shimmer until the backdrop arrives
     const [logoState, setLogoState] = React.useState('loading'); // loading | ok | failed
     const [backdropReady, setBackdropReady] = React.useState(false);
@@ -33,6 +35,19 @@ const Slide = ({ item, active, onBackdropBroken }) => {
         event.preventDefault();
         play({ id: item.id, type: item.type, fallbackHref: href });
     }, [play, item, href]);
+
+    const onDetailsClick = React.useCallback((event) => {
+        if (
+            !event.defaultPrevented &&
+            event.button === 0 &&
+            !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey &&
+            (!event.currentTarget.target || event.currentTarget.target === '_self') &&
+            typeof href === 'string'
+        ) {
+            event.preventDefault();
+            navigateWithOrigin(href);
+        }
+    }, [href, navigateWithOrigin]);
 
     return (
         <div className={classnames(styles['slide'], { [styles['active']]: active, [styles['loading']]: !backdropReady })} aria-hidden={!active}>
@@ -73,7 +88,7 @@ const Slide = ({ item, active, onBackdropBroken }) => {
                         </svg>
                         <span>{resolving ? 'Loading…' : 'Play'}</span>
                     </button>
-                    <a className={classnames(styles['cta'], styles['cta-details'])} href={href} tabIndex={active ? 0 : -1}>
+                    <a className={classnames(styles['cta'], styles['cta-details'])} href={href} onClick={onDetailsClick} tabIndex={active ? 0 : -1}>
                         View details
                     </a>
                 </div>
