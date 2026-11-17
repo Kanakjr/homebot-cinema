@@ -111,5 +111,5 @@ test('WATCH_REGION is normalised: case and whitespace fixed, junk falls back to 
     assert.equal(normalizeRegion('USA'), 'IN');
     assert.equal(normalizeRegion(''), 'IN');
     assert.equal(normalizeRegion(undefined), 'IN');
-    assert.equal(createTmdb({ region: 'de', fetchJson }).region, 'DE');
+    assert.equal(createTmdb({ raw: openDb(':memory:', ':memory:').raw, region: 'de', fetchJson }).region, 'DE');
 });
