@@ -558,6 +558,14 @@ app.post('/api/sentinel/check', auth.requireAdmin, async (req, res) => {
     }
 });
 
+// System artwork an install can replace privately: data/art/<name>.png wins over the built-in image (empty states, default and
+// signed-out avatars, library/calendar placeholders). Not part of the repo; see docs/mascot-art.md.
+app.get(/^\/images\/(empty|default_avatar|anonymous|library_placeholder|calendar_placeholder)\.png$/, (req, res, next) => {
+    const file = path.join(data_path, 'art', `${req.params[0]}.png`);
+    if (!fs.existsSync(file)) return next();
+    res.set('Cache-Control', 'private, max-age=3600').sendFile(file);
+});
+
 // Static files
 app.use(express.static(build_path, {
     setHeaders: (res, filePath) => {
