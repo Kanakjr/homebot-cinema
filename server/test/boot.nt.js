@@ -15,9 +15,10 @@ const ADMIN = 'admin@example.com';
 
 const freePort = () => new Promise((resolve) => { const s = net.createServer().listen(0, () => { const p = s.address().port; s.close(() => resolve(p)); }); });
 
-async function boot(plugins, extraEnv = {}) {
+async function boot(plugins, extraEnv = {}, prepare = null) {
     const port = await freePort();
     const data = fs.mkdtempSync(path.join(os.tmpdir(), 'boot-'));
+    if (prepare) prepare(data);
     const child = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', 'http_server.js'], {
         cwd: ROOT,
         env: {
@@ -40,7 +41,7 @@ async function boot(plugins, extraEnv = {}) {
         await new Promise((r) => setTimeout(r, 100));
     }
     assert.match(log, /listening on port/, `server did not start:\n${log}`);
-    const get = async (p) => { const r = await fetch(base + p); return { status: r.status, headers: r.headers, body: await r.json().catch(() => null) }; };
+    const get = async (p) => { const r = await fetch(base + p); return { status: r.status, headers: r.headers, bytes: Buffer.from(await r.clone().arrayBuffer()), body: await r.json().catch(() => null) }; };
     const post = async (p, body) => (await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).status;
     return { get, post, log: () => log, stop: () => new Promise((r) => { child.once('exit', r); child.kill('SIGTERM'); }) };
 }
@@ -102,5 +103,22 @@ test('streaming-server settings are admin-only (both proxy paths); reading them 
         assert.equal(await admin.post('/settings', { cacheSize: 0 }), 502);
     } finally {
         await admin.stop();
+    }
+});
+
+test('data/art/<name>.png replaces the built-in system image; other names are untouched', { timeout: 30000 }, async () => {
+    const s = await boot('none', {}, (data) => {
+        fs.mkdirSync(path.join(data, 'art'));
+        fs.writeFileSync(path.join(data, 'art', 'empty.png'), 'OVERRIDE-EMPTY');
+        fs.writeFileSync(path.join(data, 'art', 'logo.png'), 'NOT-ALLOWED');
+    });
+    try {
+        const a = await s.get('/images/empty.png');
+        assert.equal(a.status, 200);
+        assert.equal(a.bytes.toString(), 'OVERRIDE-EMPTY');
+        assert.notEqual((await s.get('/images/logo.png')).bytes.toString(), 'NOT-ALLOWED', 'only the listed system images can be replaced');
+        assert.notEqual((await s.get('/images/anonymous.png')).bytes.toString(), 'OVERRIDE-EMPTY');
+    } finally {
+        await s.stop();
     }
 });

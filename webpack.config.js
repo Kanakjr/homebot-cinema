@@ -245,7 +245,8 @@ module.exports = (env, argv) => ({
                 clientsClaim: true,
                 skipWaiting: true,
                 cleanupOutdatedCaches: true,
-                exclude: [/\.map$/, /index\.html$/],
+                // the system images stay out of the offline cache so an install's data/art/ override shows (http_server.js)
+                exclude: [/\.map$/, /index\.html$/, /images\/(empty|default_avatar|anonymous|library_placeholder|calendar_placeholder)\.png$/],
             }),
         new CopyWebpackPlugin({
             patterns: [

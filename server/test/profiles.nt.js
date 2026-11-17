@@ -196,3 +196,18 @@ test('pin hashing and tokens', () => {
     now += 31 * 24 * 3600 * 1000;
     assert.ok(!tk.verify(token, 5, 'a@b.c'), 'expired');
 });
+
+test('avatar presets: an install\'s own data/avatar-presets folder replaces the built-in set; without one the built-ins are used', () => {
+    const built = fs.mkdtempSync(path.join(os.tmpdir(), 'built-'));
+    fs.writeFileSync(path.join(built, 'fox.png'), Buffer.from(PNG.split(',')[1], 'base64'));
+    const data = fs.mkdtempSync(path.join(os.tmpdir(), 'data-'));
+    const P = require('../profiles');
+    assert.equal(P.resolvePresetDir(data, built), built, 'no own folder: built-ins');
+    fs.mkdirSync(path.join(data, 'avatar-presets'));
+    assert.equal(P.resolvePresetDir(data, built), built, 'an empty own folder does not hide the built-ins');
+    fs.writeFileSync(path.join(data, 'avatar-presets', 'luffy.png'), Buffer.from(PNG.split(',')[1], 'base64'));
+    fs.writeFileSync(path.join(data, 'avatar-presets', 'notes.txt'), 'x');
+    const dir = P.resolvePresetDir(data, built);
+    assert.equal(dir, path.join(data, 'avatar-presets'));
+    assert.deepEqual(P.loadPresetCatalog(dir).map((c) => c.key), ['luffy'], 'only the install\'s own set is offered');
+});
