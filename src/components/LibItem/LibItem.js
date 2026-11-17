@@ -129,11 +129,18 @@ const LibItem = ({ _id, removable, notifications, watched, detailsVideosFirst, .
         }
     }, [navigate, playerHref]);
 
+    const poster = typeof props.poster === 'string' && !props.poster.includes('/background/')
+        ? props.poster
+        : (/^tt\d+/.test(_id || '') ? `https://images.metahub.space/poster/medium/${_id}/img` : props.poster);
+
     return (
         <MetaItem
             {...props}
             id={_id}
             _id={_id}
+            inLibrary={true}
+            poster={poster}
+            posterShape="poster"
             href={detailsHref}
             watched={watched}
             newVideos={newVideos}
@@ -147,6 +154,7 @@ const LibItem = ({ _id, removable, notifications, watched, detailsVideosFirst, .
 LibItem.propTypes = {
     _id: PropTypes.string,
     removable: PropTypes.bool,
+    poster: PropTypes.string,
     progress: PropTypes.number,
     notifications: PropTypes.object,
     watched: PropTypes.bool,

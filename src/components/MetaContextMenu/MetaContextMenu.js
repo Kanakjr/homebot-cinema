@@ -14,31 +14,85 @@ const styles = require('./styles');
 
 function getLibraryState(id) {
     if (!id) return { inLibrary: false, watched: false };
+    const rootId = (/tt\d+/.exec(id) || [])[0] || id;
     try {
-        const rawLib = localStorage.getItem('library');
-        if (rawLib) {
-            const lib = JSON.parse(rawLib);
-            const libItem = lib && lib.items && lib.items[id];
-            if (libItem && !libItem.removed) {
-                const st = libItem.state || {};
-                const isWatched = (st.flaggedWatched > 0 || st.timesWatched > 0 || (st.duration > 0 && st.timeOffset / st.duration >= 0.9));
-                return { inLibrary: true, watched: isWatched };
+        const checkBucket = (raw) => {
+            if (!raw) return null;
+            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            const items = parsed && parsed.items && typeof parsed.items === 'object' ? parsed.items : null;
+            if (!items) return null;
+            return items[id] || items[rootId] || items[id.toLowerCase()] || items[rootId.toLowerCase()] || null;
+        };
+
+        const keysToCheck = ['library'];
+        if (typeof window !== 'undefined' && window.ssoScope) {
+            keysToCheck.unshift(`library:${window.ssoScope}`);
+        }
+        if (typeof localStorage !== 'undefined') {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith('library') && !k.startsWith('library_recent') && !keysToCheck.includes(k)) {
+                    keysToCheck.push(k);
+                }
             }
         }
-        const rawRecent = localStorage.getItem('library_recent');
-        if (rawRecent) {
-            const recent = JSON.parse(rawRecent);
-            const rItem = recent && recent.items && recent.items[id];
-            if (rItem && !rItem.removed) {
-                const st = rItem.state || {};
-                const isWatched = (st.flaggedWatched > 0 || st.timesWatched > 0 || (st.duration > 0 && st.timeOffset / st.duration >= 0.9));
-                return { inLibrary: false, watched: isWatched };
+
+        let foundItem = null;
+        for (const k of keysToCheck) {
+            try {
+                const raw = localStorage.getItem(k);
+                const match = checkBucket(raw);
+                if (match) {
+                    foundItem = match;
+                    break;
+                }
+            } catch (_) {
+                // ignore item read error
+            }
+        }
+
+        if (foundItem) {
+            const isRemoved = Boolean(foundItem.removed);
+            const isTemp = Boolean(foundItem.temp);
+            const inLib = !isRemoved && !isTemp;
+            const st = foundItem.state || {};
+            const isWatched = Boolean(st.flaggedWatched > 0 || st.timesWatched > 0 || (st.duration > 0 && st.timeOffset / st.duration >= 0.9));
+            return { inLibrary: inLib, watched: isWatched };
+        }
+
+        const recentKeys = ['library_recent'];
+        if (typeof window !== 'undefined' && window.ssoScope) {
+            recentKeys.unshift(`library_recent:${window.ssoScope}`);
+        }
+        for (const k of recentKeys) {
+            try {
+                const raw = localStorage.getItem(k);
+                const match = checkBucket(raw);
+                if (match) {
+                    const st = match.state || {};
+                    const isWatched = Boolean(st.flaggedWatched > 0 || st.timesWatched > 0 || (st.duration > 0 && st.timeOffset / st.duration >= 0.9));
+                    return { inLibrary: false, watched: isWatched };
+                }
+            } catch (_) {
+                // ignore item read error
             }
         }
     } catch (_) {
         // ignore storage parse errors
     }
     return { inLibrary: false, watched: false };
+}
+
+function resolvePoster(item) {
+    const rawPoster = typeof item.poster === 'string' ? item.poster : (item.poster && item.poster.src ? item.poster.src : null);
+    if (rawPoster && !rawPoster.includes('/background/')) {
+        return rawPoster;
+    }
+    const id = item.id || item._id;
+    if (id && /^tt\d+/.test(id)) {
+        return `https://images.metahub.space/poster/medium/${id}/img`;
+    }
+    return rawPoster;
 }
 
 const MetaContextMenu = ({ position, onClose, item }) => {
@@ -49,8 +103,10 @@ const MetaContextMenu = ({ position, onClose, item }) => {
     const [menuSize, setMenuSize] = React.useState([230, 240]);
 
     const initialLib = React.useMemo(() => getLibraryState(item.id), [item.id]);
-    const [inLibrary, setInLibrary] = React.useState(item.inLibrary !== undefined ? item.inLibrary : initialLib.inLibrary);
-    const [watched, setWatched] = React.useState(item.watched !== undefined ? item.watched : initialLib.watched);
+    const initialInLib = Boolean(item.inLibrary || initialLib.inLibrary);
+    const initialWatched = Boolean(item.watched !== undefined ? item.watched : initialLib.watched);
+    const [inLibrary, setInLibrary] = React.useState(initialInLib);
+    const [watched, setWatched] = React.useState(initialWatched);
 
     const menuRef = React.useCallback((node) => {
         if (node) {
@@ -128,6 +184,7 @@ const MetaContextMenu = ({ position, onClose, item }) => {
             });
             setInLibrary(false);
         } else {
+            const posterUrl = resolvePoster(item);
             core.transport.dispatch({
                 action: 'Ctx',
                 args: {
@@ -136,8 +193,8 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                         id: item.id,
                         type: item.type,
                         name: item.name,
-                        poster: typeof item.poster === 'string' ? item.poster : (item.poster?.src || null),
-                        posterShape: item.posterShape || 'poster',
+                        poster: posterUrl,
+                        posterShape: 'poster',
                     }
                 }
             });
@@ -150,6 +207,7 @@ const MetaContextMenu = ({ position, onClose, item }) => {
         e.preventDefault();
         e.stopPropagation();
         const nextWatched = !watched;
+        const posterUrl = resolvePoster(item);
         core.transport.dispatch({
             action: 'Ctx',
             args: {
@@ -159,8 +217,8 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                         id: item.id,
                         type: item.type,
                         name: item.name,
-                        poster: typeof item.poster === 'string' ? item.poster : (item.poster?.src || null),
-                        posterShape: item.posterShape || 'poster',
+                        poster: posterUrl,
+                        posterShape: 'poster',
                     },
                     is_watched: nextWatched,
                 }
