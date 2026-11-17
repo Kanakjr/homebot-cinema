@@ -7,7 +7,6 @@ const { createTmdb } = require('../../../server/tmdb');
 const { fakeCtx } = require('../../../server/plugins/testing');
 const { register } = require('../server');
 
-const IMDB = { 1: 'tt0000001', 2: 'tt0000002', 3: 'tt0000003', 4: 'tt0000004' };
 function fakeTmdb() {
     const calls = [];
     const fetchJson = async (path) => {
