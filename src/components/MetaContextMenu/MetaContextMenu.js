@@ -294,11 +294,13 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                     <span className={styles['label']}>{resolving ? 'Resolving...' : 'Instant Play'}</span>
                 </button>
 
-                {/* Add / Remove from Library */}
-                <button type="button" className={styles['item']} onClick={onToggleLibrary}>
-                    <Icon className={styles['icon']} name={inLibrary ? 'remove' : 'add'} />
-                    <span className={styles['label']}>{inLibrary ? 'Remove from Library' : 'Add to Library'}</span>
-                </button>
+                {/* Add / Remove from Library (only for catalog/library VOD cards) */}
+                {!item.hideLibraryAction ? (
+                    <button type="button" className={styles['item']} onClick={onToggleLibrary}>
+                        <Icon className={styles['icon']} name={inLibrary ? 'remove' : 'add'} />
+                        <span className={styles['label']}>{inLibrary ? 'Remove from Library' : 'Add to Library'}</span>
+                    </button>
+                ) : null}
 
                 {/* Mark as Watched / Unwatched */}
                 <button type="button" className={styles['item']} onClick={onToggleWatched}>
@@ -352,6 +354,7 @@ MetaContextMenu.propTypes = {
         deepLinks: PropTypes.object,
         inLibrary: PropTypes.bool,
         watched: PropTypes.bool,
+        hideLibraryAction: PropTypes.bool,
         onDismissClick: PropTypes.func,
     }).isRequired,
 };

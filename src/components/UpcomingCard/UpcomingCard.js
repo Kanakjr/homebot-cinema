@@ -60,6 +60,7 @@ const UpcomingCard = ({ className, metaId, videoId, name, season, episode, title
                         season,
                         episode,
                         href,
+                        hideLibraryAction: true,
                     }}
                 />
             ) : null}

@@ -101,6 +101,7 @@ const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, de
                         href,
                         deepLinks,
                         watched: pct >= 90,
+                        hideLibraryAction: true,
                         onDismissClick: onDismiss,
                     }}
                 />
