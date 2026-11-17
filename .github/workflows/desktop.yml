@@ -1,0 +1,64 @@
+# Desktop apps. On every change to desktop/ (pull request or main): run the Rust tests and build the DMG.
+# On a version tag (v1.2.0) or a manual run with a tag: build every app and attach it to the GitHub Release for that tag, so
+# it is downloadable from the website (https://github.com/<repo>/releases/latest).
+#
+#   git tag v1.2.0 && git push origin v1.2.0
+#
+# Windows and Linux jobs are added here when those ports exist (docs/native-apps.md).
+name: Desktop apps
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths: ['desktop/**', '.github/workflows/desktop.yml']
+  pull_request:
+    paths: ['desktop/**', '.github/workflows/desktop.yml']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build and publish (for example v1.2.0). Leave empty to only build.'
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  macos:
+    runs-on: macos-latest   # Apple Silicon (macos-14 is rejected on this account)
+    permissions:
+      contents: write   # attach files to the release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+      - name: Test
+        run: cargo test --no-default-features --manifest-path desktop/src-tauri/Cargo.toml
+      - name: Version
+        id: v
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ] && [ "${GITHUB_REF_TYPE}" = "tag" ]; then TAG="$GITHUB_REF_NAME"; fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+      - name: Build the DMG
+        # no CINEMA_ORIGIN: public builds ask for the server's address on first run
+        run: VERSION="${{ steps.v.outputs.version }}" zsh desktop/scripts/package-dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: desktop/release/*
+          if-no-files-found: error
+      - name: Publish to the release
+        if: steps.v.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          # a version-free copy gives the website a permanent link: .../releases/latest/download/HomeBot-Cinema-arm64.dmg
+          cp desktop/release/HomeBot-Cinema-*-arm64.dmg desktop/release/HomeBot-Cinema-arm64.dmg
+          ( cd desktop/release && shasum -a 256 HomeBot-Cinema-arm64.dmg > HomeBot-Cinema-arm64.dmg.sha256 )
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "HomeBot Cinema $TAG" --generate-notes
+          gh release upload "$TAG" desktop/release/* --clobber

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connect to your server</title>
+<style>
+    :root { --accent: #F27A24; --gold: #FFD700; --line: #2a2a31; --muted: #a1a1aa; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #050506; color: #f4f4f5; font: 15px/1.5 -apple-system, system-ui, sans-serif; }
+    body { display: grid; place-items: center; padding: 24px; -webkit-user-select: none; }
+    .card { width: min(460px, 100%); padding: 32px; border: 1px solid var(--line); border-radius: 18px; background: #0e0e11; }
+    .mark { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--gold)); margin-bottom: 18px; }
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    p { margin: 0 0 22px; color: var(--muted); }
+    label { display: block; font-weight: 600; margin: 16px 0 6px; }
+    small { display: block; color: var(--muted); font-weight: 400; margin-top: 4px; }
+    input { width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); background: #050506; color: inherit; font: inherit; -webkit-user-select: text; }
+    input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    button { margin-top: 24px; width: 100%; padding: 12px; border: 0; border-radius: 999px; font: inherit; font-weight: 700; color: #111; background: linear-gradient(90deg, var(--accent), var(--gold)); cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
+    .error { margin-top: 14px; color: #ff8a8a; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<form class="card" id="form">
+    <div class="mark" aria-hidden="true"></div>
+    <h1>Connect to your server</h1>
+    <p>HomeBot Cinema plays from your own server. Enter the address you open it at in a browser.</p>
+    <label for="public">Server address</label>
+    <input id="public" placeholder="cinema.example.com" autocomplete="url" autocapitalize="off" spellcheck="false" required autofocus>
+    <label for="local">Home-network address <small>Optional. When the server answers here (for example http://localhost:3002 or http://192.168.1.20:3002), the app uses it directly.</small></label>
+    <input id="local" placeholder="http://localhost:3002" autocapitalize="off" spellcheck="false">
+    <button id="go" type="submit">Connect</button>
+    <div class="error" id="error" role="alert"></div>
+</form>
+<script>
+    const invoke = (cmd, args) => window.__TAURI__.core.invoke(cmd, args);
+    const $ = (id) => document.getElementById(id);
+    invoke('get_server').then((s) => { if (s) { $('public').value = s.public; $('local').value = s.local || ''; } }).catch(() => {});
+    $('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $('error').textContent = '';
+        $('go').disabled = true;
+        $('go').textContent = 'Connecting…';
+        try {
+            await invoke('set_server', { public: $('public').value, local: $('local').value });
+        } catch (err) {
+            $('error').textContent = String(err);
+            $('go').disabled = false;
+            $('go').textContent = 'Connect';
+        }
+    });
+</script>
+</body>
+</html>
