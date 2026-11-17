@@ -1217,6 +1217,7 @@ const Player = () => {
             <PluginSlot
                 name={'playerOverlays'}
                 title={player.title ?? null}
+                showName={metaItemContent?.name ?? null}
                 type={urlParams.type ?? null}
                 metaId={urlParams.id ?? null}
                 poster={metaItemContent?.poster ?? null}

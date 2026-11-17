@@ -1,7 +1,10 @@
 {
     "id": "nowplaying",
-    "name": "Now playing",
-    "description": "Admin > Now playing: who is watching what right now, on which device, and whether it plays directly or is transcoded by the streaming server.",
+    "name": "Now playing and watch stats",
+    "description": "Admin > Now playing (who watches what, direct play or transcoding) and Watch stats (#/stats): play history kept on this server, hours per day, when you watch, top titles, devices, CSV export.",
+    "env": [
+        { "name": "NOWPLAYING_KEEP_DAYS", "description": "Days of watch history to keep (default 730; 0 keeps everything)." }
+    ],
     "version": "1.0.0",
     "defaultEnabled": true
 }

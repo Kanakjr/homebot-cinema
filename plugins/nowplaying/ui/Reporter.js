@@ -38,7 +38,7 @@ const Reporter = (props) => {
     const beat = React.useCallback(() => {
         const p = latest.current;
         if (p.live || !Number.isFinite(p.durationMs) || p.durationMs <= 0) return;
-        send('/api/nowplaying', R.heartbeat({ ...p, session: session.current, lastHlsAt: lastHls.current, nowMs: Date.now() }));
+        send('/api/nowplaying', R.heartbeat({ ...p, name: p.showName, session: session.current, lastHlsAt: lastHls.current, nowMs: Date.now() }));
     }, []);
 
     // a new title is a new session; the old one ends right away (binge-watching keeps the player mounted)
@@ -68,6 +68,7 @@ const Reporter = (props) => {
 
 Reporter.propTypes = {
     title: PropTypes.string,
+    showName: PropTypes.string,
     type: PropTypes.string,
     metaId: PropTypes.string,
     videoId: PropTypes.string,

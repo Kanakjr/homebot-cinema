@@ -84,6 +84,9 @@ Click the sparkle button in the top bar and ask: *"something light under two hou
 - **Continue watching** shows the time left, or *Next up* after the furthest episode you watched; an **Upcoming** row lists
   episodes of your shows airing in the next two weeks.
 - **Admin > Now playing**: who is watching what, on which device, and whether it plays directly or is transcoded.
+- **Watch stats** (`#/stats`, Tautulli-style): every play of 30 seconds or more is kept in your own database, with hours per
+  day, when you watch, most-watched titles, devices, direct play vs transcoding, streaks, a searchable history and CSV export.
+  Admins see any profile or the whole household; everyone else sees only their own.
 - **Admin panel**: overview, people, activity log and quality profiles.
 - **Live updates** (server-sent events) so downloads and the library refresh without reloading, and a daily database
   snapshot (the last 7 are kept).
@@ -176,7 +179,7 @@ you switch on or off, so you run only what you want:
 | `find` | Smart filters (TMDB) | on |
 | `themes` | Appearance settings and extra accent colours | on |
 | `skip` | Skip intro, recap and credits in the player, marks on the seek bar; Up Next when the credits start | on |
-| `nowplaying` | Admin > Now playing: who watches what, direct play or transcoding | on |
+| `nowplaying` | Admin > Now playing, and Watch stats: play history, charts, CSV (kept on your server) | on |
 | `collections` | "Part of the X collection" on movie pages (TMDB) | on |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |

@@ -18,10 +18,11 @@ const isHlsResource = (name) => /\/hlsv2\//.test(name) && !/\/hlsv2\/probe/.test
 const playbackMode = (lastHlsAt, nowMs) => (lastHlsAt !== null && nowMs - lastHlsAt < HLS_WINDOW ? 'transcode' : 'direct');
 
 /** The heartbeat body. */
-function heartbeat({ session, title, type, metaId, videoId, poster, timeMs, durationMs, paused, stream, lastHlsAt, nowMs }) {
+function heartbeat({ session, title, name, type, metaId, videoId, poster, timeMs, durationMs, paused, stream, lastHlsAt, nowMs }) {
     return {
         session,
         title: title || 'Untitled',
+        name: name || null,
         type: type || null,
         metaId: metaId || null,
         videoId: videoId || null,
