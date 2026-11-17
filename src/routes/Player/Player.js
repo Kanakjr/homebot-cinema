@@ -948,25 +948,6 @@ const Player = () => {
                 return;
             }
 
-            // Subtitle Toggle C
-            if ((e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
-                e.preventDefault();
-                if (video.state.selectedSubtitlesTrackId !== null || video.state.selectedExtraSubtitlesTrackId !== null) {
-                    video.setSubtitlesTrack(null);
-                    video.setExtraSubtitlesTrack(null);
-                    video.setHudNotice('Subtitles: OFF');
-                } else if (allSubtitleTracks && allSubtitleTracks.length > 0) {
-                    const firstTrack = allSubtitleTracks[0];
-                    if (firstTrack.type === 'extra') {
-                        video.setExtraSubtitlesTrack(firstTrack.id);
-                    } else {
-                        video.setSubtitlesTrack(firstTrack.id);
-                    }
-                    video.setHudNotice(`Subtitles: ${firstTrack.lang || 'ON'}`);
-                }
-                return;
-            }
-
             const keyboardKey = getKeyboardShortcutKey(e);
             if (keyboardKey !== 'Space' || e.repeat) return;
             if (menusOpen || detailsHold.current !== null || e.ctrlKey || e.metaKey || e.altKey) return;

@@ -80,6 +80,9 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
         const tracks = allSubtitles.filter(({ lang }) => lang === selectedSubtitlesLanguage);
         return sortByValues(tracks, ORIGIN_PRIORITIES);
     }, [allSubtitles, selectedSubtitlesLanguage]);
+    const hasExternalCandidates = React.useMemo(() => (
+        subtitlesTracksForLanguage.some((track) => !track.embedded)
+    ), [subtitlesTracksForLanguage]);
     const onMouseDown = React.useCallback((event) => {
         event.nativeEvent.subtitlesMenuClosePrevented = true;
     }, []);
@@ -187,7 +190,19 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
                 </div>
             </div>
             <div className={styles['variants-container']}>
-                <div className={styles['variants-header']}>{ t('PLAYER_SUBTITLES_VARIANTS') }</div>
+                <div className={styles['variants-header']}>
+                    <span>{ t('PLAYER_SUBTITLES_VARIANTS') }</span>
+                    {hasExternalCandidates && typeof props.onTriggerAutoSync === 'function' ? (
+                        <button
+                            type="button"
+                            className={styles['header-sync-btn']}
+                            onClick={props.onTriggerAutoSync}
+                            title="Acoustic auto-sync add-on subtitles"
+                        >
+                            {props.autoSyncInfo && props.autoSyncInfo.isSyncing ? 'Syncing...' : '⚡ Auto-Sync'}
+                        </button>
+                    ) : null}
+                </div>
                 {
                     subtitlesTracksForLanguage.length > 0 ?
                         <div className={styles['variants-list']}>
@@ -196,6 +211,7 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
                                     key={index}
                                     track={track}
                                     selected={props.selectedSubtitlesTrackId === track.id || props.selectedExtraSubtitlesTrackId === track.id}
+                                    isAutoSynced={Boolean(!track.embedded && props.autoSyncInfo && props.autoSyncInfo.isAutoSynced && props.autoSyncInfo.bestTrack && props.autoSyncInfo.bestTrack.id === track.id)}
                                     onSelect={subtitlesTrackOnSelect}
                                 />
                             ))}
@@ -252,6 +268,16 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
 SubtitlesMenu.displayName = 'MainNavBars';
 
 SubtitlesMenu.propTypes = {
+    autoSyncInfo: PropTypes.shape({
+        isAutoSynced: PropTypes.bool,
+        isSyncing: PropTypes.bool,
+        isEmbedded: PropTypes.bool,
+        confidence: PropTypes.number,
+        recommendedOffset: PropTypes.number,
+        bestTrack: PropTypes.object,
+        message: PropTypes.string,
+    }),
+    onTriggerAutoSync: PropTypes.func,
     className: PropTypes.string,
     subtitlesLanguage: PropTypes.string,
     interfaceLanguage: PropTypes.string,

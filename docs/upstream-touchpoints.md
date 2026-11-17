@@ -79,6 +79,12 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/common/interfaceScale.ts` | 6 | Zoom default. |
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
 | `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls. |
+| `src/routes/Player/useSubtitles.ts` | 367 | Dynamic acoustic subtitle matcher: probes audio voice envelope, runs batch FFT correlation matrix, auto-selects & retimes best add-on subtitle; fixed toggleSubtitles hotkey 'c'. |
+| `src/routes/Player/useSubtitles.d.ts` | 13 | Types for autoSyncInfo and onTriggerAutoSync in SubtitlesMenuProps and UseSubtitlesResult. |
+| `src/routes/Player/SubtitlesMenu/SubtitlesMenu.js` | 25 | Header auto-sync trigger button for external subtitles and matched badge binding. |
+| `src/routes/Player/SubtitlesMenu/styles.less` | 30 | Header auto-sync button styling and width adjustments. |
+| `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.tsx` | 4 | Displays matched badge for auto-synced subtitle variant. |
+| `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.less` | 13 | Styling for matched badge pill on variant item. |
 | `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
 | `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
 | `src/components/MetaPreview/MetaPreview.js` | 4 | Small fix. |

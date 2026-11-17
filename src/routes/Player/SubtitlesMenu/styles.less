@@ -65,7 +65,33 @@
     }
 
     .variants-container {
-        width: 16rem;
+        width: 18rem;
+
+        .variants-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+
+            .header-sync-btn {
+                background: rgba(255, 215, 0, 0.15);
+                border: 1px solid rgba(255, 215, 0, 0.45);
+                border-radius: 0.25rem;
+                padding: 0.2rem 0.55rem;
+                color: #FFD700;
+                font-size: 0.72rem;
+                font-weight: 700;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: background 0.15s ease, border-color 0.15s ease;
+
+                &:hover {
+                    background: rgba(255, 215, 0, 0.28);
+                    border-color: #FFD700;
+                }
+            }
+        }
 
         .no-variants-container {
             flex: 1;

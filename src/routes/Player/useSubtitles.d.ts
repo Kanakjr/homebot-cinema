@@ -66,7 +66,19 @@ type UseSubtitlesArgs = {
     toggleSubtitlesMenu: () => void,
 };
 
+type AutoSyncInfoState = {
+    isAutoSynced: boolean,
+    isSyncing?: boolean,
+    isEmbedded?: boolean,
+    bestTrack: SubtitleTrack | null,
+    confidence: number,
+    recommendedOffset: number,
+    message?: string,
+} | null;
+
 type SubtitlesMenuProps = {
+    autoSyncInfo?: AutoSyncInfoState,
+    onTriggerAutoSync?: () => void,
     subtitlesLanguage: string | null,
     interfaceLanguage: string,
     subtitlesTracks: SubtitleTrack[],
@@ -94,4 +106,5 @@ type UseSubtitlesResult = {
     extraSubtitleTracks: SubtitleTrack[],
     selectedExtraSubtitleTrackId: string | null,
     subtitlesMenuProps: SubtitlesMenuProps,
+    autoSyncInfo?: AutoSyncInfoState,
 };

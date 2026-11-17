@@ -1,8 +1,10 @@
 // Copyright (C) 2017-2026 Smart code 203358507
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CONSTANTS, getKeyboardShortcutKeys, languages, useFileDropListener, useInterval, useShortcut, useTimeout, useToast } from 'stremio/common';
+import { SmartSubtitleSelector } from 'stremio/common/subtitles/SmartSubtitleSelector';
+import { AudioVADProbe } from 'stremio/common/subtitles/AudioVADProbe';
 import {
     getSubtitleDelayStepMultiplier,
     snapSubtitleDelay,
@@ -196,6 +198,17 @@ const useSubtitles = ({
     const subtitleDelayHold = useRef<SubtitleDelayHold | null>(null);
     const subtitleDelayInterval = useInterval(SUBTITLES_DELAY_REPEAT_INTERVAL_MS);
     const subtitleDelayTimeout = useTimeout(SUBTITLES_DELAY_REPEAT_DELAY_MS);
+    const [autoSyncInfo, setAutoSyncInfo] = useState<{
+        isAutoSynced: boolean,
+        isSyncing?: boolean,
+        isEmbedded?: boolean,
+        bestTrack: SubtitleTrack | null,
+        confidence: number,
+        recommendedOffset: number,
+        message?: string,
+    } | null>(null);
+    const autoSyncAttemptedStream = useRef<unknown>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     videoRef.current = video;
     settingsRef.current = settings;
@@ -246,6 +259,22 @@ const useSubtitles = ({
     }, [streamStateChanged, subtitlePreferenceChanged]);
 
     const disableSubtitles = useCallback(() => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+
+        const videoEl = document.querySelector('video');
+        if (videoEl && videoEl.textTracks) {
+            Array.from(videoEl.textTracks).forEach((track) => {
+                try {
+                    track.mode = 'disabled';
+                } catch (_e) {
+                    // Ignore on non-configurable tracks
+                }
+            });
+        }
+
         const selectedTrack = video.state.selectedSubtitlesTrackId !== null ?
             findTrackById(video.state.subtitlesTracks, video.state.selectedSubtitlesTrackId)
             :
@@ -409,6 +438,12 @@ const useSubtitles = ({
         trackSelectionLocked.current = false;
         appliedTrack.current = null;
         lastSelectedTrack.current = null;
+        autoSyncAttemptedStream.current = null;
+        setAutoSyncInfo(null);
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
     }, [video.state.stream]);
 
     useEffect(() => {
@@ -524,6 +559,248 @@ const useSubtitles = ({
         }
     }, [player.streamState, video.state.stream, setSubtitlesDelay, setSubtitlesSize, setSubtitlesOffset]);
 
+    const triggerAutoSync = useCallback(async () => {
+        const videoEl = document.querySelector('video');
+        if (!videoEl) {
+            toast.show({
+                type: 'error',
+                title: 'Playback Video Missing',
+                message: 'Cannot access video audio track.',
+                timeout: 3000,
+            });
+            return;
+        }
+
+        const candidateTracks = videoRef.current.state.extraSubtitlesTracks;
+        if (!candidateTracks || candidateTracks.length === 0) {
+            if (videoRef.current.state.selectedSubtitlesTrackId) {
+                const track = findTrackById(videoRef.current.state.subtitlesTracks, videoRef.current.state.selectedSubtitlesTrackId);
+                setAutoSyncInfo({
+                    isAutoSynced: true,
+                    isSyncing: false,
+                    isEmbedded: true,
+                    bestTrack: track || null,
+                    confidence: 1.0,
+                    recommendedOffset: 0.0,
+                    message: 'Embedded stream subtitle is naturally aligned with audio container.',
+                });
+                toast.show({
+                    type: 'info',
+                    title: 'Embedded Subtitle Aligned',
+                    message: 'Embedded stream track is muxed in sync with audio container.',
+                    timeout: 3500,
+                });
+                return;
+            }
+
+            toast.show({
+                type: 'info',
+                title: 'No Add-on Subtitles Found',
+                message: 'No external subtitle candidates available to match against audio.',
+                timeout: 3000,
+            });
+            return;
+        }
+
+        const targetLang = normalizeLanguage(
+            player.subtitlePreference?.language ?? settings.subtitlesLanguage ?? CONSTANTS.DEFAULT_SUBTITLES_LANGUAGE
+        );
+        const matchingTracks = targetLang
+            ? candidateTracks.filter((t) => normalizeLanguage(t.lang) === targetLang)
+            : candidateTracks;
+
+        if (matchingTracks.length === 0) {
+            toast.show({
+                type: 'info',
+                title: 'No Matching Language Subtitles',
+                message: `No external subtitles found for language: ${targetLang || 'selected'}`,
+                timeout: 3000,
+            });
+            return;
+        }
+
+        setAutoSyncInfo({
+            isAutoSynced: false,
+            isSyncing: true,
+            bestTrack: null,
+            confidence: 0,
+            recommendedOffset: 0,
+        });
+
+        toast.show({
+            type: 'info',
+            title: 'Analyzing Audio & Subtitles...',
+            message: `Probing speech presence across ${matchingTracks.length} candidate track(s)...`,
+            timeout: 3000,
+        });
+
+        try {
+            const probeSeconds = 20;
+            const audioProfile = await AudioVADProbe.captureVoiceProfile(videoEl, {
+                durationSeconds: probeSeconds,
+            });
+
+            const selection = await SmartSubtitleSelector.rankAndSelect(audioProfile, matchingTracks, {
+                durationSeconds: probeSeconds,
+                minConfidence: 0.70,
+            });
+
+            if (selection.isAutoSynced && selection.bestTrack) {
+                selectExtraTrack(selection.bestTrack);
+                const delayMs = Math.round(selection.recommendedOffset * 1000);
+                changeDelay(delayMs);
+
+                setAutoSyncInfo({
+                    isAutoSynced: true,
+                    isSyncing: false,
+                    bestTrack: selection.bestTrack,
+                    confidence: selection.confidence,
+                    recommendedOffset: selection.recommendedOffset,
+                });
+
+                toast.show({
+                    type: 'success',
+                    title: 'Acoustic Subtitle Synced',
+                    message: `${selection.bestTrack.label || selection.bestTrack.lang} (${Math.round(selection.confidence * 100)}% match, ${selection.recommendedOffset >= 0 ? '+' : ''}${selection.recommendedOffset.toFixed(2)}s)`,
+                    timeout: 4000,
+                });
+            } else {
+                setAutoSyncInfo({
+                    isAutoSynced: false,
+                    isSyncing: false,
+                    bestTrack: selection.bestTrack || null,
+                    confidence: selection.confidence,
+                    recommendedOffset: selection.recommendedOffset,
+                    message: `Best candidate confidence was ${(selection.confidence * 100).toFixed(0)}% (threshold: 70%)`,
+                });
+                toast.show({
+                    type: 'info',
+                    title: 'Low Acoustic Correlation',
+                    message: `Best match was only ${(selection.confidence * 100).toFixed(0)}%. You can adjust delay manually.`,
+                    timeout: 4000,
+                });
+            }
+        } catch (err: any) {
+            console.warn('[SmartSubtitles] Manual acoustic sync error:', err);
+            setAutoSyncInfo(null);
+            toast.show({
+                type: 'error',
+                title: 'Acoustic Sync Failed',
+                message: err?.message || 'Error processing audio spectrum.',
+                timeout: 3000,
+            });
+        }
+    }, [
+        changeDelay,
+        player.subtitlePreference,
+        selectExtraTrack,
+        settings.subtitlesLanguage,
+        toast,
+    ]);
+
+    // Dynamic Acoustic Subtitle Matcher: probes voice presence and auto-selects & retimes best subtitle
+    useEffect(() => {
+        const stream = video.state.stream;
+        if (!stream || video.state.paused === true) {
+            return;
+        }
+
+        if (autoSyncAttemptedStream.current === stream) {
+            return;
+        }
+
+        if (trackSelectionLocked.current || player.subtitlePreference?.enabled === false) {
+            return;
+        }
+
+        // If embedded subtitles are already active, they are naturally aligned with container.
+        if (video.state.selectedSubtitlesTrackId !== null) {
+            autoSyncAttemptedStream.current = stream;
+            return;
+        }
+
+        const candidateTracks = video.state.extraSubtitlesTracks;
+        if (!candidateTracks || candidateTracks.length === 0) {
+            autoSyncAttemptedStream.current = stream;
+            return;
+        }
+
+        const targetLang = normalizeLanguage(
+            player.subtitlePreference?.language ?? settings.subtitlesLanguage ?? CONSTANTS.DEFAULT_SUBTITLES_LANGUAGE
+        );
+        const matchingTracks = targetLang
+            ? candidateTracks.filter((t) => normalizeLanguage(t.lang) === targetLang)
+            : candidateTracks;
+
+        if (matchingTracks.length === 0) {
+            autoSyncAttemptedStream.current = stream;
+            return;
+        }
+
+        const videoEl = document.querySelector('video');
+        if (!videoEl) {
+            return;
+        }
+
+        autoSyncAttemptedStream.current = stream;
+        const abortCtrl = new AbortController();
+        abortControllerRef.current = abortCtrl;
+
+        const probeSeconds = 20;
+        AudioVADProbe.captureVoiceProfile(videoEl, {
+            durationSeconds: probeSeconds,
+            signal: abortCtrl.signal,
+        }).then(async (audioProfile: Float32Array) => {
+            if (abortCtrl.signal.aborted || videoRef.current.state.stream !== stream) {
+                return;
+            }
+
+            const selection = await SmartSubtitleSelector.rankAndSelect(audioProfile, matchingTracks, {
+                durationSeconds: probeSeconds,
+                signal: abortCtrl.signal,
+                minConfidence: 0.75,
+            });
+
+            if (abortCtrl.signal.aborted || videoRef.current.state.stream !== stream) {
+                return;
+            }
+
+            if (selection.isAutoSynced && selection.bestTrack && !trackSelectionLocked.current && player.subtitlePreference?.enabled !== false) {
+                selectExtraTrack(selection.bestTrack);
+                const delayMs = Math.round(selection.recommendedOffset * 1000);
+                changeDelay(delayMs);
+
+                const syncData = {
+                    isAutoSynced: true,
+                    isSyncing: false,
+                    bestTrack: selection.bestTrack,
+                    confidence: selection.confidence,
+                    recommendedOffset: selection.recommendedOffset,
+                };
+                setAutoSyncInfo(syncData);
+            }
+        }).catch((err: any) => {
+            if (!abortCtrl.signal.aborted) {
+                console.warn('[SmartSubtitles] Acoustic sync probe error:', err);
+            }
+        });
+
+        return () => {
+            abortCtrl.abort();
+        };
+    }, [
+        changeDelay,
+        player.subtitlePreference,
+        selectExtraTrack,
+        settings.subtitlesLanguage,
+        toast,
+        video.state.extraSubtitlesTracks,
+        video.state.paused,
+        video.state.selectedSubtitlesTrackId,
+        video.state.stream,
+        video.state.subtitlesTracks,
+    ]);
+
     useEffect(() => {
         if (!hasTracks) {
             closeSubtitlesMenu();
@@ -581,10 +858,12 @@ const useSubtitles = ({
     }, [updateSize]), !menusOpen);
 
     useShortcut('toggleSubtitles', useCallback(() => {
-        const subtitlesEnabled = video.state.selectedSubtitlesTrackId !== null ||
-            video.state.selectedExtraSubtitlesTrackId !== null;
+        const isCurrentlyEnabled = (
+            video.state.selectedSubtitlesTrackId !== null ||
+            video.state.selectedExtraSubtitlesTrackId !== null
+        );
 
-        if (subtitlesEnabled) {
+        if (isCurrentlyEnabled) {
             if (video.state.selectedSubtitlesTrackId) {
                 const track = findTrackById(
                     video.state.subtitlesTracks,
@@ -610,26 +889,67 @@ const useSubtitles = ({
             }
 
             disableSubtitles();
+            toast.show({
+                type: 'info',
+                title: t('PLAYER_SUBTITLES_DISABLED') || 'Subtitles Off',
+                timeout: 2000,
+            });
             return;
         }
 
-        const savedTrack = player.streamState?.subtitleTrack ?? lastSelectedTrack.current;
-        const source = player.subtitlePreference?.source ??
-            (savedTrack ? (savedTrack.embedded ? 'embedded' : 'external') : undefined);
-        const language = player.subtitlePreference?.language ?? normalizeLanguage(savedTrack?.language);
-
+        // Subtitles are currently OFF -> Enable them!
         trackSelectionLocked.current = false;
         appliedTrack.current = null;
-        subtitlePreferenceChanged({
-            enabled: true,
-            ...(source ? { source } : {}),
-            ...(language ? { language } : {}),
-        });
+        const saved = player.streamState?.subtitleTrack ?? lastSelectedTrack.current;
+        let trackToEnable: { track: SubtitleTrack, embedded: boolean } | undefined;
+
+        if (saved?.id) {
+            if (saved.embedded) {
+                const trk = findTrackById(video.state.subtitlesTracks, saved.id);
+                if (trk) trackToEnable = { track: trk, embedded: true };
+            } else {
+                const trk = findTrackById(video.state.extraSubtitlesTracks, saved.id);
+                if (trk) trackToEnable = { track: trk, embedded: false };
+            }
+        }
+
+        if (!trackToEnable) {
+            const targetLang = normalizeLanguage(
+                player.subtitlePreference?.language ?? settings.subtitlesLanguage ?? CONSTANTS.DEFAULT_SUBTITLES_LANGUAGE
+            );
+            const candidates = buildCandidates({ enabled: true, language: targetLang }, null, targetLang);
+            const best = resolveBestCandidate(candidates, video.state.subtitlesTracks, video.state.extraSubtitlesTracks);
+            if (best) {
+                trackToEnable = { track: best.track, embedded: best.source === 'embedded' };
+            } else if (video.state.subtitlesTracks.length > 0) {
+                trackToEnable = { track: video.state.subtitlesTracks[0], embedded: true };
+            } else if (video.state.extraSubtitlesTracks.length > 0) {
+                trackToEnable = { track: video.state.extraSubtitlesTracks[0], embedded: false };
+            }
+        }
+
+        if (trackToEnable) {
+            if (trackToEnable.embedded) {
+                selectEmbeddedTrack(trackToEnable.track);
+            } else {
+                selectExtraTrack(trackToEnable.track);
+            }
+        } else {
+            toast.show({
+                type: 'info',
+                title: t('PLAYER_SUBTITLES_DISABLED') || 'No Subtitles Available',
+                timeout: 2000,
+            });
+        }
     }, [
         disableSubtitles,
         player.subtitlePreference,
         player.streamState,
-        subtitlePreferenceChanged,
+        selectEmbeddedTrack,
+        selectExtraTrack,
+        settings.subtitlesLanguage,
+        t,
+        toast,
         video.state.extraSubtitlesTracks,
         video.state.selectedExtraSubtitlesTrackId,
         video.state.selectedSubtitlesTrackId,
@@ -644,6 +964,8 @@ const useSubtitles = ({
     }, [closeMenus, hasTracks, toggleSubtitlesMenu]));
 
     const menuProps = useMemo(() => ({
+        autoSyncInfo,
+        onTriggerAutoSync: triggerAutoSync,
         subtitlesLanguage: settings.subtitlesLanguage,
         interfaceLanguage: settings.interfaceLanguage,
         subtitlesTracks: video.state.subtitlesTracks,
@@ -664,6 +986,7 @@ const useSubtitles = ({
         onExtraSubtitlesDelayChanged: changeDelay,
         onExtraSubtitlesSizeChanged: changeSize,
     }), [
+        autoSyncInfo,
         changeDelay,
         changeOffset,
         changeSize,
@@ -671,6 +994,7 @@ const useSubtitles = ({
         selectExtraTrack,
         settings.interfaceLanguage,
         settings.subtitlesLanguage,
+        triggerAutoSync,
         video.state.extraSubtitlesDelay,
         video.state.extraSubtitlesOffset,
         video.state.extraSubtitlesSize,
@@ -689,6 +1013,7 @@ const useSubtitles = ({
         extraSubtitleTracks: video.state.extraSubtitlesTracks,
         selectedExtraSubtitleTrackId: video.state.selectedExtraSubtitlesTrackId,
         subtitlesMenuProps: menuProps,
+        autoSyncInfo,
     };
 };
 

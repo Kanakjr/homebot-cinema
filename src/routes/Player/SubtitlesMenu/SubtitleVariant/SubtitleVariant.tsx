@@ -25,13 +25,14 @@ type SubtitlesTrack = {
 type Props = {
     track: SubtitlesTrack,
     selected: boolean,
+    isAutoSynced?: boolean,
     onSelect: (track: SubtitlesTrack) => void,
 };
 
 const hasValidLabel = (label?: string) => label && label.length > 0 && !label.startsWith('http');
 const ASS_BADGE = 'ASS';
 
-const SubtitleVariant = ({ track, selected, onSelect }: Props) => {
+const SubtitleVariant = ({ track, selected, isAutoSynced, onSelect }: Props) => {
     const { t } = useTranslation();
     const toast = useToast();
     const buttonRef = useRef<HTMLElement>(null);
@@ -80,6 +81,7 @@ const SubtitleVariant = ({ track, selected, onSelect }: Props) => {
                         {variantLabel}
                     </div>
                     {track.ass ? <div className={styles['ass-badge']}>{ASS_BADGE}</div> : null}
+                    {isAutoSynced ? <div className={styles['auto-sync-badge']}>⚡ Matched</div> : null}
                 </div>
                 <div className={styles['variant-origin']}>
                     {t(track.origin)}
