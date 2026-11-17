@@ -78,6 +78,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/core/createTransport.ts` | 6 | Analytics disabled. |
 | `src/common/interfaceScale.ts` | 6 | Zoom default. |
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
+| `src/router/useGoBack.ts` | 9 | Back goes through the real history when there is any (upstream replaced the entry with the origin, leaving it twice in the history). |
 | `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls. |
 | `src/routes/Player/useSubtitles.ts` | 367 | Dynamic acoustic subtitle matcher: probes audio voice envelope, runs batch FFT correlation matrix, auto-selects & retimes best add-on subtitle; fixed toggleSubtitles hotkey 'c'. |
 | `src/routes/Player/useSubtitles.d.ts` | 13 | Types for autoSyncInfo and onTriggerAutoSync in SubtitlesMenuProps and UseSubtitlesResult. |
