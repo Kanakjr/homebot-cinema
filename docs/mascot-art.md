@@ -40,6 +40,7 @@ prompt "in the style of" a named character or studio.
      button on a navy poster. Invented artwork only, no text, no real films or characters." (Background may be dark navy;
      these are not keyed.)
    - `calendar_placeholder`: the same, with a calendar page (a grid, no numbers) on the middle poster instead of the play button.
+   These two can be generated procedurally at 4x supersampled resolution using `python3 scripts/brand/render-placeholders.py`.
 4. **Drop the results** into `assets/brand/mascot/raw/` named `empty.png`, `default_avatar.png`, `anonymous.png`,
    `library_placeholder.png`, `calendar_placeholder.png` (the character sheet as `sheet.png`).
 5. **Process and rebuild:**

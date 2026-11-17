@@ -105,6 +105,14 @@ All of `assets/images/splash/*` (iOS splash screens), plus:
 - `assets/images/monochrome_icon_512x512.png`
 - `assets/images/stremio_symbol.png`
 
+System artwork and placeholders (`docs/mascot-art.md`, `scripts/brand/render-placeholders.py`):
+
+- `assets/images/anonymous.png`
+- `assets/images/calendar_placeholder.png`
+- `assets/images/default_avatar.png`
+- `assets/images/empty.png`
+- `assets/images/library_placeholder.png`
+
 ## Removed
 
 - `assets/screenshots/metadetails.png` (upstream release/workflow/app-id/screenshots, not ours to publish)
