@@ -29,7 +29,8 @@ const User = ({ profile }: Props) => {
                         </div>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#F27A24', marginTop: '0.2rem' }}>
-                        Cloudflare Zero Trust SSO Session (Isolated Library & History)
+                        {/* HomeBot: plain wording instead of the sign-in mechanism */}
+                        {(window as unknown as { ssoIsAdmin?: boolean }).ssoIsAdmin ? 'Signed in · admin' : 'Signed in'}
                     </div>
                 </div>
             </div>

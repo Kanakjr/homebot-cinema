@@ -31,6 +31,10 @@ const Search = () => {
         catalogs: search.catalogs,
         loadRange: loadSearchRows,
     });
+    // HomeBot: every catalog answered "nothing found" -> say so instead of an empty page (rows still loading keep their skeletons)
+    const noResults = search.catalogs.length > 0 && search.catalogs.every((catalog) => {
+        return catalog.content?.type === 'Err' && catalog.content.content === 'EmptyContent';
+    });
     return (
         <MainNavBars className={styles['search-container']} route={'search'} query={query}>
             <div ref={scrollContainerRef} className={styles['search-content']} onScroll={onScroll}>
@@ -70,43 +74,54 @@ const Search = () => {
                                 <div className={styles['message-label']}>{ t.string('STREMIO_TV_SEARCH_NO_ADDONS') }</div>
                             </div>
                             :
-                            catalogRows.map(({ catalog, index }) => {
-                                switch (catalog.content?.type) {
-                                    case 'Ready': {
-                                        return (
-                                            <MetaRow
-                                                key={index}
-                                                className={classnames(styles['search-row'], styles[`search-row-${catalog.content.content[0].posterShape}`], 'animation-fade-in')}
-                                                catalog={catalog}
-                                                itemComponent={MetaItem}
-                                            />
-                                        );
-                                    }
-                                    case 'Err': {
-                                        if (catalog.content.content !== 'EmptyContent') {
+                            noResults ?
+                                <div className={styles['message-container']}>
+                                    <Image
+                                        className={styles['image']}
+                                        src={require('/assets/images/empty.png')}
+                                        alt={' '}
+                                    />
+                                    <div className={styles['message-label']}>No results for “{query}”</div>
+                                    <div className={styles['message-hint']}>Check the spelling, or try a title, an actor or an IMDb link.</div>
+                                </div>
+                                :
+                                catalogRows.map(({ catalog, index }) => {
+                                    switch (catalog.content?.type) {
+                                        case 'Ready': {
                                             return (
                                                 <MetaRow
                                                     key={index}
-                                                    className={classnames(styles['search-row'], 'animation-fade-in')}
+                                                    className={classnames(styles['search-row'], styles[`search-row-${catalog.content.content[0].posterShape}`], 'animation-fade-in')}
                                                     catalog={catalog}
-                                                    message={catalog.content.content}
+                                                    itemComponent={MetaItem}
                                                 />
                                             );
                                         }
-                                        return null;
+                                        case 'Err': {
+                                            if (catalog.content.content !== 'EmptyContent') {
+                                                return (
+                                                    <MetaRow
+                                                        key={index}
+                                                        className={classnames(styles['search-row'], 'animation-fade-in')}
+                                                        catalog={catalog}
+                                                        message={catalog.content.content}
+                                                    />
+                                                );
+                                            }
+                                            return null;
+                                        }
+                                        default: {
+                                            return (
+                                                <MetaRow.Placeholder
+                                                    key={index}
+                                                    className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
+                                                    catalog={catalog}
+                                                    title={t.catalogTitle(catalog)}
+                                                />
+                                            );
+                                        }
                                     }
-                                    default: {
-                                        return (
-                                            <MetaRow.Placeholder
-                                                key={index}
-                                                className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
-                                                catalog={catalog}
-                                                title={t.catalogTitle(catalog)}
-                                            />
-                                        );
-                                    }
-                                }
-                            })
+                                })
                 }
             </div>
         </MainNavBars>

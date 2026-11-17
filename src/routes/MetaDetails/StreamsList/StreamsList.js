@@ -438,7 +438,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
                                     countLoadingAddons > 0 ?
                                         <div className={styles['addons-loading-container']}>
                                             <div className={styles['addons-loading']}>
-                                                {countLoadingAddons} {t('MOBILE_ADDONS_LOADING')}
+                                                {countLoadingAddons === 1 ? '1 addon is still loading' : `${countLoadingAddons} ${t('MOBILE_ADDONS_LOADING')}`}
                                             </div>
                                             <span className={styles['addons-loading-bar']}></span>
                                         </div>

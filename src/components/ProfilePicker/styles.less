@@ -83,24 +83,37 @@
             width: 9.5rem;
             height: 9.5rem;
             border-radius: 1.2rem;
-            border: 2px solid @border;
             overflow: hidden;
             background: @surface;
             font-size: 3rem;
             color: @muted;
-            transition: transform 0.15s, border-color 0.15s;
+            transition: transform 0.15s;
 
             img { width: 100%; height: 100%; object-fit: cover; }
-            &.add { border-style: dashed; }
             &.editing { filter: brightness(0.7); }
+
+            // The ring is an overlay above the image, not the box's own border: with transform: scale() WebKit
+            // paints the image over a real border on the straight edges (only the corners stayed white).
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border: 2px solid @border;
+                border-radius: inherit;
+                pointer-events: none;
+                transition: border-color 0.15s;
+            }
+            &.add::after { border-style: dashed; }
         }
 
         .lock { position: absolute; right: 0.4rem; bottom: 0.4rem; font-size: 1.1rem; }
         .edit-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: @text; }
         .name { font-weight: 700; font-size: 1.05rem; color: @muted; }
 
+        &:focus { outline: none; }
         &:hover, &:focus-visible {
-            .avatar { transform: scale(1.05); border-color: @text; }
+            .avatar { transform: scale(1.05); }
+            .avatar::after { border-color: @text; }
             .name { color: @text; }
         }
     }
@@ -165,6 +178,9 @@
     background: @surface;
     color: @text;
 
+    // Children keep their size; the modal scrolls instead. Shrinking the avatar grid squashed its rows in WebKit.
+    > * { flex-shrink: 0; }
+
     .modal-title { font-size: 1.4rem; font-weight: 800; text-align: center; }
     .modal-sub { color: @muted; text-align: center; font-size: 0.9rem; }
     .modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; }
@@ -186,7 +202,11 @@
     }
 
     .field-label { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: @muted; }
-    .swatches { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+    .field { display: flex; flex-direction: column; gap: 0.5rem; }
+    .field-hint { margin-top: -0.5rem; font-size: 0.85rem; color: @muted; }
+    .pin-input { -webkit-text-security: disc; letter-spacing: 0.3em; &::placeholder { letter-spacing: normal; } }
+    // two even rows instead of a full row plus one lonely swatch
+    .swatches { display: grid; grid-template-columns: repeat(7, 1.9rem); justify-content: space-between; gap: 0.55rem; }
     .swatch {
         width: 1.9rem;
         height: 1.9rem;
@@ -207,9 +227,21 @@
         input[type='checkbox'] { .toggle(); }
     }
 
-    .avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(3.6rem, 1fr)); gap: 0.6rem; max-height: 13rem; overflow-y: auto; padding: 0.2rem; }
+    // Fixed square tracks: WebKit ignored aspect-ratio on the stretched grid items and cut every avatar in half.
+    .avatar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 3.6rem);
+        grid-auto-rows: 3.6rem;
+        justify-content: space-between;
+        align-content: start;
+        gap: 0.6rem;
+        max-height: 13rem;
+        overflow-y: auto;
+        padding: 0.2rem;
+    }
     .avatar-choice {
-        aspect-ratio: 1;
+        width: 100%;
+        height: 100%;
         padding: 0;
         border: 2px solid transparent;
         border-radius: 0.8rem;

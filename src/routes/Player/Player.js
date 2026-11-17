@@ -866,7 +866,13 @@ const Player = () => {
     }, [isEpg, closeMenus, player.nextVideo, nextVideo, handleNextVideoNavigation]));
 
     useShortcut('exit', React.useCallback(() => {
+        // HomeBot: Escape dismisses the topmost layer first; only an Escape with nothing open leaves the player.
+        const layerOpen = optionsMenuOpen || subtitlesMenuOpen || audioMenuOpen || speedMenuOpen || statisticsMenuOpen
+            || castDevicesMenuOpen || sideDrawerOpen || shortcutsModalOpen;
         closeMenus();
+        if (layerOpen) {
+            return;
+        }
         // When escExitFullscreen is enabled, FullscreenProvider handles the first
         // Escape press by leaving fullscreen. Only skip navigating back in that case,
         // otherwise Escape would never exit the player in windowed mode.
@@ -874,7 +880,7 @@ const Player = () => {
             return;
         }
         goBack();
-    }, [closeMenus, settings.escExitFullscreen, fullscreen, goBack]));
+    }, [closeMenus, settings.escExitFullscreen, fullscreen, goBack, optionsMenuOpen, subtitlesMenuOpen, audioMenuOpen, speedMenuOpen, statisticsMenuOpen, castDevicesMenuOpen, sideDrawerOpen, shortcutsModalOpen]));
 
     React.useLayoutEffect(() => {
         if (!routeFocused) {

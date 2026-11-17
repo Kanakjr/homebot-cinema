@@ -23,7 +23,8 @@ const { default: useInterfaceScale } = require('./useInterfaceScale');
 const styles = require('./styles');
 
 const ProtectedRoutes = withCoreSuspender(Routes);
-const NAVIGATE_TABS_ROUTES = ['/', '/discover', '/library', '/server', '/admin', '/downloads', '/calendar', '/addons', '/settings'];
+// HomeBot: number keys follow the sidebar order (1 Home … 6 Settings, 7 Admin for admins)
+const { navTabs } = require('stremio/common/navTabs');
 
 const App = () => {
     const core = useCore();
@@ -61,9 +62,10 @@ const App = () => {
                 navigate('/search');
                 break;
             case 'navigateTabs': {
+                const routes = navTabs(!!window.ssoIsAdmin).map((tab) => tab.href);
                 const index = Number(key) - 1;
-                if (index >= 0 && index < NAVIGATE_TABS_ROUTES.length)
-                    navigate(NAVIGATE_TABS_ROUTES[index]);
+                if (index >= 0 && index < routes.length)
+                    navigate(routes[index]);
                 break;
             }
             case 'navigateHistory':

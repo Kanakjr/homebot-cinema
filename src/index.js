@@ -26,7 +26,7 @@ const { ensureProfile } = require('./common/profileGate');
 const { loadPlugins } = require('./plugins');
 
 // only English is bundled; App switches to the profile's language via common/i18nLanguages (loaded on demand)
-const translations = { 'en-US': { translation: enUS } };
+const translations = { 'en-US': { translation: { ...enUS, ...require('./common/stringOverrides') } } };
 
 i18n
     .use(initReactI18next)

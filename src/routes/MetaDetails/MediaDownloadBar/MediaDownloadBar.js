@@ -63,25 +63,39 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
         return meta?.name || 'Media';
     }, [meta, video]);
 
+    // Which title the server-library lookup has answered for. Until it has, the bar says "Checking…" rather than a
+    // premature "Not on your server yet", and offers no Save (the title may already be there).
+    const [libCheckedFor, setLibCheckedFor] = React.useState(null);
+    const libLookup = /^tt\d+/.test(metaId || '');
+    const libChecked = !libLookup || libCheckedFor === metaId;
+    React.useEffect(() => {
+        setLib(null);
+    }, [metaId]);
+
     const refresh = React.useCallback(async () => {
         if (!mediaId) return;
-        try {
-            setStatus(await api('GET', `/api/downloads/check/${encodeURIComponent(mediaId)}`));
-        } catch (_) {
-            // transient: keep the last known status
-        }
-        if (/^tt\d+/.test(metaId || '')) {
-            try {
-                setLib(await api('GET', `/api/library/by-imdb/${encodeURIComponent(metaId)}?soft=1`));
-            } catch (_) {
-                setLib(null);
-            }
-        }
+        // both lookups at once: the library answer decides the headline, so it must not wait behind the other
+        const checkStatus = api('GET', `/api/downloads/check/${encodeURIComponent(mediaId)}`)
+            .then(setStatus)
+            .catch(() => {
+                // transient: keep the last known status
+            });
+        const checkLib = /^tt\d+/.test(metaId || '') ?
+            api('GET', `/api/library/by-imdb/${encodeURIComponent(metaId)}?soft=1`)
+                .then(setLib)
+                .catch(() => setLib(null))
+                .finally(() => setLibCheckedFor(metaId))
+            : Promise.resolve();
+        await Promise.all([checkStatus, checkLib]);
     }, [mediaId, metaId]);
 
     React.useEffect(() => {
         if (routeFocused) refresh();
     }, [refresh, routeFocused]);
+    // without window focus, still answer the first library lookup for a title once (the headline waits on it); polling waits for focus
+    React.useEffect(() => {
+        if (!routeFocused && libLookup && libCheckedFor !== metaId) refresh();
+    }, [refresh, routeFocused, libLookup, libCheckedFor, metaId]);
     useServerEvents(['downloads', 'library'], refresh, { fallbackMs: 5000, enabled: routeFocused });
 
     React.useEffect(() => {
@@ -208,7 +222,7 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
 
     const downloading = status.status === 'downloading';
     const onServer = !!localFile || status.downloaded || (lib && !video);
-    const canSave = !downloading && !localFile && !status.downloaded;
+    const canSave = !downloading && !localFile && !status.downloaded && libChecked;
     const hasOptions = canSave || !!(admin && meta && meta.type === 'series');
     const expanded = open && hasOptions;
     const toggleOpen = () => setOpen((v) => {
@@ -235,8 +249,9 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
                         {downloading ? `Saving to your server… ${Math.round((status.progress || 0) * 100)}%`
                             : localFile && lib && lib.type === 'series' ? 'This episode is on your server'
                                 : onServer ? 'On your server'
-                                    : lib && video ? 'This episode isn’t on your server'
-                                        : 'Not on your server yet'}
+                                    : !libChecked ? 'Checking your server…'
+                                        : lib && video ? 'This episode isn’t on your server'
+                                            : 'Not on your server yet'}
                     </div>
                     {expanded && summary && !downloading ? <div className={styles['sub']}>{summary}{localFile && lib.type === 'series' && localFile.resolution ? ` · ${localFile.resolution}` : ''}</div> : null}
                     {downloading ? <div className={styles['track']}><div className={styles['fill']} style={{ width: `${Math.round((status.progress || 0) * 100)}%` }} /></div> : null}

@@ -6,16 +6,8 @@ import { VerticalNavBar, HorizontalNavBar } from 'stremio/components/NavBar';
 import { useContentGamepadNavigation, useVerticalNavGamepadNavigation } from 'stremio/services/GamepadNavigation';
 import styles from './MainNavBars.less';
 const { useNewOnServer } = require('stremio/common/newOnServer');
-
-const BASE_TABS = [
-    { id: 'board', label: 'Home', icon: 'home', href: '/' },
-    { id: 'discover', label: 'Discover', icon: 'discover', href: '/discover' },
-    { id: 'library', label: 'Library', icon: 'library', href: '/library' },
-    { id: 'calendar', label: 'Calendar', icon: 'calendar', href: '/calendar' },
-    { id: 'downloads', label: 'Downloads', icon: 'download', href: '/downloads' },
-    { id: 'settings', label: 'SETTINGS', icon: 'settings', href: '/settings' },
-];
-const ADMIN_TAB = { id: 'admin', label: 'Admin', icon: 'lock', href: '/admin' };
+// the tab list is shared with the number-key shortcuts (App.js)
+const { navTabs } = require('stremio/common/navTabs');
 
 type Props = {
     className: string,
@@ -30,8 +22,8 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
 
     const isAdmin = !!(window as unknown as { ssoIsAdmin?: boolean }).ssoIsAdmin;
     const fresh = useNewOnServer();
-    const tabs = React.useMemo(() => (isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS)
-        .map((tab) => (tab.id === 'library' && fresh.length > 0 ? { ...tab, badge: fresh.length, badgeTitle: `New on your server: ${fresh.map((i: { title: string }) => i.title).join(', ')}` } : tab)), [isAdmin, fresh]);
+    const tabs = React.useMemo(() => navTabs(isAdmin)
+        .map((tab: { id: string, label: string, icon: string, href: string }) => (tab.id === 'library' && fresh.length > 0 ? { ...tab, badge: fresh.length, badgeTitle: `New on your server: ${fresh.map((i: { title: string }) => i.title).join(', ')}` } : tab)), [isAdmin, fresh]);
     const navRoute = route === 'continue_watching' ? 'library' : (route ?? '');
     useContentGamepadNavigation(contentRef, navRoute);
     useVerticalNavGamepadNavigation(navRef, navRoute);

@@ -24,25 +24,26 @@ const Menu = ({ selected, streamingServer, extraSections = [], onSelect }: Props
     ), [streamingServer?.settings]);
 
     return (
+        // HomeBot: role/aria-current so VoiceOver and keyboard users can find and follow the section links
         <div className={styles['menu']}>
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.GENERAL })} title={t('SETTINGS_NAV_GENERAL')} data-section={SECTIONS.GENERAL} onClick={onSelect}>
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.GENERAL })} title={t('SETTINGS_NAV_GENERAL')} data-section={SECTIONS.GENERAL} role={'button'} aria-current={selected === SECTIONS.GENERAL ? 'true' : undefined} onClick={onSelect}>
                 { t('SETTINGS_NAV_GENERAL') }
             </Button>
             {extraSections.map((s) => (
-                <Button key={s.id} className={classNames(styles['button'], { [styles['selected']]: selected === s.id })} title={s.label} data-section={s.id} onClick={onSelect}>
+                <Button key={s.id} className={classNames(styles['button'], { [styles['selected']]: selected === s.id })} title={s.label} data-section={s.id} role={'button'} aria-current={selected === s.id ? 'true' : undefined} onClick={onSelect}>
                     {s.label}
                 </Button>
             ))}
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.INTERFACE })} title={t('INTERFACE')} data-section={SECTIONS.INTERFACE} onClick={onSelect}>
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.INTERFACE })} title={t('INTERFACE')} data-section={SECTIONS.INTERFACE} role={'button'} aria-current={selected === SECTIONS.INTERFACE ? 'true' : undefined} onClick={onSelect}>
                 { t('INTERFACE') }
             </Button>
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.PLAYER })} title={t('SETTINGS_NAV_PLAYER')} data-section={SECTIONS.PLAYER} onClick={onSelect}>
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.PLAYER })} title={t('SETTINGS_NAV_PLAYER')} data-section={SECTIONS.PLAYER} role={'button'} aria-current={selected === SECTIONS.PLAYER ? 'true' : undefined} onClick={onSelect}>
                 { t('SETTINGS_NAV_PLAYER') }
             </Button>
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.STREAMING })} title={t('SETTINGS_NAV_STREAMING')} data-section={SECTIONS.STREAMING} onClick={onSelect}>
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.STREAMING })} title={t('SETTINGS_NAV_STREAMING')} data-section={SECTIONS.STREAMING} role={'button'} aria-current={selected === SECTIONS.STREAMING ? 'true' : undefined} onClick={onSelect}>
                 { t('SETTINGS_NAV_STREAMING') }
             </Button>
-            { !platform.isMobile && <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.SHORTCUTS })} title={t('SETTINGS_NAV_SHORTCUTS')} data-section={SECTIONS.SHORTCUTS} onClick={onSelect}>
+            { !platform.isMobile && <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.SHORTCUTS })} title={t('SETTINGS_NAV_SHORTCUTS')} data-section={SECTIONS.SHORTCUTS} role={'button'} aria-current={selected === SECTIONS.SHORTCUTS ? 'true' : undefined} onClick={onSelect}>
                 { t('SETTINGS_NAV_SHORTCUTS') }
             </Button> }
 

@@ -58,9 +58,11 @@ const Settings = () => {
             return;
         }
 
-        const marker = scrollTop + 50;
+        // HomeBot: the section in the upper third of the view is the current one (a 50px marker kept the previous,
+        // mostly scrolled-away section lit), measured like the menu click (container offset subtracted, not added)
+        const marker = scrollTop + clientHeight / 3;
         const activeSection = availableSections.reduce((current, section) => {
-            const sectionTop = section.ref.current!.offsetTop + offsetTop;
+            const sectionTop = section.ref.current!.offsetTop - offsetTop;
             return sectionTop <= marker ? section : current;
         }, availableSections[0]);
 

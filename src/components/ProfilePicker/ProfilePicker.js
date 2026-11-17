@@ -87,6 +87,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
     const [accent, setAccent] = React.useState((profile && profile.accent) || DEFAULT_ACCENT);
     const [amoled, setAmoled] = React.useState(profile && profile.settings && profile.settings.amoled !== undefined ? !!profile.settings.amoled : true);
     const [pin, setPin] = React.useState('');
+    const [pinConfirm, setPinConfirm] = React.useState('');
     const [currentPin, setCurrentPin] = React.useState('');
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState('');
@@ -106,6 +107,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
 
     const save = () => run(async () => {
         if (pin && !/^\d{4}$/.test(pin)) throw new Error('PIN must be 4 digits');
+        if (pin && pin !== pinConfirm) throw new Error('The two PINs don’t match');
         let saved;
         const look = { accent, settings: { amoled } };
         if (isNew) {
@@ -156,23 +158,51 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                             key={key}
                             type="button"
                             title={a.label}
+                            aria-label={a.label}
+                            aria-pressed={accent === key}
                             className={classNames(styles['swatch'], { [styles['selected']]: accent === key })}
                             style={{ background: a.color }}
                             onClick={() => setAccent(key)}
                         />
                     ))}
                 </div>
+                {/* PIN fields: a visible label, digits masked (a text input, so browsers don't offer to save it as a password), and a confirm step */}
                 {!isNew && profile.hasPin && !isAdmin ?
-                    <input className={styles['text-input']} inputMode="numeric" maxLength={4} placeholder="Current PIN" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, ''))} />
+                    <label className={styles['field']}>
+                        <span className={styles['field-label']}>Current PIN</span>
+                        <input className={classNames(styles['text-input'], styles['pin-input'])} inputMode="numeric" autoComplete="off" maxLength={4} placeholder="4 digits" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, ''))} />
+                    </label>
                     : null}
-                <input
-                    className={styles['text-input']}
-                    inputMode="numeric"
-                    maxLength={4}
-                    placeholder={!isNew && profile.hasPin ? 'New 4-digit PIN (optional)' : 'PIN lock, 4 digits (optional)'}
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                />
+                <label className={styles['field']}>
+                    <span className={styles['field-label']}>{!isNew && profile.hasPin ? 'New PIN (optional)' : 'PIN lock (optional)'}</span>
+                    <input
+                        className={classNames(styles['text-input'], styles['pin-input'])}
+                        inputMode="numeric"
+                        autoComplete="off"
+                        maxLength={4}
+                        placeholder="4 digits"
+                        value={pin}
+                        onChange={(e) => {
+                            setPin(e.target.value.replace(/\D/g, ''));
+                            setPinConfirm('');
+                        }}
+                    />
+                </label>
+                {pin.length > 0 && pin.length < PIN_LENGTH ? <div className={styles['field-hint']}>A PIN has 4 digits</div> : null}
+                {pin.length === PIN_LENGTH ?
+                    <label className={styles['field']}>
+                        <span className={styles['field-label']}>Confirm PIN</span>
+                        <input
+                            className={classNames(styles['text-input'], styles['pin-input'])}
+                            inputMode="numeric"
+                            autoComplete="off"
+                            maxLength={4}
+                            placeholder="Enter it again"
+                            value={pinConfirm}
+                            onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, ''))}
+                        />
+                    </label>
+                    : null}
                 {!isNew && profile.hasPin ?
                     <button type="button" className={styles['link-btn']} disabled={busy} onClick={() => run(async () => {
                         await pm.removePin(profile.id, currentPin);
@@ -193,7 +223,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                         : <span />}
                     <span>
                         <button type="button" className={styles['secondary']} onClick={onClose}>Cancel</button>
-                        <button type="button" className={styles['primary']} disabled={busy || !name.trim()} onClick={save}>Save</button>
+                        <button type="button" className={styles['primary']} disabled={busy || !name.trim() || (pin.length > 0 && pinConfirm.length < PIN_LENGTH)} onClick={save}>Save</button>
                     </span>
                 </div>
             </div>
@@ -270,7 +300,7 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
     return (
         <div className={styles['picker']}>
             <BrandLockup size={44} className={styles['brand']} />
-            <h1 className={styles['title']}>{manage ? 'Manage profiles' : 'Who\'s watching?'}</h1>
+            <h1 className={styles['title']}>{manage ? 'Manage profiles' : 'Who’s watching?'}</h1>
             {profiles === null ? <div className={styles['muted']}>Loading…</div> : (
                 <div className={styles['grid']}>
                     {profiles.map((p) => (
@@ -293,7 +323,7 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
             )}
             {error ? <div className={styles['form-error']}>{error}</div> : null}
             <label className={styles['pill']}>
-                <span>Use this profile next time</span>
+                <span>Remember my choice on this device</span>
                 <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
             </label>
             <div className={styles['footer-actions']}>
