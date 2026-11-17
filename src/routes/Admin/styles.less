@@ -63,6 +63,31 @@
     .log { grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 1.2fr); }
     .plugin { grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.6fr) auto; .tmain { flex-wrap: wrap; } }
     .hint code { font-size: 0.85em; }
+
+    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 0.9rem; }
+    .plugin-card { display: flex; flex-direction: column; gap: 0.7rem; padding: 1.1rem 1.2rem; border: 1px solid @border; border-radius: 1rem; background: @surface; transition: border-color 0.15s;
+        &.state-active { border-color: rgba(80, 200, 120, 0.35); }
+        &.state-failed { border-color: rgba(255, 90, 90, 0.5); }
+        &.state-off { opacity: 0.75; }
+    }
+    .plugin-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; }
+    .plugin-title { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .plugin-name { font-size: 1.1rem; font-weight: 800; }
+    .plugin-id { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: @muted; }
+    .plugin-desc { flex: 1; font-size: 0.88rem; line-height: 1.45; color: @muted; }
+    .plugin-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+    .plugin-note { font-size: 0.8rem; color: @muted; }
+    .pill { padding: 0.15rem 0.6rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); font-size: 0.74rem; font-weight: 800; }
+    .pill-active { background: rgba(80, 200, 120, 0.18); color: #7fe0a3; }
+    .pill-needs { background: rgba(255, 190, 70, 0.18); color: #ffcf6e; }
+    .pill-failed { background: rgba(255, 90, 90, 0.18); color: #ff9a9a; }
+    .env-chip { padding: 0.1rem 0.45rem; border-radius: 0.4rem; background: rgba(255, 255, 255, 0.08); font-size: 0.72rem; }
+    .switch { flex: none; position: relative; width: 2.6rem; height: 1.5rem; padding: 0; border: none; border-radius: 1rem; background: rgba(255, 255, 255, 0.18); cursor: pointer; transition: background 0.15s;
+        &.on { background: var(--primary-accent-color); }
+        &:disabled { opacity: 0.4; cursor: not-allowed; }
+        .knob { position: absolute; top: 0.2rem; left: 0.2rem; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+        &.on .knob { transform: translateX(1.1rem); }
+    }
     .payload { font-size: 0.8rem; color: @muted; font-family: ui-monospace, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .panel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border: 1px solid @border; border-radius: 1rem; background: @surface; }
