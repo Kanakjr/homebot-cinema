@@ -31,26 +31,40 @@ const Plugins = ({ onError }) => {
                 {data.envOverride ? <> <b>CINEMA_PLUGINS is set in the environment and wins over these switches.</b></> : null}
             </div>
             {changed ? <div className={styles['hint']}><b>Restart the server to apply your changes.</b></div> : null}
-            <div className={styles['table']}>
+            <div className={styles['plugin-grid']}>
                 {data.plugins.map((p) => {
                     const on = p.id in pending ? pending[p.id] : p.enabled;
                     const missing = (p.env || []).filter((e) => e.required && !e.set).map((e) => e.name);
+                    const failed = !!p.error;
+                    const state = failed ? 'failed' : (p.active ? 'active' : (missing.length ? 'needs' : 'off'));
+                    const label = { failed: 'Failed to load', active: 'Active', needs: 'Needs setup', off: 'Off' }[state];
                     return (
-                        <div key={p.id} className={classnames(styles['trow'], styles['plugin'])}>
-                            <div className={styles['tmain']}>
-                                {p.name} <span className={styles['tag']}>{p.id}</span>
-                                {p.source === 'data' ? <span className={styles['tag']}>private</span> : null}
-                            </div>
-                            <div className={styles['tmeta']}>
-                                {p.description}
-                                <div>
-                                    {p.active ? 'Active' : (p.error ? `Failed to load: ${p.error}` : (p.reason || 'Off'))}
-                                    {missing.length ? ` · needs ${missing.join(', ')}` : ''}
+                        <div key={p.id} className={classnames(styles['plugin-card'], styles[`state-${state}`])}>
+                            <div className={styles['plugin-head']}>
+                                <div className={styles['plugin-title']}>
+                                    <span className={styles['plugin-name']}>{p.name}</span>
+                                    <span className={styles['plugin-id']}>{p.id}{p.version ? ` · v${p.version}` : ''}{p.source === 'data' ? ' · private' : ''}</span>
                                 </div>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={on}
+                                    aria-label={`${p.name}: ${on ? 'switch off' : 'switch on'}`}
+                                    className={classnames(styles['switch'], { [styles['on']]: on })}
+                                    disabled={data.envOverride}
+                                    onClick={() => toggle(p)}
+                                >
+                                    <span className={styles['knob']} />
+                                </button>
                             </div>
-                            <button type="button" className={classnames(styles['btn-sm'], { [styles['danger']]: on })} disabled={data.envOverride} onClick={() => toggle(p)}>
-                                {on ? 'Switch off' : 'Switch on'}
-                            </button>
+                            <div className={styles['plugin-desc']}>{p.description}</div>
+                            <div className={styles['plugin-foot']}>
+                                <span className={classnames(styles['pill'], styles[`pill-${state}`])}>{label}</span>
+                                {on !== p.enabled ? <span className={styles['pill']}>Restart to apply</span> : null}
+                                {failed ? <span className={styles['plugin-note']}>{p.error}</span> : null}
+                                {!failed && !p.active && p.reason ? <span className={styles['plugin-note']}>{p.reason}</span> : null}
+                                {missing.map((m) => <code key={m} className={styles['env-chip']}>{m}</code>)}
+                            </div>
                         </div>
                     );
                 })}

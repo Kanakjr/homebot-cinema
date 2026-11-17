@@ -11,6 +11,7 @@ a plugin off removes its routes, its UI and its background work. Core never impo
 | `skip` | Skip intro / recap / credits buttons in the player, intro and credits marks on the seek bar, auto-skip per profile, Up Next when the credits start | on | nothing (`SKIP_INTRODB_URL=off` for no outside lookups) |
 | `nowplaying` | Admin > Now playing (who watches what, direct play or transcoding) and **Watch stats** (`#/stats`): play history kept in the database, hours per day, when you watch, top titles, devices, CSV export | on | nothing |
 | `collections` | "Part of the X collection" on movie pages | on | `TMDB_API_KEY` |
+| `similar` | "More like this" row (recommended titles, posters and ratings) under the description of movie and series pages | on | `TMDB_API_KEY` |
 | `metalfx` | Apple MetalFX AI 4K Upscaler in the player overlay and Settings (macOS native desktop app) | on | macOS Apple Silicon |
 | `ai` | AI copilot drawer (sparkle button): recommendations, server questions, staged downloads | off | `GEMINI_API_KEY` |
 | `telegram` | Household alerts (for example Sentinel queued an episode) to a Telegram chat | off | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |

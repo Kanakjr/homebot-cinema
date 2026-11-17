@@ -1,0 +1,10 @@
+{
+    "id": "similar",
+    "name": "More like this",
+    "description": "\"More like this\" row on movie and series pages: titles people who liked it also liked, from TMDB.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "env": [
+        { "name": "TMDB_API_KEY", "required": true, "description": "TMDB v3 API key (free), shared with Smart filters." }
+    ]
+}

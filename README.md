@@ -181,6 +181,7 @@ you switch on or off, so you run only what you want:
 | `skip` | Skip intro, recap and credits in the player, marks on the seek bar; Up Next when the credits start | on |
 | `nowplaying` | Admin > Now playing, and Watch stats: play history, charts, CSV (kept on your server) | on |
 | `collections` | "Part of the X collection" on movie pages (TMDB) | on |
+| `similar` | "More like this" row on movie and series pages (TMDB recommendations) | on |
 | `metalfx` | 4K AI upscale button and live GPU stats in the macOS desktop app (Apple MetalFX); inert in the browser | on |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |
