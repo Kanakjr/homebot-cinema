@@ -3,6 +3,7 @@
 
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 
 const MAX_PROFILES = 8;
 const MAX_PIN_FAILS = 5;
@@ -41,8 +42,18 @@ function createTokens(secret, now = () => Date.now()) {
     };
 }
 
-// ---------- preset avatars (PNG files in server/avatars: original artwork, see scripts/brand/make-avatars.js) ----------
+// ---------- preset avatars ----------
+// Built in: PNG files in server/avatars (original artwork, scripts/brand/make-avatars.js). An install can supply its own set in
+// <data>/avatar-presets/ (gitignored, part of that install only): when that folder holds any PNG it REPLACES the built-in set.
 const PREFERRED = ['fox', 'panda', 'robot', 'owl'];
+const hasPng = (dir) => {
+    try { return fs.readdirSync(dir).some((f) => /^[a-z0-9-]+\.png$/.test(f)); } catch (_) { return false; }
+};
+/** The first folder that holds avatars: the install's own set, else the built-in one. */
+function resolvePresetDir(dataPath, builtInDir) {
+    const own = path.join(dataPath, 'avatar-presets');
+    return hasPng(own) ? own : builtInDir;
+}
 function loadPresetCatalog(dir) {
     let keys = [];
     try {
@@ -67,4 +78,4 @@ const toPublic = (p) => ({
     accent: p.accent || null, settings: safeJson(p.settings_json),
 });
 
-module.exports = { MAX_PROFILES, MAX_PIN_FAILS, LOCK_MS, loadPresetCatalog, hashPin, checkPin, validPin, createTokens, toPublic, safeJson };
+module.exports = { MAX_PROFILES, MAX_PIN_FAILS, LOCK_MS, loadPresetCatalog, resolvePresetDir, hashPin, checkPin, validPin, createTokens, toPublic, safeJson };

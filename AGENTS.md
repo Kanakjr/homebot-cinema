@@ -57,7 +57,9 @@ Read this file instead of exploring; open only the files named here.
   lists the profile's shows airing in the next 14 days (`server/upnext.js`).
 - System artwork (empty states, default/signed-out avatar, library/calendar placeholders): the captain mascot, `docs/mascot-art.md`
   (`scripts/brand/process-mascot.py`). An install can override them privately with `data/art/<name>.png`.
-- Branding sources: `assets/brand/*.svg`; `scripts/brand/build.js` regenerates icons and splash images. Avatars are original artwork; never commit character images.
+- Branding sources: `assets/brand/*.svg`; `scripts/brand/build.js` regenerates icons and splash images.
+- Avatars: preset avatars live in `server/avatars/`. An install's own set in `data/avatar-presets/` (gitignored) replaces them
+  (`resolvePresetDir` in `server/profiles.js`).
 
 ## Commands
 ```bash
