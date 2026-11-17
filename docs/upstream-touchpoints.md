@@ -27,7 +27,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (strict-origin-when-cross-origin). |
-| `src/App/App.js` | 85 | Streaming server URL fixed to the origin; slot appOverlays; NewOnServer toaster; addons loader; number keys follow the sidebar (`common/navTabs.js`). |
+| `src/App/App.js` | 115 | Streaming server URL fixed to the origin; slot appOverlays; NewOnServer toaster; addons loader; number keys follow the sidebar (`common/navTabs.js`); Phase 3: shell-navigate handler (Go menu, Settings ⌘,, Search ⌘F) & fullscreen sync. |
 | `.gitignore` | 77 | Secrets, data/, local notes. |
 | `src/index.js` | 71 | Boot: plugin list, profile gate, SSO isolation before rendering; our English wording (`common/stringOverrides.js`). |
 | `CONTRIBUTING.md` | 68 | Fork contributing guide. |
@@ -42,13 +42,13 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Settings/General/General.tsx` | 45 | Dashboard link; Stremio-account features (data export, calendar subscription, Trakt) hidden behind `STREMIO_ACCOUNT_FEATURES`. |
 | `src/routes/Player/Error/styles.less` | 44 | Same; Phase 2: accent-foreground text on accent-fill buttons, tokens for translucent oranges. |
 | `src/router/routerPaths.tsx` | 30 | Core routes (/downloads, /admin, /server) + slot routes. |
-| `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 30 | Brand mark, profile avatar, slot navButtons. |
+| `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 32 | Brand mark, profile avatar, slot navButtons; Phase 3: data-tauri-drag-region. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 29 | Badge; Phase 2: inactive-icon opacity 0.35→0.55 (3:1 non-text minimum). |
 | `webpack.config.js` | 30 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API); five system images left out of the offline cache (private `data/art/` override). |
 | `src/routes/Board/Board.js` | 44 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row. |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 15 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
-| `src/App/styles.less` | 35 | Branding; Phase 2: :root token defaults (--secondary/tertiary/quaternary-accent-color unified to primary; --primary-accent-rgb, --accent-foreground-color, --accent-thumb-color). |
+| `src/App/styles.less` | 45 | Branding; Phase 2: :root token defaults (--secondary/tertiary/quaternary-accent-color unified to primary; --primary-accent-rgb, --accent-foreground-color, --accent-thumb-color); Phase 3: --mac-traffic-lights-inset for data-shell=macos and data-fullscreen. |
 | `src/App/WebUpdateScreen/WebUpdateScreen.tsx` | 22 | No update banner. |
 | `src/routes/Calendar/Episode/Episode.less` | 18 | Markers. |
 | `src/routes/Library/Placeholder/Placeholder.tsx` | 18 | No Stremio sign-in prompt; Phase 2: accent token for title colour. |
@@ -59,7 +59,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/MainNavBars/MainNavBars.tsx` | 33 | Core tabs (Downloads, Server, Admin), from `common/navTabs.js`; Phase 2: scroll-edge state (scrolled class on HorizontalNavBar, reset on route change). |
 | `src/routes/Player/Indicator/Indicator.less` | 15 | Same; Phase 2: accent tokens for border and glow. |
 | `src/routes/Player/Indicator/Indicator.tsx` | 12 | HUD notices. |
-| `src/components/NavBar/HorizontalNavBar/styles.less` | 12 | Avatar styles. |
+| `src/components/NavBar/HorizontalNavBar/styles.less` | 16 | Avatar styles; Phase 3: traffic-lights padding-left inset transition. |
 | `Dockerfile` | 12 | Adds the server, plugins and ffmpeg. |
 | `src/routes/Calendar/Selector/Selector.less` | 11 | Markers. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/NavTabButton.js` | 11 | Badge for new on server. |
@@ -112,6 +112,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Calendar/Table/Cell/Cell.less` | 160 | Phase 2: today dot text uses --accent-foreground-color on --secondary-accent-color background. |
 | `src/routes/Player/ShortcutsModal/ShortcutsModal.less` | 185 | Phase 2: hard-coded #F27A24 → tokens; kbd key uses neutral foreground instead of #FFD700. |
 | `src/routes/Settings/Menu/Menu.less` | 55 | Phase 2: version-info opacity 0.3→0.6 (was 2.3:1, now passes 4.5:1). |
+| `src/routes/Settings/Player/Player.tsx` | 20 | Phase 3: hide external player when shell is active, hide duplicate Nvidia GPU toggle on macOS, sublabel explaining background playback restriction. |
 
 ## Replaced images (branding: `scripts/brand/build.js` regenerates them)
 

@@ -91,13 +91,65 @@ async fn set_server(app: tauri::AppHandle, public: String, local: String) -> Res
     Ok(())
 }
 
-/// Menu: the standard macOS menus plus Server > Change Server… (forgets the saved address, shows setup.html).
+/// Menu: macOS native menus with Settings (⌘,), Go menu (⌘1–7, ⌘[, ⌘], ⌘F), Server > Change Server…, etc.
 fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
-    use tauri::menu::{Menu, MenuItem, Submenu};
-    let menu = Menu::default(app.handle())?;
-    let change = MenuItem::with_id(app, "change-server", "Change Server…", true, None::<&str>)?;
-    menu.append(&Submenu::with_items(app, "Server", true, &[&change])?)?;
-    Ok(menu)
+    use tauri::menu::{Menu, MenuItem, Submenu, PredefinedMenuItem};
+    let app_sub = Submenu::with_items(app, "HomeBot Cinema", true, &[
+        &PredefinedMenuItem::about(app, None, None)?,
+        &MenuItem::with_id(app, "menu-settings", "Settings…", true, Some("CmdOrCtrl+,"))?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::services(app, None)?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::hide(app, None)?,
+        &PredefinedMenuItem::hide_others(app, None)?,
+        &PredefinedMenuItem::show_all(app, None)?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::quit(app, None)?,
+    ])?;
+    let file_sub = Submenu::with_items(app, "File", true, &[
+        &PredefinedMenuItem::close_window(app, None)?,
+    ])?;
+    let edit_sub = Submenu::with_items(app, "Edit", true, &[
+        &PredefinedMenuItem::undo(app, None)?,
+        &PredefinedMenuItem::redo(app, None)?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::cut(app, None)?,
+        &PredefinedMenuItem::copy(app, None)?,
+        &PredefinedMenuItem::paste(app, None)?,
+        &PredefinedMenuItem::select_all(app, None)?,
+    ])?;
+    let view_sub = Submenu::with_items(app, "View", true, &[
+        &PredefinedMenuItem::fullscreen(app, None)?,
+    ])?;
+    let go_sub = Submenu::with_items(app, "Go", true, &[
+        &MenuItem::with_id(app, "go-home", "Home", true, Some("CmdOrCtrl+1"))?,
+        &MenuItem::with_id(app, "go-discover", "Discover", true, Some("CmdOrCtrl+2"))?,
+        &MenuItem::with_id(app, "go-library", "Library", true, Some("CmdOrCtrl+3"))?,
+        &MenuItem::with_id(app, "go-calendar", "Calendar", true, Some("CmdOrCtrl+4"))?,
+        &MenuItem::with_id(app, "go-downloads", "Downloads", true, Some("CmdOrCtrl+5"))?,
+        &MenuItem::with_id(app, "go-settings", "Settings", true, Some("CmdOrCtrl+6"))?,
+        &MenuItem::with_id(app, "go-admin", "Admin", true, Some("CmdOrCtrl+7"))?,
+        &PredefinedMenuItem::separator(app)?,
+        &MenuItem::with_id(app, "go-back", "Back", true, Some("CmdOrCtrl+["))?,
+        &MenuItem::with_id(app, "go-forward", "Forward", true, Some("CmdOrCtrl+]"))?,
+        &MenuItem::with_id(app, "go-search", "Search", true, Some("CmdOrCtrl+F"))?,
+    ])?;
+    let server_sub = Submenu::with_items(app, "Server", true, &[
+        &MenuItem::with_id(app, "change-server", "Change Server…", true, None::<&str>)?,
+    ])?;
+    let window_sub = Submenu::with_items(app, "Window", true, &[
+        &PredefinedMenuItem::minimize(app, None)?,
+    ])?;
+
+    Menu::with_items(app, &[
+        &app_sub,
+        &file_sub,
+        &edit_sub,
+        &view_sub,
+        &go_sub,
+        &server_sub,
+        &window_sub,
+    ])
 }
 
 /// Tell the user something important without a terminal (the app is normally launched from Finder).
@@ -501,12 +553,46 @@ fn main() {
             metalfx_status
         ])
         .on_menu_event(|app, event| {
-            if event.id() == "change-server" {
-                server::clear(app);
-                home::stop_watcher();
-                if let Some(w) = app.get_webview_window("main") {
-                    let _ = w.navigate(setup_url());
+            let id = event.id().as_ref();
+            match id {
+                "change-server" => {
+                    server::clear(app);
+                    home::stop_watcher();
+                    if let Some(w) = app.get_webview_window("main") {
+                        let _ = w.navigate(setup_url());
+                    }
                 }
+                "menu-settings" | "go-settings" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/settings" }));
+                }
+                "go-home" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/" }));
+                }
+                "go-discover" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/discover" }));
+                }
+                "go-library" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/library" }));
+                }
+                "go-calendar" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/calendar" }));
+                }
+                "go-downloads" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/downloads" }));
+                }
+                "go-admin" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "route": "/admin" }));
+                }
+                "go-back" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "action": "back" }));
+                }
+                "go-forward" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "action": "forward" }));
+                }
+                "go-search" => {
+                    shell::emit(app, "shell-navigate", serde_json::json!({ "action": "search" }));
+                }
+                _ => {}
             }
         })
         .setup(|app| {
@@ -526,6 +612,8 @@ fn main() {
                 .inner_size(1280.0, 760.0)
                 .min_inner_size(640.0, 400.0)
                 .transparent(true)
+                .title_bar_style(tauri::TitleBarStyle::Overlay)
+                .hidden_title(true)
                 .initialization_script(shell::SHIM);
             if remote && std::env::var("SPIKE_INCOGNITO").is_ok() {
                 builder = builder.incognito(true); // opt-in: fresh storage for this run

@@ -5,6 +5,13 @@
 (function () {
     if (window.__shellShimInstalled) return;
     window.__shellShimInstalled = true;
+    if (document.documentElement) {
+        document.documentElement.dataset.shell = 'macos';
+    } else {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.documentElement.dataset.shell = 'macos';
+        });
+    }
     var listeners = [];
 
     function send(msg) {

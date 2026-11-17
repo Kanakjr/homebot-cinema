@@ -100,7 +100,10 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         {...seekShortTimeDurationSelect}
                     />
                 </Option>
-                <Option label={'SETTINGS_PLAY_IN_BACKGROUND'}>
+                <Option
+                    label={'SETTINGS_PLAY_IN_BACKGROUND'}
+                    sublabel={'Built-in player pauses in background to conserve GPU and battery resources'}
+                >
                     <Toggle
                         disabled={true}
                         tabIndex={-1}
@@ -123,12 +126,15 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                 </Option>
             </Category>
             <Category icon={'glasses'} label={'SETTINGS_SECTION_ADVANCED'}>
-                <Option label={'SETTINGS_PLAY_IN_EXTERNAL_PLAYER'}>
-                    <MultiselectMenu
-                        className={'multiselect'}
-                        {...playInExternalPlayerSelect}
-                    />
-                </Option>
+                {
+                    !shell.active &&
+                        <Option label={'SETTINGS_PLAY_IN_EXTERNAL_PLAYER'}>
+                            <MultiselectMenu
+                                className={'multiselect'}
+                                {...playInExternalPlayerSelect}
+                            />
+                        </Option>
+                }
                 {
                     shell.active &&
                         <Option label={'SETTINGS_HWDEC'}>
@@ -139,7 +145,7 @@ const Player = forwardRef<HTMLDivElement, Props>(({ profile }: Props, ref) => {
                         </Option>
                 }
                 {
-                    shell.active && shell.capabilities.gpuVideoProcessing &&
+                    shell.active && shell.capabilities.gpuVideoProcessing && !platform.name.includes('mac') &&
                         <Option label={'SETTINGS_GPU_VIDEO_PROCESSING'}>
                             <Toggle
                                 tabIndex={-1}

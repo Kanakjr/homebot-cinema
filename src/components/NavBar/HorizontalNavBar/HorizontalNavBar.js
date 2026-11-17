@@ -30,7 +30,7 @@ const HorizontalNavBar = React.memo(({ className, route, query, title, backButto
     ), []);
     useHorizontalNavGamepadNavigation(route || className, backButton ? backButtonOnClick : undefined);
     return (
-        <nav {...props} className={classnames(className, styles['horizontal-nav-bar-container'])}>
+        <nav {...props} data-tauri-drag-region className={classnames(className, styles['horizontal-nav-bar-container'])}>
             {
                 backButton ?
                     <Button className={classnames(styles['button-container'], styles['back-button-container'])} tabIndex={-1} onClick={backButtonOnClick}>

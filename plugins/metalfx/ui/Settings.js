@@ -26,42 +26,50 @@ const Settings = forwardRef((_props, ref) => {
                 />
             </Option>
 
-            <div className={styles['benchmark-card']}>
-                <div className={styles['benchmark-header']}>
-                    <span className={styles['chip']}>Reference benchmark: Apple M4</span>
-                    <span className={styles['target']}>Target: 4K UHD (3840x2160)</span>
+            <details className={styles['benchmark-details']}>
+                <summary className={styles['benchmark-summary']}>
+                    About Apple MetalFX architecture & reference benchmark
+                </summary>
+                <div className={styles['benchmark-card']}>
+                    <div className={styles['benchmark-header']}>
+                        <span className={styles['chip']}>Reference benchmark: Apple M4</span>
+                        <span className={styles['target']}>Target: 4K UHD (3840x2160)</span>
+                    </div>
+                    <div className={styles['grid']}>
+                        <div className={styles['stat']}>
+                            <div className={styles['value']}>5.416 ms</div>
+                            <div className={styles['label']}>GPU Latency</div>
+                        </div>
+                        <div className={styles['stat']}>
+                            <div className={styles['value']}>184.6 FPS</div>
+                            <div className={styles['label']}>Max Throughput</div>
+                        </div>
+                        <div className={styles['stat']}>
+                            <div className={styles['value']}>13.0%</div>
+                            <div className={styles['label']}>24 FPS Budget</div>
+                        </div>
+                        <div className={styles['stat']}>
+                            <div className={styles['value']}>+327%</div>
+                            <div className={styles['label']}>Peak Sharpness</div>
+                        </div>
+                    </div>
                 </div>
-                <div className={styles['grid']}>
-                    <div className={styles['stat']}>
-                        <div className={styles['value']}>5.416 ms</div>
-                        <div className={styles['label']}>GPU Latency</div>
-                    </div>
-                    <div className={styles['stat']}>
-                        <div className={styles['value']}>184.6 FPS</div>
-                        <div className={styles['label']}>Max Throughput</div>
-                    </div>
-                    <div className={styles['stat']}>
-                        <div className={styles['value']}>13.0%</div>
-                        <div className={styles['label']}>24 FPS Budget</div>
-                    </div>
-                    <div className={styles['stat']}>
-                        <div className={styles['value']}>+327%</div>
-                        <div className={styles['label']}>Peak Sharpness</div>
-                    </div>
-                </div>
-                <div className={styles['footer']}>
-                    {isNativeMac ? (
-                        <span className={styles['status-active']}>
-                            ● Native macOS Desktop Engine Connected ({telemetry.inWidth}x{telemetry.inHeight} →{' '}
-                            {telemetry.outWidth}x{telemetry.outHeight})
-                        </span>
-                    ) : (
-                        <span className={styles['status-web']}>
-                            Native desktop app required for hardware-accelerated MetalFX. When streaming in the
-                            macOS app, Apple Silicon executes MetalFX in real-time.
-                        </span>
-                    )}
-                </div>
+            </details>
+
+            <div className={styles['footer']}>
+                {isNativeMac ? (
+                    <span className={styles['status-active']}>
+                        ● Native macOS Desktop Engine Connected
+                        {active && telemetry.inWidth && telemetry.outWidth && (telemetry.inWidth !== telemetry.outWidth || telemetry.inHeight !== telemetry.outHeight)
+                            ? ` (${telemetry.inWidth}x${telemetry.inHeight} → ${telemetry.outWidth}x${telemetry.outHeight})`
+                            : ''}
+                    </span>
+                ) : (
+                    <span className={styles['status-web']}>
+                        Native desktop app required for hardware-accelerated MetalFX. When streaming in the
+                        macOS app, Apple Silicon executes MetalFX in real-time.
+                    </span>
+                )}
             </div>
         </Section>
     );

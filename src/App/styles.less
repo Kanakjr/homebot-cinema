@@ -116,6 +116,16 @@
     @media (display-mode: standalone) {
         --safe-area-inset-bottom: @calculated-bottom-safe-inset;
     }
+
+    --mac-traffic-lights-inset: 0rem;
+}
+
+:root[data-shell='macos'] {
+    --mac-traffic-lights-inset: 4.8rem;
+}
+
+:root[data-shell='macos'][data-fullscreen='true'] {
+    --mac-traffic-lights-inset: 0rem;
 }
 
 * {

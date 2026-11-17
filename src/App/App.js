@@ -78,6 +78,45 @@ const App = () => {
         }
     }, [toggleShortcutModal, toggleGamepadModal, changeInterfaceScale, navigate, goBack]);
 
+    // HomeBot: handle navigation dispatched from desktop shell menus (Go menu, Settings ⌘,, Search ⌘F)
+    React.useEffect(() => {
+        if (!shell || !shell.on) return;
+        const onShellNavigate = (data) => {
+            if (!data) return;
+            if (data.route) {
+                navigate(data.route);
+            } else if (data.action === 'back') {
+                goBack();
+            } else if (data.action === 'forward') {
+                navigate(1);
+            } else if (data.action === 'search') {
+                navigate('/search');
+                setTimeout(() => {
+                    const searchInput = document.querySelector('input[type="search"], input[placeholder*="Search" i]');
+                    if (searchInput) searchInput.focus();
+                }, 50);
+            }
+        };
+        shell.on('shell-navigate', onShellNavigate);
+        return () => shell.off('shell-navigate', onShellNavigate);
+    }, [shell, navigate, goBack]);
+
+    // HomeBot: sync desktop shell fullscreen state to dataset for traffic-light padding
+    React.useEffect(() => {
+        if (!shell || !shell.on) return;
+        const onVisibility = (data) => {
+            if (data && typeof data.isFullscreen === 'boolean') {
+                if (data.isFullscreen) {
+                    document.documentElement.dataset.fullscreen = 'true';
+                } else {
+                    delete document.documentElement.dataset.fullscreen;
+                }
+            }
+        };
+        shell.on('win-visibility-changed', onVisibility);
+        return () => shell.off('win-visibility-changed', onVisibility);
+    }, [shell]);
+
     React.useEffect(() => {
         const prevPath = previousPathRef.current;
         previousPathRef.current = locationPath;

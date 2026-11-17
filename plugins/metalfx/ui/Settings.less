@@ -8,8 +8,26 @@
     color: rgba(255, 255, 255, 0.65);
 }
 
-.benchmark-card {
+.benchmark-details {
     margin-top: 1.25rem;
+
+    .benchmark-summary {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        padding: 0.5rem 0;
+        user-select: none;
+        transition: color 0.15s ease;
+
+        &:hover {
+            color: #ffffff;
+        }
+    }
+}
+
+.benchmark-card {
+    margin-top: 0.75rem;
     padding: 1.15rem 1.35rem;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.1);

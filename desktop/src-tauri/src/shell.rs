@@ -18,7 +18,7 @@ pub const SHIM: &str = include_str!("shell_shim.js");
 
 /// When the last `loadfile` was sent, and to which address (for the start-latency log line).
 static LOADED_AT: Mutex<Option<(Instant, String)>> = Mutex::new(None);
-const SHELL_VERSION: &str = "5.0.0-spike";
+const SHELL_VERSION: &str = "5.0.0";
 
 #[derive(Default)]
 pub struct ShellState {

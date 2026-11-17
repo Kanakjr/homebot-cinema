@@ -8,12 +8,14 @@ type Props = {
     className?: string,
     icon?: string,
     label: string,
+    title?: string,
+    sublabel?: string,
     children: React.ReactNode,
 };
 
-const Option = ({ className, icon, label, children }: Props) => {
+const Option = ({ className, icon, label, title, sublabel, children }: Props) => {
     return (
-        <div className={classNames(className, styles['option'])}>
+        <div className={classNames(className, styles['option'])} title={title}>
             <div className={styles['heading']}>
                 {
                     icon &&
@@ -24,6 +26,7 @@ const Option = ({ className, icon, label, children }: Props) => {
                 }
                 <div className={styles['label']}>
                     {t(label)}
+                    {sublabel && <div style={{ fontSize: '0.8rem', opacity: 0.65, marginTop: '0.2rem', fontWeight: 'normal' }}>{sublabel}</div>}
                 </div>
             </div>
             <div className={styles['content']}>
