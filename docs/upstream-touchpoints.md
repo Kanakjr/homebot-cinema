@@ -78,6 +78,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/core/createTransport.ts` | 6 | Analytics disabled. |
 | `src/common/interfaceScale.ts` | 6 | Zoom default. |
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
+| `src/router/useGoBack.ts` | 9 | Back goes through the real history when there is any (upstream replaced the entry with the origin, leaving it twice in the history). |
 | `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls. |
 | `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
 | `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
