@@ -26,7 +26,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays, Up Next at the credits start and seek-bar marks a plugin reports (skip intro). |
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
-| `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (same-origin). |
+| `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (strict-origin-when-cross-origin). |
 | `src/App/App.js` | 85 | Streaming server URL fixed to the origin; slot appOverlays; NewOnServer toaster; addons loader. |
 | `.gitignore` | 77 | Secrets, data/, local notes. |
 | `src/index.js` | 71 | Boot: plugin list, profile gate, SSO isolation before rendering. |

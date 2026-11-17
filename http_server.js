@@ -45,8 +45,9 @@ const streamLinksSecret = loadSecret(data_path);
 const streamLinks = createStreamLinks({ secret: streamLinksSecret });
 
 const app = express();
-// Never send our hostname to outside services (addons, image CDNs, TMDB) in Referer; same-origin requests keep it.
-app.use((_req, res, next) => { res.set('Referrer-Policy', 'same-origin'); next(); });
+// Outside services get only our origin, never a path. Not 'same-origin': WebKit (desktop app) then sends YouTube no
+// referrer and trailers fail with embed error 153.
+app.use((_req, res, next) => { res.set('Referrer-Policy', 'strict-origin-when-cross-origin'); next(); });
 
 // Plugin hooks (server/plugins/hooks.js): named extension points core exposes to plugins/ (see docs/plugins.md).
 const { createHooks } = require('./server/plugins/hooks');

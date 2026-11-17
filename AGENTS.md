@@ -12,7 +12,7 @@ Read this file instead of exploring; open only the files named here.
 - **No secrets in git or output**: `.env`, API keys, Cloudflare tokens/AUD, `data/` (all gitignored; templates: `.env.example`, `data/addons.example.json`).
 - **No stream sources in git**: no scraper/indexer URLs, piracy sites or release-group names (`server/test/content_guard.nt.js`).
   Sources are operator data: `data/addons.json`, `STREAM_ADDON_URL`, quality profiles in the DB.
-- **No calls to Stremio's own API**: the core worker's `fetch` is guarded (`src/worker/fetchGuard.js`); `Referrer-Policy: same-origin`.
+- **No calls to Stremio's own API**: the core worker's `fetch` is guarded (`src/worker/fetchGuard.js`); `Referrer-Policy: strict-origin-when-cross-origin` (YouTube trailers fail in WebKit with `same-origin`).
   Outside hosts: `docs/third-party-services.md`.
 - **Plugin boundaries** (`server/test/boundaries.nt.js`): core never imports `plugins/*`; plugin server code uses only `ctx` and
   `server/sdk.js`; plugins never import each other. New optional features start as plugins.
