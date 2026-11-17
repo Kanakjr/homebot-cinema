@@ -376,7 +376,7 @@ const plugins = loadPlugins({
         events: eventHub,
         services: {
             library, downloads: downloadsManager, sentinel: sentinelDaemon, quality: qualityStore, probeMany: swarmProbe.probeMany,
-            tmdb, region: process.env.WATCH_REGION || 'IN', streamLinks,
+            tmdb, region: tmdb.region, streamLinks,
         },
         dataPath: data_path,
         settings: pluginSettings,

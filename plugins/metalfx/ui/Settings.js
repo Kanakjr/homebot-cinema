@@ -28,7 +28,7 @@ const Settings = forwardRef((_props, ref) => {
 
             <div className={styles['benchmark-card']}>
                 <div className={styles['benchmark-header']}>
-                    <span className={styles['chip']}>Apple Silicon Verified</span>
+                    <span className={styles['chip']}>Reference benchmark: Apple M4</span>
                     <span className={styles['target']}>Target: 4K UHD (3840x2160)</span>
                 </div>
                 <div className={styles['grid']}>

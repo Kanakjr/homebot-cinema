@@ -181,6 +181,7 @@ you switch on or off, so you run only what you want:
 | `skip` | Skip intro, recap and credits in the player, marks on the seek bar; Up Next when the credits start | on |
 | `nowplaying` | Admin > Now playing, and Watch stats: play history, charts, CSV (kept on your server) | on |
 | `collections` | "Part of the X collection" on movie pages (TMDB) | on |
+| `metalfx` | 4K AI upscale button and live GPU stats in the macOS desktop app (Apple MetalFX); inert in the browser | on |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |
 | `gdrive` | Google Drive (rclone) folders as extra library roots | off |
@@ -200,7 +201,7 @@ All settings are environment variables; [`.env.example`](.env.example) has every
 | `STREMIO_SERVER_HOST/PORT`, `TRANSMISSION_HOST/PORT` | Where the streaming server and Transmission are (defaults match the example compose) |
 | `LIBRARY_MOVIES_DIR`, `LIBRARY_TV_DIR` | Media folders as seen inside the container |
 | `STREAM_ADDON_URL` | The Stremio stream addon Sentinel and the copilot ask for releases (base URL or install link). **No default**: without it they find nothing |
-| `TMDB_API_KEY`, `WATCH_REGION` | Smart filters, and the country whose streaming catalogs are searched |
+| `TMDB_API_KEY`, `WATCH_REGION` | Smart filters, and the country whose streaming catalogs are searched (two letters, any case; default `IN`) |
 | `CINEMA_PLUGINS` | Which plugins run (`all`, `none`, a list, `-id`); otherwise `data/plugins.json`, otherwise each plugin's default |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | Plugin `ai`: the AI copilot |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Plugin `telegram`: alerts |
