@@ -48,4 +48,16 @@
             try { l({ data: json }); } catch (e) { console.error('[shell shim] listener failed', e); }
         });
     };
+
+    // Suppress native WebKit context menu on macOS (Open link in new tab, reload, etc.),
+    // while preserving inputs/textareas and allowing Shift+Right-Click for dev tools.
+    window.addEventListener('contextmenu', function (e) {
+        if (e.shiftKey) return;
+        var target = e.target;
+        var isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        var hasSelection = window.getSelection && window.getSelection().toString().length > 0;
+        if (!isInput && !hasSelection) {
+            e.preventDefault();
+        }
+    }, true);
 })();

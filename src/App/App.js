@@ -258,6 +258,24 @@ const App = () => {
         };
     }, [core.transport, profile.auth]);
 
+    // Prevent default browser/WebKit context menu on non-input elements
+    React.useEffect(() => {
+        const onGlobalContextMenu = (e) => {
+            if (e.shiftKey) return;
+            const target = e.target;
+            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            const hasSelection = window.getSelection && window.getSelection().toString().length > 0;
+            if (!isInput && !hasSelection) {
+                e.preventDefault();
+            }
+        };
+
+        window.addEventListener('contextmenu', onGlobalContextMenu, true);
+        return () => {
+            window.removeEventListener('contextmenu', onGlobalContextMenu, true);
+        };
+    }, []);
+
     return (
         <ServicesProvider services={services}>
             <ToastProvider className={styles['toasts-container']}>
