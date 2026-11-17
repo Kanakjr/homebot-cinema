@@ -70,6 +70,19 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
         return videosForSeason.every((video) => video.watched);
     }, [videosForSeason]);
 
+    const nextUpVideoId = React.useMemo(() => {
+        const st = libraryItem?.state || {};
+        const current = st.video_id;
+        const offset = Number(st.timeOffset) || 0;
+        const duration = Number(st.duration) || 0;
+        const progress = duration > 0 ? offset / duration : 0;
+        if (current && offset > 1 && progress < 0.9) return current;
+        const firstUnwatched = videos.find((v) => !v.watched && (v.season > 0 || seasons.length === 1));
+        return firstUnwatched ? firstUnwatched.id : null;
+    }, [libraryItem, videos, seasons]);
+
+    const seriesRuntime = metaItem?.content?.content?.runtime || null;
+
     const videosContainerRef = React.useRef(null);
     const previousListRef = React.useRef({ titleKey, season: selectedSeason });
     const restoredScrollRef = React.useRef(false);
@@ -199,27 +212,39 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                                                     (!isNaN(video.released.getTime()) && video.released.toLocaleString(profile.settings.interfaceLanguage, { year: '2-digit', month: 'short', day: 'numeric' }).toLowerCase().includes(search.toLowerCase()))
                                                 );
                                         })
-                                        .map((video, index) => (
-                                            <Video
-                                                key={index}
-                                                id={video.id}
-                                                title={video.title}
-                                                thumbnail={video.thumbnail}
-                                                season={video.season}
-                                                episode={video.episode}
-                                                released={video.released}
-                                                upcoming={video.upcoming}
-                                                watched={video.watched}
-                                                progress={video.progress}
-                                                deepLinks={video.deepLinks}
-                                                scheduled={video.scheduled}
-                                                seasonWatched={seasonWatched}
-                                                selected={video.id === selectedVideoId}
-                                                onSelect={saveScrollPosition}
-                                                onMarkVideoAsWatched={onMarkVideoAsWatched}
-                                                onMarkSeasonAsWatched={onMarkSeasonAsWatched}
-                                            />
-                                        ))
+                                        .map((video, index) => {
+                                            const isCurrent = libraryItem?.state?.video_id === video.id;
+                                            const duration = Number(libraryItem?.state?.duration) || 0;
+                                            const offset = Number(libraryItem?.state?.timeOffset) || 0;
+                                            const calculatedProgress = isCurrent && duration > 0 && offset > 1
+                                                ? Math.min(100, Math.max(0, Math.round((offset / duration) * 100)))
+                                                : undefined;
+                                            const progress = typeof video.progress === 'number' ? video.progress : calculatedProgress;
+                                            const runtime = video.runtime || seriesRuntime;
+                                            return (
+                                                <Video
+                                                    key={index}
+                                                    id={video.id}
+                                                    title={video.title}
+                                                    thumbnail={video.thumbnail}
+                                                    season={video.season}
+                                                    episode={video.episode}
+                                                    released={video.released}
+                                                    upcoming={video.upcoming}
+                                                    watched={video.watched}
+                                                    progress={progress}
+                                                    deepLinks={video.deepLinks}
+                                                    scheduled={video.scheduled}
+                                                    seasonWatched={seasonWatched}
+                                                    selected={video.id === selectedVideoId}
+                                                    nextUp={video.id === nextUpVideoId}
+                                                    runtime={runtime}
+                                                    onSelect={saveScrollPosition}
+                                                    onMarkVideoAsWatched={onMarkVideoAsWatched}
+                                                    onMarkSeasonAsWatched={onMarkSeasonAsWatched}
+                                                />
+                                            );
+                                        })
                                 }
                             </div>
                         </React.Fragment>

@@ -120,6 +120,18 @@
                 opacity: 0.65; // HomeBot: 0.44 measured 4.0:1 for this small text
             }
 
+            .runtime-container {
+                flex: none;
+                margin-right: 0.5rem;
+                padding: 0.2rem 0.5rem;
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.75);
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 0.3rem;
+                white-space: nowrap;
+            }
+
             .upcoming-watched-container {
                 flex: 0 1 auto;
                 display: flex;
@@ -130,6 +142,23 @@
 
                 &>:nth-child(2) {
                     margin-left: 0.5rem;
+                }
+
+                .next-up-container {
+                    flex: none;
+                    display: flex;
+                    align-items: center;
+                    height: 100%;
+                    padding: 0 0.5rem;
+                    border-radius: 0.3rem;
+                    background-color: var(--primary-accent-color);
+
+                    .flag-label {
+                        color: var(--accent-foreground-color, #000);
+                        font-size: 0.78rem;
+                        font-weight: 800;
+                        white-space: nowrap;
+                    }
                 }
 
                 .upcoming-container,

@@ -43,7 +43,7 @@ VideoLabel.propTypes = {
     shouldScroll: PropTypes.bool,
 };
 
-const Video = ({ className, id, title, thumbnail, season, episode, released, upcoming, watched, progress, scheduled, seasonWatched, selected, deepLinks, isEpg, isNow, startTime, endTime, onSelect, onMarkVideoAsWatched, onMarkSeasonAsWatched, ...props }) => {
+const Video = ({ className, id, title, thumbnail, season, episode, released, upcoming, watched, progress, scheduled, seasonWatched, selected, deepLinks, isEpg, isNow, startTime, endTime, onSelect, onMarkVideoAsWatched, onMarkSeasonAsWatched, nextUp, runtime, ...props }) => {
     const routeFocused = useRouteFocused();
     const profile = useProfile();
     const navigate = useNavigate();
@@ -180,7 +180,23 @@ const Video = ({ className, id, title, thumbnail, season, episode, released, upc
                                         :
                                         null
                         }
+                        {
+                            typeof runtime === 'string' && runtime.length > 0 ?
+                                <div className={styles['runtime-container']}>
+                                    {runtime}
+                                </div>
+                                :
+                                null
+                        }
                         <div className={styles['upcoming-watched-container']}>
+                            {
+                                nextUp && !watched && !isNow ?
+                                    <div className={styles['next-up-container']}>
+                                        <div className={styles['flag-label']}>Next up</div>
+                                    </div>
+                                    :
+                                    null
+                            }
                             {
                                 upcoming && !watched && !isNow ?
                                     <div className={styles['upcoming-container']}>
@@ -227,7 +243,7 @@ const Video = ({ className, id, title, thumbnail, season, episode, released, upc
                 {children}
             </VideoLabel>
         );
-    }, [deepLinks, playButtonOnClick, playButtonOnKeyDown, selected, menuOpen, endTime, isEpg, isNow, profile.settings.hideSpoilers, profile.settings.interfaceLanguage, season, startTime, t]);
+    }, [deepLinks, playButtonOnClick, playButtonOnKeyDown, selected, menuOpen, endTime, isEpg, isNow, profile.settings.hideSpoilers, profile.settings.interfaceLanguage, season, startTime, t, runtime, nextUp, progress]);
     const renderMenu = React.useMemo(() => function renderMenu() {
         return (
             <div className={styles['context-menu-content']} onPointerDown={popupMenuOnPointerDown} onContextMenu={popupMenuOnContextMenu} onClick={popupMenuOnClick} onKeyDown={popupMenuOnKeyDown}>
@@ -310,6 +326,8 @@ Video.propTypes = {
     onSelect: PropTypes.func,
     onMarkVideoAsWatched: PropTypes.func,
     onMarkSeasonAsWatched: PropTypes.func,
+    nextUp: PropTypes.bool,
+    runtime: PropTypes.string,
 };
 
 module.exports = Video;

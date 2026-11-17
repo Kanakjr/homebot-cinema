@@ -21,6 +21,9 @@ const MetaLinks = require('./MetaLinks');
 const MetaPreviewPlaceholder = require('./MetaPreviewPlaceholder');
 const styles = require('./styles');
 const { Ratings } = require('./Ratings');
+const usePlayResolve = require('stremio/common/usePlayResolve');
+const { api } = require('stremio/common/serverApi');
+const pm = require('stremio/common/profileManager');
 
 const ALLOWED_LINK_REDIRECTS = [
     routesRegexp.search.regexp,
@@ -28,9 +31,25 @@ const ALLOWED_LINK_REDIRECTS = [
     routesRegexp.metadetails.regexp
 ];
 
-const MetaPreview = React.forwardRef(({ className, compact, name, logo, background, runtime, releaseInfo, released, description, deepLinks, links, trailerStreams, inLibrary, toggleInLibrary, watched, toggleWatched, ratingInfo, metadata, children, actions, showIcon = 'play', onShowClick }, ref) => {
+const MetaPreview = React.forwardRef(({ className, compact, name, type, metaId, videoId, logo, background, runtime, releaseInfo, released, description, deepLinks, links, trailerStreams, inLibrary, toggleInLibrary, watched, toggleWatched, ratingInfo, metadata, children, actions, showIcon = 'play', onShowClick }, ref) => {
     const { t } = useTranslation();
     const [shareModalOpen, openShareModal, closeShareModal] = useBinaryState(false);
+    const [playInfo, setPlayInfo] = React.useState(null);
+    const [expandedSummary, setExpandedSummary] = React.useState(false);
+    const { play: triggerPlay, resolving: resolvingPlay } = usePlayResolve();
+
+    React.useEffect(() => {
+        if (!metaId || !type || compact) return;
+        let alive = true;
+        const q = new URLSearchParams({ id: metaId, type });
+        if (videoId) q.set('videoId', videoId);
+        api('GET', `/api/play/resolve?${q.toString()}`, undefined, pm.profileHeaders())
+            .then((r) => { if (alive && r) setPlayInfo(r); })
+            .catch(() => null);
+        return () => { alive = false; };
+    }, [metaId, type, videoId, compact]);
+
+    const playLabel = playInfo && playInfo.label ? playInfo.label : (type === 'series' ? 'Play S1E1' : 'Play');
     const isMobileLandscape = useMediaQuery(`(max-width: ${screenSizes.xsmall}) and (max-height: ${screenSizes['phone-landscape-size']}) and (orientation: landscape)`);
     const iconActions = compact && isMobileLandscape;
     const linksGroups = React.useMemo(() => {
@@ -93,6 +112,15 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
             :
             null;
     }, [deepLinks]);
+    const onPrimaryPlay = React.useCallback((event) => {
+        event.preventDefault();
+        triggerPlay({
+            id: metaId,
+            type,
+            videoId,
+            fallbackHref: showHref,
+        });
+    }, [triggerPlay, metaId, type, videoId, showHref]);
     const trailerHref = React.useMemo(() => {
         if (!Array.isArray(trailerStreams) || trailerStreams.length === 0) {
             return null;
@@ -183,9 +211,127 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
                         null
                 }
                 {
+                    !compact && (metaId || type) ?
+                        <div className={styles['primary-action-container']}>
+                            <button
+                                type="button"
+                                className={styles['primary-play-button']}
+                                onClick={onPrimaryPlay}
+                                disabled={resolvingPlay}
+                                aria-label={playLabel}
+                            >
+                                <svg className={styles['play-icon']} viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                                    <polygon points="5,3 19,12 5,21" />
+                                </svg>
+                                <span>{resolvingPlay ? 'Loading…' : playLabel}</span>
+                            </button>
+                        </div>
+                        :
+                        null
+                }
+                {
+                    !compact ?
+                        <div className={styles['action-row-container']}>
+                            {
+                                typeof trailerHref === 'string' ?
+                                    <ActionButton
+                                        className={styles['action-button']}
+                                        icon={'trailer'}
+                                        label={t('TRAILER')}
+                                        tabIndex={0}
+                                        href={trailerHref}
+                                    />
+                                    :
+                                    null
+                            }
+                            {
+                                typeof toggleInLibrary === 'function' ?
+                                    <ActionButton
+                                        className={styles['action-button']}
+                                        icon={inLibrary ? 'remove-from-library' : 'add-to-library'}
+                                        label={inLibrary ? t('REMOVE_FROM_LIB') : t('ADD_TO_LIB')}
+                                        tabIndex={0}
+                                        onClick={toggleInLibrary}
+                                    />
+                                    :
+                                    null
+                            }
+                            {
+                                typeof toggleWatched === 'function' ?
+                                    <ActionButton
+                                        className={styles['action-button']}
+                                        icon={watched ? 'eye-off' : 'eye'}
+                                        label={watched ? t('CTX_MARK_UNWATCHED') : t('CTX_MARK_WATCHED')}
+                                        tabIndex={0}
+                                        onClick={toggleWatched}
+                                    />
+                                    :
+                                    null
+                            }
+                            {
+                                linksGroups.has(CONSTANTS.SHARE_LINK_CATEGORY) ?
+                                    <React.Fragment>
+                                        <ActionButton
+                                            className={styles['action-button']}
+                                            icon={'share'}
+                                            label={t('CTX_SHARE')}
+                                            tabIndex={0}
+                                            onClick={openShareModal}
+                                        />
+                                        {
+                                            shareModalOpen ?
+                                                <ModalDialog title={t('CTX_SHARE')} onCloseRequest={closeShareModal}>
+                                                    <SharePrompt
+                                                        className={styles['share-prompt']}
+                                                        url={linksGroups.get(CONSTANTS.SHARE_LINK_CATEGORY).href}
+                                                    />
+                                                </ModalDialog>
+                                                :
+                                                null
+                                        }
+                                    </React.Fragment>
+                                    :
+                                    null
+                            }
+                            {
+                                ratingInfo !== null ?
+                                    <Ratings
+                                        ratingInfo={ratingInfo}
+                                        className={styles['ratings-group']}
+                                    />
+                                    :
+                                    null
+                            }
+                        </div>
+                        :
+                        null
+                }
+                {
                     compact && typeof description === 'string' && description.length > 0 ?
                         <div className={styles['description-container']}>
                             {description}
+                        </div>
+                        :
+                        null
+                }
+                {
+                    !compact && typeof description === 'string' && description.length > 0 ?
+                        <div className={classnames(styles['description-container'], { [styles['expanded']]: expandedSummary })}>
+                            <div className={styles['label-container']}>
+                                {t('SUMMARY')}
+                            </div>
+                            <div className={styles['description-text']}>
+                                {description}
+                            </div>
+                            {description.length > 180 ? (
+                                <button
+                                    type="button"
+                                    className={styles['more-toggle']}
+                                    onClick={() => setExpandedSummary(!expandedSummary)}
+                                >
+                                    {expandedSummary ? 'Less' : 'More'}
+                                </button>
+                            ) : null}
                         </div>
                         :
                         null
@@ -206,41 +352,12 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
                             />
                         ))
                 }
-                {
-                    !compact && typeof description === 'string' && description.length > 0 ?
-                        <div className={styles['description-container']}>
-                            <div className={styles['label-container']}>
-                                {t('SUMMARY')}
-                            </div>
-                            {description}
-                        </div>
-                        :
-                        null
-                }
                 {children}
             </div>
             <div className={styles['action-buttons-container']}>
-                {actions !== undefined ? actions : <>
+                {actions !== undefined ? actions : compact ? <>
                     {
-                        typeof trailerHref === 'string' ?
-                            <ActionButton
-                                className={styles['action-button']}
-                                icon={'trailer'}
-                                label={t('TRAILER')}
-                                tabIndex={0}
-                                href={trailerHref}
-                                tooltip={compact}
-                            />
-                            :
-                            null
-                    }
-                    {
-                        typeof toggleInLibrary === 'function' && typeof toggleWatched === 'function'
-                            ? <ActionsGroup items={metaItemActions} className={styles['group-container']} />
-                            : null
-                    }
-                    {
-                        typeof showHref === 'string' && compact ?
+                        typeof showHref === 'string' ?
                             <ActionButton
                                 className={classnames(styles['action-button'], styles['show-button'])}
                                 icon={showIcon}
@@ -255,41 +372,24 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
                             null
                     }
                     {
-                        !compact && ratingInfo !== null ?
-                            <Ratings
-                                ratingInfo={ratingInfo}
-                                className={styles['group-container']}
+                        typeof trailerHref === 'string' ?
+                            <ActionButton
+                                className={styles['action-button']}
+                                icon={'trailer'}
+                                label={t('TRAILER')}
+                                tabIndex={0}
+                                href={trailerHref}
+                                tooltip={true}
                             />
                             :
                             null
                     }
                     {
-                        linksGroups.has(CONSTANTS.SHARE_LINK_CATEGORY) && !compact ?
-                            <React.Fragment>
-                                <ActionButton
-                                    className={styles['action-button']}
-                                    icon={'share'}
-                                    label={t('CTX_SHARE')}
-                                    tooltip={true}
-                                    tabIndex={0}
-                                    onClick={openShareModal}
-                                />
-                                {
-                                    shareModalOpen ?
-                                        <ModalDialog title={t('CTX_SHARE')} onCloseRequest={closeShareModal}>
-                                            <SharePrompt
-                                                className={styles['share-prompt']}
-                                                url={linksGroups.get(CONSTANTS.SHARE_LINK_CATEGORY).href}
-                                            />
-                                        </ModalDialog>
-                                        :
-                                        null
-                                }
-                            </React.Fragment>
-                            :
-                            null
+                        typeof toggleInLibrary === 'function' && typeof toggleWatched === 'function'
+                            ? <ActionsGroup items={metaItemActions} className={styles['group-container']} />
+                            : null
                     }
-                </>}
+                </> : null}
             </div>
         </div>
     );
@@ -298,6 +398,9 @@ const MetaPreview = React.forwardRef(({ className, compact, name, logo, backgrou
 MetaPreview.Placeholder = MetaPreviewPlaceholder;
 
 MetaPreview.propTypes = {
+    type: PropTypes.string,
+    metaId: PropTypes.string,
+    videoId: PropTypes.string,
     metadata: PropTypes.node,
     children: PropTypes.node,
     actions: PropTypes.node,

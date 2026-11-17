@@ -21,7 +21,7 @@ const episodeLabel = (deepLinks) => {
     }
 };
 
-const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, deepLinks, upNext }) => {
+const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, deepLinks, upNext, state }) => {
     const core = useCore();
     const [bgFailed, setBgFailed] = React.useState(false);
     const playerHref = deepLinks && typeof deepLinks.player === 'string' ? deepLinks.player : null;
@@ -32,7 +32,13 @@ const ContinueWatchingCard = ({ className, _id, type, name, poster, progress, de
     const href = nextUp ? `#/detail/series/${encodeURIComponent(_id)}/${encodeURIComponent(nextUp.id)}` : (playerHref || detailsHref);
     const pct = nextUp ? 0 : Math.max(0, Math.min(100, Math.round(progress || 0))); // core reports progress as a percentage
     const ep = nextUp ? `Next up · S${nextUp.season} E${nextUp.episode}` : (type === 'series' ? episodeLabel(deepLinks) : null);
-    const left = upNext && upNext.mode === 'resume' ? timeLeft(upNext.remainingMs) : null;
+    const clientRemainingMs = state && Number(state.duration) > 0 && Number(state.timeOffset) > 1
+        ? Math.max(0, Number(state.duration) - Number(state.timeOffset))
+        : null;
+    const remainingMs = upNext && upNext.mode === 'resume' && typeof upNext.remainingMs === 'number'
+        ? upNext.remainingMs
+        : clientRemainingMs;
+    const left = typeof remainingMs === 'number' ? timeLeft(remainingMs) : null;
     const pill = nextUp ? (upNext.mode === 'upcoming' ? (airLabel(nextUp.released) ? `Airs ${airLabel(nextUp.released)}` : 'Not aired yet') : 'New episode')
         : left || (pct > 0 && pct < 100 ? `${pct}% watched` : null);
 
@@ -67,7 +73,11 @@ ContinueWatchingCard.propTypes = {
     poster: PropTypes.string,
     progress: PropTypes.number,
     deepLinks: PropTypes.object,
-    upNext: PropTypes.shape({ mode: PropTypes.string, remainingMs: PropTypes.number, next: PropTypes.object })
+    upNext: PropTypes.shape({ mode: PropTypes.string, remainingMs: PropTypes.number, next: PropTypes.object }),
+    state: PropTypes.shape({
+        duration: PropTypes.number,
+        timeOffset: PropTypes.number,
+    }),
 };
 
 module.exports = ContinueWatchingCard;

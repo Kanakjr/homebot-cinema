@@ -83,13 +83,23 @@ function continueState(item, meta, now = Date.now()) {
     const progress = duration > 0 ? Math.min(1, offset / duration) : 0;
     const inProgress = duration > 0 && offset > 1 && progress < FINISHED;
     const base = { id: item._id, mode: 'none', remainingMs: null, progress: Math.round(progress * 1000) / 1000, next: null };
-    if (inProgress) return { ...base, mode: 'resume', remainingMs: Math.max(0, Math.round(duration - offset)) };
+    const current = typeof st.video_id === 'string' ? st.video_id : null;
+    const m = current ? /^tt\d+:(\d+):(\d+)$/.exec(current) : null;
+    if (inProgress) {
+        return {
+            ...base,
+            mode: 'resume',
+            remainingMs: Math.max(0, Math.round(duration - offset)),
+            videoId: current,
+            season: m ? Number(m[1]) : null,
+            episode: m ? Number(m[2]) : null,
+        };
+    }
     if (item.type !== 'series' || !meta) return base;
 
     const eps = episodes(meta);
     if (!eps.length) return base;
     const watched = decodeWatched(st.watched, meta.videos.map((v) => v.id));
-    const current = typeof st.video_id === 'string' ? st.video_id : null;
     const currentDone = current && (progress >= FINISHED || (offset <= 1 && ((Number(st.flaggedWatched) || 0) > 0 || (Number(st.timesWatched) || 0) > 0)));
     if (currentDone) watched.add(current);
     let furthest = -1;
@@ -99,7 +109,14 @@ function continueState(item, meta, now = Date.now()) {
     if (!next) return { ...base, mode: 'done' };
     const ep = shapeEpisode(next);
     const aired = ep.released !== null && Date.parse(ep.released) <= now;
-    return { ...base, mode: aired ? 'next' : 'upcoming', next: ep };
+    return {
+        ...base,
+        mode: aired ? 'next' : 'upcoming',
+        next: ep,
+        videoId: ep.id,
+        season: ep.season,
+        episode: ep.episode,
+    };
 }
 
 /** Episodes of `shows` ([{ id, name, poster }] with their metas) airing in [now - 1 day, now + days], soonest first. */

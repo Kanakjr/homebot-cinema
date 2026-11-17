@@ -61,18 +61,61 @@
 
     .meta { display: flex; align-items: center; gap: 0.7rem; font-size: 1.05rem; color: rgba(255, 255, 255, 0.85); .dot { opacity: 0.6; } }
 
+    .synopsis {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.82);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 38rem;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-top: 0.2rem;
+    }
+
     .cta {
         display: inline-flex;
         align-items: center;
-        padding: 0.8rem 1.6rem;
+        gap: 0.5rem;
+        padding: 0.75rem 1.4rem;
         border-radius: 1.4rem;
-        background: #fff;
-        color: #000;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 700;
         text-decoration: none;
-        transition: transform 0.15s;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.15s, background-color 0.15s;
+
         &:hover, &:focus-visible { transform: scale(1.04); }
+
+        &.cta-play {
+            background: var(--primary-accent-color);
+            color: var(--accent-foreground-color, #000);
+
+            .play-icon {
+                flex: none;
+                margin-right: 0.1rem;
+            }
+        }
+
+        &.cta-details {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+
+            &:hover { background: rgba(255, 255, 255, 0.28); }
+        }
     }
 
     // small round, see-through previous/next buttons; shown while the pointer or keyboard is on the banner (always, a bit fainter, on touch screens)
@@ -105,8 +148,9 @@
     }
     &:hover .nav, &:focus-within .nav { opacity: 1; }
 
-    .dots { position: absolute; right: 1.6rem; bottom: 1.4rem; display: flex; gap: 0.5rem; }
+    .dots { position: absolute; right: 1.6rem; bottom: 1.4rem; display: flex; gap: 0.5rem; align-items: center; }
     .pip {
+        position: relative;
         width: 0.55rem;
         height: 0.55rem;
         padding: 0;
@@ -116,6 +160,16 @@
         cursor: pointer;
         transition: width 0.25s, background 0.25s;
         &.on { width: 1.8rem; background: #fff; }
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2.4rem;
+            height: 2.4rem;
+        }
     }
 }
 

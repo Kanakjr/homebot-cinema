@@ -326,7 +326,13 @@ registerLibraryRoutes(app, {
 });
 // Home screen: Continue watching "next up" (after the furthest episode watched) and the Upcoming row (per profile)
 const upnextApi = require('./server/upnext');
-upnextApi.registerUpNextRoutes(app, { upnext: upnextApi.createUpNext({ raw: cinemaDb.raw }), requireProfile: profileApi.requireProfile });
+const upnextService = upnextApi.createUpNext({ raw: cinemaDb.raw });
+upnextApi.registerUpNextRoutes(app, { upnext: upnextService, requireProfile: profileApi.requireProfile });
+
+// Play resolver: 1-click play for hero banner and title detail pages
+const playResolve = require('./server/play_resolve');
+const playResolver = playResolve.createPlayResolver({ library, upnext: upnextService, grabberStore: qualityStore, streamAddonUrl: process.env.STREAM_ADDON_URL });
+playResolve.registerPlayRoutes(app, { resolver: playResolver, requireProfile: profileApi.requireProfile });
 
 // TMDB client: a core service (smart filters and the AI copilot use it). Without TMDB_API_KEY it reports "not configured".
 const tmdb = require('./server/tmdb').createTmdb({ apiKey: process.env.TMDB_API_KEY, apiBase: process.env.TMDB_API_BASE || undefined, raw: cinemaDb.raw, region: process.env.WATCH_REGION || 'IN' });

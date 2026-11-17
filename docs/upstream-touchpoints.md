@@ -113,6 +113,12 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/ShortcutsModal/ShortcutsModal.less` | 185 | Phase 2: hard-coded #F27A24 → tokens; kbd key uses neutral foreground instead of #FFD700. |
 | `src/routes/Settings/Menu/Menu.less` | 55 | Phase 2: version-info opacity 0.3→0.6 (was 2.3:1, now passes 4.5:1). |
 | `src/routes/Settings/Player/Player.tsx` | 20 | Phase 3: hide external player when shell is active, hide duplicate Nvidia GPU toggle on macOS, sublabel explaining background playback restriction. |
+| `src/routes/Settings/components/Option/Option.tsx` | 7 | Phase 3: support optional sublabel and title tooltip for setting options. |
+
+<!-- Phase 4: Play-first title pages and 1-click playback -->
+| `src/components/Video/Video.js` | 22 | Phase 4: renders Next up badge on current unwatched/in-progress episode and displays episode runtime tag. |
+| `src/routes/Board/styles.less` | 12 | Phase 4: max-width 1/4 constraint on board-row-landscape cards to maintain 16:9 aspect ratio and alignment with Upcoming row. |
+| `src/routes/MetaDetails/VideosList/VideosList.js` | 67 | Phase 4: episode watch progress tracking, runtime pass-through, next-up episode detection. |
 
 ## Replaced images (branding: `scripts/brand/build.js` regenerates them)
 

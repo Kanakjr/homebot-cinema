@@ -226,6 +226,9 @@ const MetaDetails = () => {
                                         <MetaPreview
                                             className={classnames(styles['meta-preview'], 'animation-fade-in')}
                                             name={metaDetails.metaItem.content.content.name}
+                                            type={metaPath.type}
+                                            metaId={metaDetails.metaItem.content.content.id}
+                                            videoId={streamPath?.id ?? null}
                                             logo={metaDetails.metaItem.content.content.logo}
                                             runtime={metaDetails.metaItem.content.content.runtime}
                                             releaseInfo={metaDetails.metaItem.content.content.releaseInfo}
@@ -242,7 +245,6 @@ const MetaDetails = () => {
                                             toggleInLibrary={metaDetails.metaItem.content.content.inLibrary ? removeFromLibrary : addToLibrary}
                                             watched={metaDetails.metaItem.content.content.watched}
                                             toggleWatched={toggleWatched}
-                                            metaId={metaDetails.metaItem.content.content.id}
                                             ratingInfo={metaDetails.ratingInfo}
                                         >
                                             {/* HomeBot: plugin sections under the description */}

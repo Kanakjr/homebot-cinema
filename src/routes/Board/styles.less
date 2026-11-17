@@ -47,6 +47,18 @@
     .board-content-container {
         .board-content {
             .visible-items(~".board-row-poster, .board-row-square, .continue-watching-row", ~".board-row-landscape");
+
+            .board-row-landscape {
+                .meta-items-container {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: flex-start;
+                }
+
+                .meta-item {
+                    max-width: calc(100% / 4);
+                }
+            }
         }
     }
 }

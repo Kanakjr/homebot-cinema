@@ -6,6 +6,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
+const usePlayResolve = require('stremio/common/usePlayResolve');
 const { MAX_SLIDES } = require('./pickHeroItems');
 const styles = require('./styles');
 
@@ -14,16 +15,25 @@ const SWIPE_PX = 40;
 const imdbArt = (kind, id) => `https://images.metahub.space/${kind}/medium/${id}/img`;
 
 const Slide = ({ item, active, onBackdropBroken }) => {
+    const { play, resolving } = usePlayResolve();
     // the text title shows until the logo image has loaded (or for good if it fails); a shimmer until the backdrop arrives
     const [logoState, setLogoState] = React.useState('loading'); // loading | ok | failed
     const [backdropReady, setBackdropReady] = React.useState(false);
     const logoSrc = item.logo || imdbArt('logo', item.id);
     const href = getMetaDetailsHref(item.deepLinks) || `#/detail/${item.type}/${item.id}`;
+    const year = item.releaseInfo || (item.year ? String(item.year) : null);
     const meta = [
         item.type === 'series' ? 'Series' : item.type === 'movie' ? 'Movie' : item.type,
         Array.isArray(item.genres) && item.genres[0],
-        item.releaseInfo
+        year
     ].filter(Boolean);
+    const synopsis = item.description || item.overview || null;
+
+    const onPlay = React.useCallback((event) => {
+        event.preventDefault();
+        play({ id: item.id, type: item.type, fallbackHref: href });
+    }, [play, item, href]);
+
     return (
         <div className={classnames(styles['slide'], { [styles['active']]: active, [styles['loading']]: !backdropReady })} aria-hidden={!active}>
             <img
@@ -48,7 +58,25 @@ const Slide = ({ item, active, onBackdropBroken }) => {
                 <div className={styles['meta']}>
                     {meta.map((m, i) => <React.Fragment key={m}>{i > 0 ? <span className={styles['dot']}>•</span> : null}<span>{m}</span></React.Fragment>)}
                 </div>
-                <a className={styles['cta']} href={href} tabIndex={active ? 0 : -1}>View details</a>
+                {synopsis ? <p className={styles['synopsis']}>{synopsis}</p> : null}
+                <div className={styles['actions']}>
+                    <button
+                        type="button"
+                        className={classnames(styles['cta'], styles['cta-play'])}
+                        onClick={onPlay}
+                        disabled={resolving}
+                        tabIndex={active ? 0 : -1}
+                        aria-label={`Play ${item.name}`}
+                    >
+                        <svg className={styles['play-icon']} viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                            <polygon points="5,3 19,12 5,21" />
+                        </svg>
+                        <span>{resolving ? 'Loading…' : 'Play'}</span>
+                    </button>
+                    <a className={classnames(styles['cta'], styles['cta-details'])} href={href} tabIndex={active ? 0 : -1}>
+                        View details
+                    </a>
+                </div>
             </div>
         </div>
     );
