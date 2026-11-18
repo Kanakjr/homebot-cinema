@@ -29,6 +29,10 @@ describe('desktop shim track labels', () => {
         expect(a.title).toBe('E-AC3 5.1');
         expect(b.title).toBe('AAC Stereo');
     });
+    it('drops the speaker-position suffix from the channel layout', () => {
+        const [a] = labels([{ type: 'audio', lang: 'eng', codec: 'eac3', 'demux-channels': '5.1(side)', 'demux-channel-count': 6 }]);
+        expect(a.title).toBe('E-AC3 5.1');
+    });
     it('keeps the file title and adds what it lacks', () => {
         const [a] = labels([{ type: 'audio', lang: 'eng', codec: 'eac3', title: 'English Atmos', 'demux-channel-count': 6 }]);
         expect(a.title).toBe('English Atmos · E-AC3 5.1');

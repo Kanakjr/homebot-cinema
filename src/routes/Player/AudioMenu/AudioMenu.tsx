@@ -12,6 +12,11 @@ type Props = {
     onAudioTrackSelected: (id: string) => void,
 };
 
+// The track's own description, without the bare language name some players use as a label
+const ownLabelOf = ({ label, lang }: { label?: string, lang: string }) => {
+    return label && label !== lang && label !== (languages.label(lang) || lang) ? label : '';
+};
+
 const AudioMenu = memo(forwardRef<HTMLDivElement, Props>(({ className, selectedAudioTrackId, audioTracks, onAudioTrackSelected }: Props, ref) => {
     const { t } = useTranslation();
 
@@ -35,11 +40,12 @@ const AudioMenu = memo(forwardRef<HTMLDivElement, Props>(({ className, selectedA
                     {
                         audioTracks.map(({ id, label, lang }, index) => {
                             const langLabel = languages.label(lang) || lang;
-                            // Same language twice and nothing to tell them apart: number them within the language
-                            const sameLanguage = audioTracks.filter((track) => track.lang === lang);
-                            const displayLabel = label && label !== lang && label !== langLabel
-                                ? label
-                                : (sameLanguage.length > 1 ? `Audio ${audioTracks.slice(0, index).filter((track) => track.lang === lang).length + 1}` : '');
+                            const ownLabel = ownLabelOf({ label, lang });
+                            // Tracks that read the same (same language and label, or no label at all) get a number within
+                            // that group, so they can be told apart
+                            const sameText = audioTracks.filter((track) => track.lang === lang && ownLabelOf(track) === ownLabel);
+                            const position = audioTracks.slice(0, index).filter((track) => sameText.includes(track)).length + 1;
+                            const displayLabel = sameText.length > 1 ? `${ownLabel ? `${ownLabel} · ` : ''}Audio ${position}` : ownLabel;
                             return (
                                 <Button
                                     key={index}

@@ -54,7 +54,8 @@
         var channels = '';
         var chCount = track['demux-channel-count'] || track['audio-channels'];
         if (track['demux-channels']) {
-            channels = String(track['demux-channels']);
+            // mpv reports the layout as "5.1(side)" / "7.1": the speaker-position suffix is noise here
+            channels = String(track['demux-channels']).replace(/\(.*\)/, '').trim();
         } else if (chCount === 8) {
             channels = '7.1';
         } else if (chCount === 6) {
