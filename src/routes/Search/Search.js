@@ -8,6 +8,8 @@ const { default: Icon } = require('@stremio/stremio-icons/react');
 const { withCoreSuspender } = require('stremio/common');
 const { Image, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
 const PageHeader = require('stremio/components/PageHeader');
+const { api } = require('stremio/common/serverApi');
+const topResults = require('./topResults');
 const useSearch = require('./useSearch');
 const styles = require('./styles');
 const { useSearchParams } = require('react-router-dom');
@@ -28,6 +30,26 @@ const Search = () => {
             :
             null;
     }, [search.selected]);
+    // HomeBot: titles already on the server for this query, so they can be marked and listed first
+    const [onServer, setOnServer] = React.useState(() => new Set());
+    React.useEffect(() => {
+        let cancelled = false;
+        if (!query) {
+            setOnServer(new Set());
+            return undefined;
+        }
+        api('GET', `/api/library?q=${encodeURIComponent(query)}`)
+            .then((res) => !cancelled && setOnServer(new Set((res.items || []).map((i) => i.imdbId).filter(Boolean))))
+            .catch(() => !cancelled && setOnServer(new Set()));
+        return () => { cancelled = true; };
+    }, [query]);
+    const top = React.useMemo(() => {
+        if (query === null) return [];
+        const ranked = topResults(search.catalogs, query);
+        const local = ranked.filter((item) => onServer.has(item.id));
+        return [...local, ...ranked.filter((item) => !onServer.has(item.id))]
+            .map((item) => (onServer.has(item.id) ? { ...item, subtitle: ['On your server', item.subtitle].filter(Boolean).join(' · ') } : item));
+    }, [search.catalogs, query, onServer]);
     const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
         catalogs: search.catalogs,
         loadRange: loadSearchRows,
@@ -94,43 +116,54 @@ const Search = () => {
                                     <div className={styles['message-hint']}>Check the spelling, or try a title, an actor or an IMDb link.</div>
                                 </div>
                                 :
-                                catalogRows.map(({ catalog, index }) => {
-                                    switch (catalog.content?.type) {
-                                        case 'Ready': {
-                                            return (
-                                                <MetaRow
-                                                    key={index}
-                                                    className={classnames(styles['search-row'], styles[`search-row-${catalog.content.content[0].posterShape}`], 'animation-fade-in')}
-                                                    catalog={catalog}
-                                                    itemComponent={MetaItem}
-                                                />
-                                            );
-                                        }
-                                        case 'Err': {
-                                            if (catalog.content.content !== 'EmptyContent') {
+                                <>
+                                    {top.length >= 2 ?
+                                        <MetaRow
+                                            className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
+                                            title="Top results"
+                                            catalog={{ items: top }}
+                                            itemComponent={MetaItem}
+                                        />
+                                        :
+                                        null}
+                                    {catalogRows.map(({ catalog, index }) => {
+                                        switch (catalog.content?.type) {
+                                            case 'Ready': {
                                                 return (
                                                     <MetaRow
                                                         key={index}
-                                                        className={classnames(styles['search-row'], 'animation-fade-in')}
+                                                        className={classnames(styles['search-row'], styles[`search-row-${catalog.content.content[0].posterShape}`], 'animation-fade-in')}
                                                         catalog={catalog}
-                                                        message={catalog.content.content}
+                                                        itemComponent={MetaItem}
                                                     />
                                                 );
                                             }
-                                            return null;
+                                            case 'Err': {
+                                                if (catalog.content.content !== 'EmptyContent') {
+                                                    return (
+                                                        <MetaRow
+                                                            key={index}
+                                                            className={classnames(styles['search-row'], 'animation-fade-in')}
+                                                            catalog={catalog}
+                                                            message={catalog.content.content}
+                                                        />
+                                                    );
+                                                }
+                                                return null;
+                                            }
+                                            default: {
+                                                return (
+                                                    <MetaRow.Placeholder
+                                                        key={index}
+                                                        className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
+                                                        catalog={catalog}
+                                                        title={t.catalogTitle(catalog)}
+                                                    />
+                                                );
+                                            }
                                         }
-                                        default: {
-                                            return (
-                                                <MetaRow.Placeholder
-                                                    key={index}
-                                                    className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
-                                                    catalog={catalog}
-                                                    title={t.catalogTitle(catalog)}
-                                                />
-                                            );
-                                        }
-                                    }
-                                })
+                                    })}
+                                </>
                 }
             </div>
         </MainNavBars>

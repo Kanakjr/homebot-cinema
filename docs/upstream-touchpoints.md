@@ -139,6 +139,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Settings/General/User/User.less` | 10 | Phase 6: Switch profile / Sign out buttons in the Account pane. |
 | `src/routes/Settings/Settings.less` | 8 | Phase 6: readable max width for the pane. |
 | `src/routes/Settings/constants.ts` | 1 | Phase 6: `ABOUT` section id. |
+| `src/components/MetaItem/styles.less` | 7 | Phase 7: small year/type line under the title (`subtitle`, Search top results). |
 | `src/components/LibItem/LibItem.js` | 2 | Context menu: pass explicit id/_id to MetaItem for right-click actions. |
 | `src/components/MetaItem/MetaItem.js` | 30 | Context menu: right-click menu with Instant Play, Add/Remove Library, Mark Watched/Unwatched, Details, Copy Link. |
 

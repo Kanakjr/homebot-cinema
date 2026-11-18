@@ -55,7 +55,8 @@
     .section { display: flex; align-items: center; gap: 0.6rem; margin: 2rem 0 0.9rem; font-size: 1.35rem; font-weight: 800; }
     .count { padding: 0.1rem 0.6rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); font-size: 0.82rem; }
 
-    .list { display: flex; flex-direction: column; gap: 0.6rem; }
+    // two columns once the window is wide enough, instead of one long narrow list
+    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 34rem), 1fr)); gap: 0.6rem; }
     .card {
         display: flex;
         align-items: center;

@@ -11,6 +11,7 @@ const PageHeader = require('stremio/components/PageHeader');
 const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const { useQualityProfiles } = require('stremio/common/qualityProfile');
 const useServerEvents = require('stremio/common/useServerEvents');
+const prettyTitle = require('./prettyTitle');
 const styles = require('./Downloads.less');
 
 const POLL_MS = 3000;
@@ -161,7 +162,7 @@ const Downloads = () => {
                                 <div key={t.id} className={styles['card']}>
                                     <Thumb src={t.poster} title={t.title} />
                                     <div className={styles['card-main']}>
-                                        <div className={styles['card-title']}>{t.title}</div>
+                                        <div className={styles['card-title']} title={t.title}>{prettyTitle(t.title)}</div>
                                         <div className={styles['track']}><div className={styles['fill']} style={{ width: `${p}%` }} /></div>
                                         <div className={styles['card-meta']}>
                                             <span>{paused ? 'Paused' : `${p}%`}</span>
@@ -219,7 +220,7 @@ const Downloads = () => {
                             <button key={d.id} type="button" className={classnames(styles['card'], styles['clickable'])} onClick={() => openOnServer(d)}>
                                 <Thumb src={d.poster} title={d.title} />
                                 <div className={styles['card-main']}>
-                                    <div className={styles['card-title']}>{d.title}</div>
+                                    <div className={styles['card-title']} title={d.title}>{prettyTitle(d.title)}</div>
                                     <div className={styles['card-meta']}>
                                         <span>{formatBytes(d.totalSize)}</span>
                                         <span>{when(d.completedAt || d.addedAt)}</span>

@@ -18,7 +18,7 @@ const { ICON_FOR_TYPE } = require('stremio/common/CONSTANTS');
 const MetaContextMenu = require('stremio/components/MetaContextMenu');
 const styles = require('./styles');
 
-const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, ...props }) => {
+const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, subtitle, ...props }) => {
     const { t } = useTranslation();
     const artwork = poster && typeof poster === 'object' ? poster : { src: poster, shape: posterShape, changeCursor: posterChangeCursor };
     const { navigateWithOrigin } = useNavigateWithOrigin();
@@ -163,6 +163,8 @@ const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster
                         <div className={classnames(styles['title-bar-container'], { [styles['has-menu']]: hasOptions })}>
                             <div className={styles['title-label']}>
                                 {typeof name === 'string' && name.length > 0 ? name : ''}
+                                {/* HomeBot: year and type under the title (Search top results), so equal titles can be told apart */}
+                                {typeof subtitle === 'string' && subtitle.length > 0 ? <span className={styles['subtitle-label']}>{subtitle}</span> : null}
                             </div>
                         </div>
                         :
@@ -227,6 +229,7 @@ MetaItem.propTypes = {
     inLibrary: PropTypes.bool,
     type: PropTypes.string,
     name: PropTypes.string,
+    subtitle: PropTypes.string,
     poster: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.shape({
