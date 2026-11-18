@@ -15,12 +15,11 @@
     }
 
     .slider-track-after {
-        background: var(--primary-accent-color) !important;
-        background-color: var(--primary-accent-color) !important;
+        background-color: var(--primary-foreground-color);
     }
 
     .slider-thumb {
-        background-color: var(--primary-accent-color);
+        background-color: @color-secondaryvariant1-light4;
         transition: transform 150ms ease;
 
         &:after {
@@ -31,15 +30,13 @@
             left: 0;
             right: 0;
             border-radius: 100%;
-            box-shadow: 0 0 0 0.25rem var(--primary-accent-color) inset;
-            filter: brightness(130%);
+            box-shadow: 0 0 0 0.25rem white inset;
         }
     }
 
     &:hover, &:global(.active) {
         .slider-track-after {
-            background: var(--primary-accent-color) !important;
-            background-color: var(--primary-accent-color) !important;
+            background-color: var(--primary-foreground-color);
         }
 
         .slider-thumb {

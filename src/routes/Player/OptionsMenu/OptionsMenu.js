@@ -25,8 +25,6 @@ const OptionsMenu = React.memo(React.forwardRef(({
     videoScale,
     videoScaleLabel,
     onVideoScaleChanged,
-    statisticsAvailable,
-    onToggleStatisticsMenu,
     onToggleShortcutsModal
 }, ref) => {
     const { t } = useTranslation();
@@ -169,16 +167,6 @@ const OptionsMenu = React.memo(React.forwardRef(({
                     null
             }
             {
-                statisticsAvailable && typeof onToggleStatisticsMenu === 'function' ?
-                    <Option
-                        icon={'network'}
-                        label={t('PLAYER_STATISTICS') || 'Network statistics'}
-                        onClick={onToggleStatisticsMenu}
-                    />
-                    :
-                    null
-            }
-            {
                 typeof onToggleShortcutsModal === 'function' ?
                     <Option
                         icon={'help'}
@@ -213,8 +201,6 @@ OptionsMenu.propTypes = {
     videoScale: PropTypes.string,
     videoScaleLabel: PropTypes.string,
     onVideoScaleChanged: PropTypes.func,
-    statisticsAvailable: PropTypes.bool,
-    onToggleStatisticsMenu: PropTypes.func,
     onToggleShortcutsModal: PropTypes.func,
 };
 

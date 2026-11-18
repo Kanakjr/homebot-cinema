@@ -1167,8 +1167,6 @@ const Player = () => {
                     videoScale={video.state.videoScale}
                     videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
                     onVideoScaleChanged={onVideoScaleChanged}
-                    statisticsAvailable={statisticsMenuAvailable}
-                    onToggleStatisticsMenu={toggleStatisticsMenu}
                     onToggleShortcutsModal={toggleShortcutsModal}
                 />
             </ContextMenu>
@@ -1206,6 +1204,7 @@ const Player = () => {
                 nextVideo={isEpg ? null : player.nextVideo}
                 stream={player.selected !== null ? player.selected.stream : null}
                 statisticsAvailable={statisticsMenuAvailable}
+                onToggleStatisticsMenu={toggleStatisticsMenu}
                 fullscreen={fullscreen}
                 onToggleFullscreen={toggleFullscreen}
                 onPlayRequested={onPlayRequested}
@@ -1335,8 +1334,6 @@ const Player = () => {
                     videoScale={video.state.videoScale}
                     videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
                     onVideoScaleChanged={onVideoScaleChanged}
-                    statisticsAvailable={statisticsMenuAvailable}
-                    onToggleStatisticsMenu={toggleStatisticsMenu}
                     onToggleShortcutsModal={toggleShortcutsModal}
                 />
             </Transition>

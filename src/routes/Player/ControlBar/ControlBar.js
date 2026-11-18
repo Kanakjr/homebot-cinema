@@ -14,10 +14,10 @@ const { PluginSlot } = require('stremio/plugins');
 const { t } = require('i18next');
 
 const Skip10BackIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 4.5A7.5 7.5 0 1 0 19.5 12" />
-        <polyline points="12 1 12 5 8 5" />
-        <text x="12" y="15" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7.5" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    <svg className={className} viewBox="0 0 512 512">
+        <path fill="currentColor" d="m256.6 78.1 27.01-26.7c1.25-1.23 2.26-2.69 2.94-4.31a13.5 13.5 0 0 0 1.02-5.14c0-1.75-.35-3.51-1.02-5.13-.68-1.62-1.69-3.08-2.94-4.31-2.58-2.51-6.01-3.9-9.6-3.9-3.6 0-7.04 1.39-9.6 3.9l-51.5 50.8a13.1 13.1 0 0 0-2.95 4.31 13.4 13.4 0 0 0-1.03 5.13c0 1.76.35 3.51 1.03 5.14.69 1.62 1.68 3.09 2.95 4.31l51.5 50.81c2.56 2.49 6 3.89 9.6 3.89 3.59 0 7.02-1.4 9.6-3.89 1.25-1.23 2.26-2.7 2.94-4.32a13.4 13.4 0 0 0 0-10.26c-.68-1.62-1.69-3.09-2.94-4.32L256.7 107.5c86 .4 155.91 70.5 155.91 156.6 0 86.4-70.31 156.7-156.7 156.7-86.41 0-156.71-70.3-156.71-156.7 0-3.93-1.56-7.69-4.33-10.46a14.78 14.78 0 0 0-10.47-4.34c-3.93 0-7.68 1.56-10.46 4.34a14.76 14.76 0 0 0-4.34 10.46c0 102.71 83.5 186.21 186.21 186.21 102.7 0 186.19-83.5 186.19-186.21.2-102.3-82.99-185.6-185.4-186" />
+        <path fill="currentColor" d="M187.5 236.3c1.61-1.29 4.61-4.1 8.8-8.3l-.4 12.5-.19 11.4v69.4H221V201.4h-20.8l-38.59 30.7 12.2 15.2z" />
+        <path fill="currentColor" fillRule="evenodd" d="M288 201c23 0 38 18 38 45v30c0 27-15 45-38 45s-38-18-38-45v-30c0-27 15-45 38-45zm0 24c-11 0-16 10-16 23v26c0 13 5 23 16 23s16-10 16-23v-26c0-13-5-23-16-23z" />
     </svg>
 );
 
@@ -26,10 +26,10 @@ Skip10BackIcon.propTypes = {
 };
 
 const Skip10ForwardIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 4.5A7.5 7.5 0 1 1 4.5 12" />
-        <polyline points="12 1 12 5 16 5" />
-        <text x="12" y="15" textAnchor="middle" fill="currentColor" stroke="none" fontSize="7.5" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif">10</text>
+    <svg className={className} viewBox="0 0 512 512">
+        <path fill="currentColor" d="M428.8 249.61c-3.96.01-7.74 1.58-10.54 4.36a14.96 14.96 0 0 0-4.36 10.53c0 87.11-70.81 157.9-157.91 157.9-87.09 0-157.9-70.79-157.9-157.9 0-86.79 70.41-157.4 157.1-157.89l-27.1 26.79a13.3 13.3 0 0 0-2.94 4.36c-.68 1.63-1.03 3.37-1.03 5.14 0 1.78.35 3.52 1.03 5.15a13.3 13.3 0 0 0 2.94 4.36 14.053 14.053 0 0 0 19.41 0l51.9-51.21c1.25-1.23 2.25-2.71 2.94-4.34a13.5 13.5 0 0 0 0-10.3c-.69-1.63-1.69-3.12-2.94-4.36L247.5 31a14.024 14.024 0 0 0-19.41 0 13.36 13.36 0 0 0-3.97 9.5c0 1.77.35 3.53 1.03 5.16s1.68 3.1 2.94 4.34l27.2 26.9c-103.1.4-186.9 84.41-186.9 187.6 0 103.51 84.2 187.61 187.6 187.61 103.41 0 187.7-84.21 187.7-187.7-.01-3.95-1.58-7.71-4.37-10.5-2.8-2.77-6.58-4.31-10.52-4.3" />
+        <path fill="currentColor" d="M195.19 252.01v69.89h25.51V201.1h-21.01l-38.9 31 12.3 15.4L187 236.3c3.07-2.61 6.01-5.37 8.8-8.3l-.41 12.6z" />
+        <path fill="currentColor" fillRule="evenodd" d="M288 201c23 0 38 18 38 45v30c0 27-15 45-38 45s-38-18-38-45v-30c0-27 15-45 38-45zm0 24c-11 0-16 10-16 23v26c0 13 5 23 16 23s16-10 16-23v-26c0-13-5-23-16-23z" />
     </svg>
 );
 
@@ -51,6 +51,7 @@ const ControlBar = React.forwardRef(({
     metaItem,
     nextVideo,
     stream,
+    statisticsAvailable,
     fullscreen,
     onToggleFullscreen,
     onPlayRequested,
@@ -65,6 +66,7 @@ const ControlBar = React.forwardRef(({
     onToggleSpeedMenu,
     onToggleSideDrawer,
     onToggleOptionsMenu,
+    onToggleStatisticsMenu,
     shellCastSupported,
     onToggleCastDevicesMenu,
     live,
@@ -93,6 +95,9 @@ const ControlBar = React.forwardRef(({
     }, []);
     const onOptionsButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.optionsMenuClosePrevented = true;
+    }, []);
+    const onStatisticsButtonMouseDown = React.useCallback((event) => {
+        event.nativeEvent.statisticsMenuClosePrevented = true;
     }, []);
     const onCastDevicesButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.castDevicesMenuClosePrevented = true;
@@ -320,6 +325,20 @@ const ControlBar = React.forwardRef(({
                     >
                         <Icon className={styles['icon']} name={'cast'} />
                     </Button>
+                    {
+                        statisticsAvailable &&
+                            <Button
+                                className={styles['control-bar-button']}
+                                role="button"
+                                aria-label={t('PLAYER_STATISTICS') || 'Network statistics'}
+                                title={`${t('PLAYER_STATISTICS') || 'Network statistics'} (D)`}
+                                tabIndex={-1}
+                                onMouseDown={onStatisticsButtonMouseDown}
+                                onClick={onToggleStatisticsMenu}
+                            >
+                                <Icon className={styles['icon']} name={'network'} />
+                            </Button>
+                    }
                     {
                         typeof onToggleFullscreen === 'function' ?
                             <Button
