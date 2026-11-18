@@ -63,14 +63,14 @@ describe('metalfx plugin: stream resolution analysis', () => {
 });
 
 describe('metalfx plugin: UI slots registration', () => {
-    it('exports playerControls, playerOverlays, and settingsSections slots recognized by host.js', () => {
-        expect(SLOTS).toContain('playerControls');
+    it('exports playerMenuItems, playerOverlays, and settingsSections slots recognized by host.js', () => {
+        expect(SLOTS).toContain('playerMenuItems');
         expect(SLOTS).toContain('playerOverlays');
         expect(SLOTS).toContain('settingsSections');
 
-        expect(Array.isArray(ui.playerControls)).toBe(true);
-        expect(ui.playerControls[0].id).toBe('metalfx-btn');
-        expect(ui.playerControls[0].Component).toBeDefined();
+        expect(Array.isArray(ui.playerMenuItems)).toBe(true);
+        expect(ui.playerMenuItems[0].id).toBe('metalfx-item');
+        expect(ui.playerMenuItems[0].Component).toBeDefined();
 
         expect(Array.isArray(ui.playerOverlays)).toBe(true);
         expect(ui.playerOverlays[0].id).toBe('metalfx-stats');

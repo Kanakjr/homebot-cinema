@@ -65,13 +65,12 @@
             channels = 'Mono';
         }
 
-        var isAtmos = track.title && /atmos/i.test(track.title);
-        var isSdh = track['hearing-impaired'] || (track.title && /sdh/i.test(track.title));
+        var title0 = track.title || '';
         var tags = [];
         if (codec) tags.push(codec);
         if (channels && (!codec || !codec.includes(channels))) tags.push(channels);
-        if (isAtmos && (!codec || !codec.includes('Atmos'))) tags.push('Atmos');
-        if (isSdh) tags.push('SDH');
+        // the file's own title already says "Atmos" / "SDH" when it does: only add what it lacks
+        if (track['hearing-impaired'] && !/\bsdh\b/i.test(title0)) tags.push('SDH');
 
         var tagStr = tags.join(' ');
         if (track.title) {
@@ -81,7 +80,9 @@
             }
             return title;
         }
-        return tagStr || ('Track ' + (index + 1));
+        // nothing known: leave it empty so the web player shows just the language (the index here counts every
+        // track type, so "Track N" was misleading)
+        return tagStr;
     }
 
     function formatSubTrack(track, index) {
@@ -102,7 +103,7 @@
         if (tags.length > 0) {
             return tags.join(' · ');
         }
-        return track.lang ? 'Embedded' : ('Track ' + (index + 1));
+        return track.lang ? 'Embedded' : '';
     }
 
     window.__shellDispatch = function (json) {

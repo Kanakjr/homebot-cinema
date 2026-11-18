@@ -7,18 +7,23 @@ type Props = {
     className: string,
     logo: string,
     progress: number,
+    loaded?: boolean,
 };
 
-const Buffering = forwardRef<HTMLDivElement, Props>(({ className, logo, progress }, ref) => {
+const Buffering = forwardRef<HTMLDivElement, Props>(({ className, logo, progress, loaded }, ref) => {
     const style = useMemo(() => {
         return {
             clipPath: `inset(0 ${100 - progress}% 0 0)`,
         };
     }, [progress]);
 
-    const statusText = typeof progress === 'number' && progress > 0
-        ? `Buffering ${Math.round(progress)}%`
-        : 'Connecting…';
+    // `progress` is how much of the file the server already holds, not how much the player buffered: it reads
+    // 100% from the start for a file on disk or a cached stream. Show a number only while it is a real partial value.
+    const statusText = !loaded
+        ? 'Connecting…'
+        : typeof progress === 'number' && progress > 0 && progress < 100
+            ? `Buffering ${Math.round(progress)}%`
+            : 'Buffering…';
 
     return (
         <div ref={ref} className={classNames(className, styles['buffering'])}>

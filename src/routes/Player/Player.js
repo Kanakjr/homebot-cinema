@@ -18,13 +18,13 @@ const { HorizontalNavBar, Transition, ContextMenu } = require('stremio/component
 const { default: Buffering } = require('./Buffering');
 const VolumeChangeIndicator = require('./VolumeChangeIndicator');
 const Error = require('./Error');
+const formatPlayerTitle = require('./formatPlayerTitle');
 const ControlBar = require('./ControlBar');
 const NextVideoPopup = require('./NextVideoPopup');
 const StatisticsMenu = require('./StatisticsMenu');
 const OptionsMenu = require('./OptionsMenu');
 const { default: CastDevicesMenu } = require('./CastDevicesMenu');
-const SubtitlesMenu = require('./SubtitlesMenu');
-const { default: AudioMenu } = require('./AudioMenu');
+const AudioSubtitlesMenu = require('./AudioSubtitlesMenu');
 const SpeedMenu = require('./SpeedMenu');
 const { default: SideDrawerButton } = require('./SideDrawerButton');
 const { default: SideDrawer } = require('./SideDrawer');
@@ -48,35 +48,6 @@ const { PluginSlot } = require('stremio/plugins'); // HomeBot: slot playerOverla
 const GAMEPAD_HANDLER_ID = 'player';
 
 const CAST_DEVICES_REFRESH_INTERVAL = 5000;
-
-const formatPlayerTitle = (title, seriesInfo, metaItem) => {
-    if (!title || typeof title !== 'string') return '';
-    // Format: "Show - Episode (SxEP)" or "Show - (SxEP)" with × or x
-    const match = title.match(/^(.*?)\s*-\s*(.*?)\s*\(([0-9]+)[×x]([0-9]+)\)$/i);
-    if (match) {
-        const show = match[1].trim();
-        const epTitle = match[2].trim();
-        const s = match[3];
-        const e = match[4];
-        if (epTitle) {
-            return `${show} · S${s} E${e} · ${epTitle}`;
-        }
-        return `${show} · S${s} E${e}`;
-    }
-    const matchSimple = title.match(/^(.*?)\s*\(([0-9]+)[×x]([0-9]+)\)$/i);
-    if (matchSimple) {
-        return `${matchSimple[1].trim()} · S${matchSimple[2]} E${matchSimple[3]}`;
-    }
-    if (seriesInfo && typeof seriesInfo.season === 'number' && typeof seriesInfo.episode === 'number') {
-        const show = metaItem?.name || title.split(' - ')[0].trim();
-        const epTitle = metaItem?.videos?.find((v) => v.season === seriesInfo.season && v.episode === seriesInfo.episode)?.title;
-        if (epTitle) {
-            return `${show} · S${seriesInfo.season} E${seriesInfo.episode} · ${epTitle}`;
-        }
-        return `${show} · S${seriesInfo.season} E${seriesInfo.episode}`;
-    }
-    return title;
-};
 
 const Player = () => {
     const { stream, streamTransportUrl, metaTransportUrl, type, id, videoId } = useParams();
@@ -136,8 +107,11 @@ const Player = () => {
     }, [video.state.manifest]);
 
     const [optionsMenuOpen, , closeOptionsMenu, toggleOptionsMenu] = useBinaryState(false);
+    // HomeBot: audio and subtitles share one panel, so one open state; the names below are kept for the call sites
     const [subtitlesMenuOpen, , closeSubtitlesMenu, toggleSubtitlesMenu] = useBinaryState(false);
-    const [audioMenuOpen, , closeAudioMenu, toggleAudioMenu] = useBinaryState(false);
+    const audioMenuOpen = false;
+    const closeAudioMenu = closeSubtitlesMenu;
+    const toggleAudioMenu = toggleSubtitlesMenu;
     const [speedMenuOpen, , closeSpeedMenu, toggleSpeedMenu] = useBinaryState(false);
     const [statisticsMenuOpen, openStatisticsMenu, closeStatisticsMenu, toggleStatisticsMenu] = useBinaryState(false);
     const [castDevicesMenuOpen, , closeCastDevicesMenu, toggleCastDevicesMenu] = useBinaryState(false);
@@ -1127,6 +1101,7 @@ const Player = () => {
                         className={classnames(styles['layer'], styles['buffering-layer'])}
                         logo={metaItemContent?.logo}
                         progress={statistics.progress}
+                        loaded={!!video.state.loaded}
                     />
                     :
                     null
@@ -1168,6 +1143,7 @@ const Player = () => {
                     videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
                     onVideoScaleChanged={onVideoScaleChanged}
                     onToggleShortcutsModal={toggleShortcutsModal}
+                    onClose={closeMenus}
                 />
             </ContextMenu>
             <HorizontalNavBar
@@ -1218,7 +1194,6 @@ const Player = () => {
                 shellCastSupported={shellCastSupported}
                 onToggleCastDevicesMenu={toggleCastDevicesMenu}
                 onToggleSubtitlesMenu={toggleSubtitlesMenu}
-                onToggleAudioMenu={toggleAudioMenu}
                 onToggleSpeedMenu={toggleSpeedMenu}
                 onToggleSideDrawer={toggleSideDrawer}
                 live={livePlayback}
@@ -1304,17 +1279,12 @@ const Player = () => {
                 />
             </Transition>
             <Transition when={subtitlesMenuOpen} name={'fade'}>
-                <SubtitlesMenu
-                    className={classnames(styles['layer'], styles['menu-layer'])}
-                    {...subtitlesMenuProps}
-                />
-            </Transition>
-            <Transition when={audioMenuOpen} name={'fade'}>
-                <AudioMenu
+                <AudioSubtitlesMenu
                     className={classnames(styles['layer'], styles['menu-layer'])}
                     audioTracks={video.state.audioTracks}
                     selectedAudioTrackId={video.state.selectedAudioTrackId}
                     onAudioTrackSelected={onAudioTrackSelected}
+                    subtitlesMenuProps={subtitlesMenuProps}
                 />
             </Transition>
             <Transition when={speedMenuOpen} name={'fade'}>
@@ -1335,6 +1305,7 @@ const Player = () => {
                     videoScaleLabel={VIDEO_SCALE_LABELS[video.state.videoScale || 'contain']}
                     onVideoScaleChanged={onVideoScaleChanged}
                     onToggleShortcutsModal={toggleShortcutsModal}
+                    onClose={closeMenus}
                 />
             </Transition>
             <Transition when={shortcutsModalOpen} name={'fade'}>

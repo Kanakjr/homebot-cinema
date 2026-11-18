@@ -102,6 +102,7 @@ const SeekBar = ({ className, time, duration, buffered, onSeekRequested, onPlayR
             </div>
             <div ref={sliderRef} className={styles['slider-wrapper']} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave}>
                 <Slider
+                    label={'Seek'}
                     className={classnames(styles['slider'], { 'active': seekTime !== null, [styles['live-slider']]: live })}
                     value={
                         !disabled ?

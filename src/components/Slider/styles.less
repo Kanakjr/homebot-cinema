@@ -2,9 +2,10 @@
 
 @import (reference) '~@stremio/stremio-colors/less/stremio-colors.less';
 
+// HomeBot: the profile accent up to 100% volume, the warm warning ramp only for boost above it
 @audio-boost-background: linear-gradient(to right,
-    var(--primary-foreground-color) 0%,
-    var(--primary-foreground-color) 50%,
+    var(--primary-accent-color) 0%,
+    var(--primary-accent-color) 50%,
     var(--warning-accent-color) 75%,
     var(--danger-accent-color) 100%) !important;
 

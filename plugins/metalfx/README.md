@@ -44,12 +44,11 @@ flowchart TD
    - Enhances contrast, reconstructs high-frequency edge details, and suppresses compression artifacts.
    - Preserves cinematic aspect ratios (16:9, 2.40:1 scope, 4:3) with centered aspect-fit rendering and pure black letterbox/pillarbox bars.
 
-3. **Bottom-Right Control Bar Integration**:
-   - Renders cleanly in the bottom-right playback controls bar alongside the existing player buttons (`...`, `?`) using the `playerControls` plugin slot.
-   - Glowing indicator dot signals when 4K AI neural processing is actively engaged.
+3. **More-menu entry**:
+   - A "4K AI upscaler · On/Off" row in the player's More menu (`playerMenuItems` plugin slot). The bar itself stays free of a chip.
 
 4. **Live Verification & Telemetry Panel**:
-   - Clicking the 4K AI button toggles a glassmorphic verification panel directly above the control bar.
+   - Choosing the More-menu entry toggles a glassmorphic verification panel directly above the control bar.
    - Displays real-time GPU telemetry polled live from the native layer:
      - **Input Stream**: Displays the genuine file resolution (e.g., `1920 × 800 (1080p FHD Native File)`). The input file is never compressed or reduced.
      - **Render Target**: Displays physical target resolution (e.g., `2560 × 1066 (1440p QHD)` or `3840 × 1600 (4K UHD)`).
@@ -69,11 +68,10 @@ plugins/metalfx/
 ├── server/
 │   └── index.js                # Server routes (/api/metalfx/status)
 ├── ui/
-│   ├── index.js                # Slot exports (playerControls, playerOverlays, settingsSections)
+│   ├── index.js                # Slot exports (playerMenuItems, playerOverlays, settingsSections)
 │   ├── logic.js                # Stream analysis & 4K detection logic
 │   ├── useMetalFx.js           # State, click-outside handling, and native IPC hook
-│   ├── MetalFxButton.js        # Control bar button (playerControls slot)
-│   ├── MetalFxButton.less      # Control bar button styling
+│   ├── MetalFxMenuItem.js      # More-menu entry (playerMenuItems slot)
 │   ├── MetalFxStatsOverlay.js  # Telemetry & interactive toggle panel (playerOverlays slot)
 │   ├── MetalFxStatsOverlay.less# Glassmorphic overlay styling
 │   ├── Settings.js             # Settings section panel (settingsSections slot)

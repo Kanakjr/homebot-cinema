@@ -12,7 +12,7 @@ try {
 }
 const usePlatform = (commonModule && commonModule.usePlatform) || (() => ({ shell: null }));
 
-// Shared overlay menu state across playerControls and playerOverlays
+// Shared overlay menu state across playerMenuItems and playerOverlays
 let s_menuOpen = false;
 const s_menuListeners = new Set();
 function setMenuOpenGlobal(val) {

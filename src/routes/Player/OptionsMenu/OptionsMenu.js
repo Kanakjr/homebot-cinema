@@ -6,6 +6,7 @@ const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { usePlatform, useToast } = require('stremio/common');
 const { isAdmin } = require('stremio/common/serverApi');
+const { PluginSlot } = require('stremio/plugins');
 const { default: usePlayOnDevice } = require('../usePlayOnDevice');
 const Option = require('./Option');
 const styles = require('./styles');
@@ -25,7 +26,8 @@ const OptionsMenu = React.memo(React.forwardRef(({
     videoScale,
     videoScaleLabel,
     onVideoScaleChanged,
-    onToggleShortcutsModal
+    onToggleShortcutsModal,
+    onClose
 }, ref) => {
     const { t } = useTranslation();
     const platform = usePlatform();
@@ -166,11 +168,13 @@ const OptionsMenu = React.memo(React.forwardRef(({
                     :
                     null
             }
+            {/* HomeBot: plugin entries (MetalFX 4K AI upscaler, ...) */}
+            <PluginSlot name={'playerMenuItems'} stream={stream} Option={Option} closeMenu={onClose} />
             {
                 typeof onToggleShortcutsModal === 'function' ?
                     <Option
                         icon={'help'}
-                        label={'Keyboard shortcuts (?)'}
+                        label={'Shortcuts (?)'}
                         onClick={onToggleShortcutsModal}
                     />
                     :
@@ -202,6 +206,7 @@ OptionsMenu.propTypes = {
     videoScaleLabel: PropTypes.string,
     onVideoScaleChanged: PropTypes.func,
     onToggleShortcutsModal: PropTypes.func,
+    onClose: PropTypes.func,
 };
 
 module.exports = OptionsMenu;

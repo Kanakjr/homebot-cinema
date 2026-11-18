@@ -8,7 +8,7 @@ const useAnimationFrame = require('stremio/common/useAnimationFrame');
 const useLiveRef = require('stremio/common/useLiveRef');
 const styles = require('./styles');
 
-const Slider = ({ className, value, buffered, minimumValue, maximumValue, disabled, onSlide, onComplete, audioBoost, stepValue }) => {
+const Slider = ({ className, value, buffered, minimumValue, maximumValue, disabled, onSlide, onComplete, audioBoost, stepValue, label }) => {
     const minimum = minimumValue !== null && !isNaN(minimumValue) ? minimumValue : 0;
     const maximum = maximumValue !== null && !isNaN(maximumValue) ? maximumValue : 100;
     const currentValue = value !== null && !isNaN(value) ? Math.min(maximum, Math.max(minimum, value)) : 0;
@@ -140,6 +140,7 @@ const Slider = ({ className, value, buffered, minimumValue, maximumValue, disabl
         <div
             ref={sliderContainerRef}
             role="slider"
+            aria-label={label}
             aria-valuemin={minimum}
             aria-valuemax={maximum}
             aria-valuenow={Math.round(currentValue)}
@@ -178,7 +179,8 @@ Slider.propTypes = {
     disabled: PropTypes.bool,
     onSlide: PropTypes.func,
     onComplete: PropTypes.func,
-    audioBoost: PropTypes.bool
+    audioBoost: PropTypes.bool,
+    label: PropTypes.string
 };
 
 module.exports = Slider;

@@ -35,9 +35,11 @@ const AudioMenu = memo(forwardRef<HTMLDivElement, Props>(({ className, selectedA
                     {
                         audioTracks.map(({ id, label, lang }, index) => {
                             const langLabel = languages.label(lang) || lang;
+                            // Same language twice and nothing to tell them apart: number them within the language
+                            const sameLanguage = audioTracks.filter((track) => track.lang === lang);
                             const displayLabel = label && label !== lang && label !== langLabel
                                 ? label
-                                : (audioTracks.length > 1 ? `Track ${index + 1}` : '');
+                                : (sameLanguage.length > 1 ? `Audio ${audioTracks.slice(0, index).filter((track) => track.lang === lang).length + 1}` : '');
                             return (
                                 <Button
                                     key={index}

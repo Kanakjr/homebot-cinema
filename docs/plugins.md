@@ -98,6 +98,7 @@ nothing. Each contribution renders inside an error boundary: a crashing plugin h
 | `discoverActions` | `{ id, Component({ className }) }` | Discover header |
 | `playerOverlays` | `{ id, Component(props) }`: `title`, `showName`, `type`, `metaId`, `videoId`, `poster`, `stream`, `streamUrl`, `timeMs`, `durationMs` (ms), `paused`, `live`, `controlsHidden`, `menusOpen`, `hasNextVideo`, `seekTo(ms)`, `playNext()`, `reportCreditsStart(ms \| null)`, `reportMarks([{ start, end, label }] \| null)` | Player, above the control bar, below popups and menus |
 | `playerControls` | `{ id, Component({ stream }) }` | Player bottom-right control bar, with playback buttons |
+| `playerMenuItems` | `{ id, Component({ stream, Option, closeMenu }) }`: render `<Option icon label onClick />` rows | Player "More" menu, after the built-in options |
 | `settingsSections` | `{ id, label, Component }` (forwardRef to a Settings `Section`) | Settings, after General, with a menu entry |
 | `adminTabs` | `{ id, label, order, Component({ onError }) }` | Admin, tabs after Overview |
 | `metaDetailsSections` | `{ id, Component({ type, id, videoId, meta }) }` | Title page, under the description |

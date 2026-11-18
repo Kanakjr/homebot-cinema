@@ -60,6 +60,7 @@ const VolumeSlider = ({ className, volume, onVolumeChangeRequested, muted }) => 
             onSlide={onSlide}
             onComplete={onComplete}
             audioBoost={!!shell.active}
+            label={'Volume'}
         />
     );
 };

@@ -23,7 +23,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/MetaDetails/StreamsList/StreamsList.js` | 277 | Quality-profile sort, swarm health, Save button (fork identity); Direct filter; "1 addon is still loading" (singular). |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
-| `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays, Up Next at the credits start and seek-bar marks a plugin reports (skip intro); Escape closes an open menu/drawer before leaving the player. |
+| `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays, Up Next at the credits start and seek-bar marks a plugin reports (skip intro); Escape closes an open menu/drawer before leaving the player; one Audio & subtitles panel (`AudioSubtitlesMenu`). |
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (strict-origin-when-cross-origin). |
@@ -82,7 +82,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/common/CONSTANTS.js` | 6 | Zoom choices. |
 | `src/router/useGoBack.ts` | 9 | Back goes through the real history when there is any (upstream replaced the entry with the origin, leaving it twice in the history). |
 | `src/router/getBackFallback.ts` | 5 | Fallback for MetaDetails returns root '/' directly rather than staying on the same title page when videoId is present. |
-| `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls. |
+| `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls; one Audio & subtitles button. |
 | `src/routes/Player/useSubtitles.ts` | 367 | Dynamic acoustic subtitle matcher: probes audio voice envelope, runs batch FFT correlation matrix, auto-selects & retimes best add-on subtitle; fixed toggleSubtitles hotkey 'c'. |
 | `src/routes/Player/useSubtitles.d.ts` | 13 | Types for autoSyncInfo and onTriggerAutoSync in SubtitlesMenuProps and UseSubtitlesResult. |
 | `src/routes/Player/SubtitlesMenu/SubtitlesMenu.js` | 25 | Header auto-sync trigger button for external subtitles and matched badge binding. |
@@ -91,14 +91,15 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.less` | 13 | Styling for matched badge pill on variant item. |
 | `src/routes/Player/ControlBar/SeekBar/SeekBar.js` | 30 | Intro / credits marks on the track and their label in the hover time (`markers`). |
 | `src/routes/Player/ControlBar/SeekBar/styles.less` | 23 | Same. |
-| `src/components/Slider/Slider.js` | 10 | Phase 5: accessibility attributes (role="slider", aria-valuemin, aria-valuemax, aria-valuenow, aria-disabled). |
-| `src/components/Slider/styles.less` | 5 | Phase 5: volume slider uses primary accent fill for normal levels (0-100%). |
+| `src/components/Slider/Slider.js` | 12 | Phase 5: `role="slider"`, `aria-label` (`label` prop), `aria-valuemin/max/now`, focusable. |
+| `src/components/Slider/styles.less` | 5 | Phase 5: the boost gradient starts with the profile accent (it was white); the warm ramp marks boost above 100%. |
+| `src/routes/Player/ControlBar/VolumeSlider/styles.less` | 4 | Phase 5: accent fill up to 100% volume. |
+| `src/routes/Player/ControlBar/VolumeSlider/VolumeSlider.js` | 1 | Phase 5: accessible name ("Volume") for the slider. |
 | `src/routes/Player/AudioMenu/AudioMenu.tsx` | 15 | Phase 5: rich audio track labels distinguishing multiple tracks of the same language with codec and channels. |
 | `src/routes/Player/Buffering/Buffering.tsx` | 20 | Phase 5: loading spinner and status label ("Connecting...", "Buffering X%"). |
 | `src/routes/Player/Buffering/Buffering.less` | 50 | Phase 5: styling for buffering spinner and frosted status badge. |
-| `src/routes/Player/ControlBar/VolumeSlider/styles.less` | 15 | Phase 5: primary accent fill for volume track and thumb. |
 | `src/routes/Player/ControlBar/styles.less` | 10 | Phase 5: tactile active state on control buttons. |
-| `src/routes/Player/OptionsMenu/OptionsMenu.js` | 35 | Phase 5: admin-only magnet link, aspect ratio, network statistics and keyboard shortcuts options. |
+| `src/routes/Player/OptionsMenu/OptionsMenu.js` | 45 | Phase 5: admin-only magnet link, aspect ratio, network statistics and keyboard shortcuts options; slot `playerMenuItems` (MetalFX 4K AI entry). |
 | `src/routes/Player/SideDrawer/SideDrawer.tsx` | 15 | Phase 5: live watch progress on currently playing episode. |
 | `src/routes/Player/styles.less` | 20 | Phase 5: click-to-dismiss scrim for episodes drawer and pointer-events pass-through on background/buffering layers. |
 | `src/components/MetaPreview/MetaPreview.js` | 15 | Small fix; Phase 2: text title shown until logo URL loads (tracked per URL to avoid blank frames on item switch). |

@@ -13,6 +13,9 @@ const { useBinaryState, usePlatform } = require('stremio/common');
 const { PluginSlot } = require('stremio/plugins');
 const { t } = require('i18next');
 
+// English fallback, so a language without the key still gets a readable label
+const label = (key, defaultValue) => t(key, { defaultValue });
+
 const Skip10BackIcon = ({ className }) => (
     <svg className={className} viewBox="0 0 512 512">
         <path fill="currentColor" d="m256.6 78.1 27.01-26.7c1.25-1.23 2.26-2.69 2.94-4.31a13.5 13.5 0 0 0 1.02-5.14c0-1.75-.35-3.51-1.02-5.13-.68-1.62-1.69-3.08-2.94-4.31-2.58-2.51-6.01-3.9-9.6-3.9-3.6 0-7.04 1.39-9.6 3.9l-51.5 50.8a13.1 13.1 0 0 0-2.95 4.31 13.4 13.4 0 0 0-1.03 5.13c0 1.76.35 3.51 1.03 5.14.69 1.62 1.68 3.09 2.95 4.31l51.5 50.81c2.56 2.49 6 3.89 9.6 3.89 3.59 0 7.02-1.4 9.6-3.89 1.25-1.23 2.26-2.7 2.94-4.32a13.4 13.4 0 0 0 0-10.26c-.68-1.62-1.69-3.09-2.94-4.32L256.7 107.5c86 .4 155.91 70.5 155.91 156.6 0 86.4-70.31 156.7-156.7 156.7-86.41 0-156.71-70.3-156.71-156.7 0-3.93-1.56-7.69-4.33-10.46a14.78 14.78 0 0 0-10.47-4.34c-3.93 0-7.68 1.56-10.46 4.34a14.76 14.76 0 0 0-4.34 10.46c0 102.71 83.5 186.21 186.21 186.21 102.7 0 186.19-83.5 186.19-186.21.2-102.3-82.99-185.6-185.4-186" />
@@ -62,7 +65,6 @@ const ControlBar = React.forwardRef(({
     onVolumeChangeRequested,
     onSeekRequested,
     onToggleSubtitlesMenu,
-    onToggleAudioMenu,
     onToggleSpeedMenu,
     onToggleSideDrawer,
     onToggleOptionsMenu,
@@ -81,12 +83,11 @@ const ControlBar = React.forwardRef(({
     const platform = usePlatform();
     const [chromecastServiceActive, setChromecastServiceActive] = React.useState(() => chromecast.active);
     const [buttonsMenuOpen, , , toggleButtonsMenu] = useBinaryState(false);
-    const onSubtitlesButtonMouseDown = React.useCallback((event) => {
+    const onAudioSubtitlesButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.subtitlesMenuClosePrevented = true;
-    }, []);
-    const onAudioButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.audioMenuClosePrevented = true;
     }, []);
+    const hasSubtitlesOrAudio = (Array.isArray(subtitlesTracks) && subtitlesTracks.length > 0) || (Array.isArray(audioTracks) && audioTracks.length > 0);
     const onSpeedButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.speedMenuClosePrevented = true;
     }, []);
@@ -192,8 +193,8 @@ const ControlBar = React.forwardRef(({
                 <Button
                     className={classnames(styles['control-bar-button'], { 'disabled': !seekable })}
                     role="button"
-                    aria-label="Rewind 10 seconds"
-                    title="Rewind 10 seconds (Left Arrow)"
+                    aria-label={label('PLAYER_BACK_10', 'Back 10 seconds')}
+                    title={`${label('PLAYER_BACK_10', 'Back 10 seconds')} (←)`}
                     tabIndex={-1}
                     onClick={onRewind10Click}
                 >
@@ -202,8 +203,8 @@ const ControlBar = React.forwardRef(({
                 <Button
                     className={classnames(styles['control-bar-button'], { 'disabled': !seekable })}
                     role="button"
-                    aria-label="Fast forward 10 seconds"
-                    title="Fast forward 10 seconds (Right Arrow)"
+                    aria-label={label('PLAYER_FORWARD_10', 'Forward 10 seconds')}
+                    title={`${label('PLAYER_FORWARD_10', 'Forward 10 seconds')} (→)`}
                     tabIndex={-1}
                     onClick={onForward10Click}
                 >
@@ -214,8 +215,8 @@ const ControlBar = React.forwardRef(({
                         <Button
                             className={classnames(styles['control-bar-button'])}
                             role="button"
-                            aria-label={t('PLAYER_NEXT_VIDEO') || 'Next Video'}
-                            title={`${t('PLAYER_NEXT_VIDEO') || 'Next Video'} (N)`}
+                            aria-label={label('PLAYER_NEXT_VIDEO', 'Next episode')}
+                            title={`${label('PLAYER_NEXT_VIDEO', 'Next episode')} (Shift+N)`}
                             tabIndex={-1}
                             onClick={onNextVideoButtonClick}
                         >
@@ -258,42 +259,31 @@ const ControlBar = React.forwardRef(({
                 <Button
                     className={styles['control-bar-buttons-menu-button']}
                     role="button"
-                    aria-label="Toggle Controls Menu"
-                    title="Controls"
+                    aria-label={label('PLAYER_CONTROLS', 'Controls')}
+                    title={label('PLAYER_CONTROLS', 'Controls')}
                     onClick={toggleButtonsMenu}
                 >
                     <Icon className={styles['icon']} name={'more-vertical'} />
                 </Button>
                 <div className={classnames(styles['control-bar-buttons-menu-container'], { 'open': buttonsMenuOpen })}>
                     <Button
-                        className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(subtitlesTracks) || subtitlesTracks.length === 0 })}
+                        className={classnames(styles['control-bar-button'], { 'disabled': !hasSubtitlesOrAudio })}
                         role="button"
-                        aria-label={t('SUBTITLES') || 'Subtitles'}
-                        title={`${t('SUBTITLES') || 'Subtitles'} (S)`}
+                        aria-label={label('PLAYER_AUDIO_SUBTITLES', 'Audio & subtitles')}
+                        title={`${label('PLAYER_AUDIO_SUBTITLES', 'Audio & subtitles')} (S / A)`}
                         tabIndex={-1}
-                        onMouseDown={onSubtitlesButtonMouseDown}
+                        onMouseDown={onAudioSubtitlesButtonMouseDown}
                         onClick={onToggleSubtitlesMenu}
                     >
                         <Icon className={styles['icon']} name={'subtitles'} />
-                    </Button>
-                    <Button
-                        className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(audioTracks) || audioTracks.length === 0 })}
-                        role="button"
-                        aria-label={t('AUDIO_TRACKS') || 'Audio Tracks'}
-                        title={`${t('AUDIO_TRACKS') || 'Audio Tracks'} (A)`}
-                        tabIndex={-1}
-                        onMouseDown={onAudioButtonMouseDown}
-                        onClick={onToggleAudioMenu}
-                    >
-                        <Icon className={styles['icon']} name={'audio-tracks'} />
                     </Button>
                     {
                         metaItem?.content?.videos?.length > 0 ?
                             <Button
                                 className={styles['control-bar-button']}
                                 role="button"
-                                aria-label={t('EPISODES') || 'Episodes'}
-                                title={`${t('EPISODES') || 'Episodes'} (E)`}
+                                aria-label={label('PLAYER_EPISODES', 'Episodes')}
+                                title={label('PLAYER_EPISODES', 'Episodes')}
                                 tabIndex={-1}
                                 onMouseDown={onVideosButtonMouseDown}
                                 onClick={onToggleSideDrawer}
@@ -306,8 +296,8 @@ const ControlBar = React.forwardRef(({
                     <Button
                         className={classnames(styles['control-bar-button'], { 'disabled': playbackSpeed === null })}
                         role="button"
-                        aria-label="Playback Speed"
-                        title={`Playback Speed (${playbackSpeed || 1}x)`}
+                        aria-label={label('PLAYER_SPEED', 'Playback speed')}
+                        title={`${label('PLAYER_SPEED', 'Playback speed')} · ${playbackSpeed || 1}× (R)`}
                         tabIndex={-1}
                         onMouseDown={onSpeedButtonMouseDown}
                         onClick={onToggleSpeedMenu}
@@ -317,8 +307,8 @@ const ControlBar = React.forwardRef(({
                     <Button
                         className={classnames(styles['control-bar-button'], { 'disabled': castButtonDisabled })}
                         role="button"
-                        aria-label="Cast to Device"
-                        title="Cast to Device"
+                        aria-label={label('PLAYER_CAST', 'Cast to device')}
+                        title={label('PLAYER_CAST', 'Cast to device')}
                         tabIndex={-1}
                         onMouseDown={onCastDevicesButtonMouseDown}
                         onClick={onChromecastButtonClick}
@@ -330,8 +320,8 @@ const ControlBar = React.forwardRef(({
                             <Button
                                 className={styles['control-bar-button']}
                                 role="button"
-                                aria-label={t('PLAYER_STATISTICS') || 'Network statistics'}
-                                title={`${t('PLAYER_STATISTICS') || 'Network statistics'} (D)`}
+                                aria-label={label('PLAYER_STATISTICS', 'Network statistics')}
+                                title={`${label('PLAYER_STATISTICS', 'Network statistics')} (D)`}
                                 tabIndex={-1}
                                 onMouseDown={onStatisticsButtonMouseDown}
                                 onClick={onToggleStatisticsMenu}
@@ -344,8 +334,8 @@ const ControlBar = React.forwardRef(({
                             <Button
                                 className={styles['control-bar-button']}
                                 role="button"
-                                aria-label={fullscreen ? 'Exit Full Screen' : 'Full Screen'}
-                                title={fullscreen ? 'Exit Full Screen (F)' : 'Full Screen (F)'}
+                                aria-label={fullscreen ? label('PLAYER_EXIT_FULLSCREEN', 'Exit full screen') : label('PLAYER_FULLSCREEN', 'Full screen')}
+                                title={`${fullscreen ? label('PLAYER_EXIT_FULLSCREEN', 'Exit full screen') : label('PLAYER_FULLSCREEN', 'Full screen')} (F)`}
                                 tabIndex={-1}
                                 onClick={onToggleFullscreen}
                             >
@@ -357,8 +347,8 @@ const ControlBar = React.forwardRef(({
                     <Button
                         className={classnames(styles['control-bar-button'], { 'disabled': !stream })}
                         role="button"
-                        aria-label="More Options"
-                        title="More Options"
+                        aria-label={label('PLAYER_MORE', 'More')}
+                        title={label('PLAYER_MORE', 'More')}
                         tabIndex={-1}
                         onMouseDown={onOptionsButtonMouseDown}
                         onClick={onToggleOptionsMenu}
@@ -403,7 +393,6 @@ ControlBar.propTypes = {
     onVolumeChangeRequested: PropTypes.func,
     onSeekRequested: PropTypes.func,
     onToggleSubtitlesMenu: PropTypes.func,
-    onToggleAudioMenu: PropTypes.func,
     onToggleSpeedMenu: PropTypes.func,
     onToggleSideDrawer: PropTypes.func,
     onToggleOptionsMenu: PropTypes.func,
