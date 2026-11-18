@@ -24,7 +24,9 @@ const useTranslate = () => {
 
             if (type && withType) {
                 const translatedType = stringWithPrefix(type, 'TYPE_');
-                return `${translatedName} - ${translatedType}`;
+                // HomeBot: "Popular · Movies" reads more plainly than "Popular - Movie" (other types and languages keep the old form)
+                const plain = { movie: 'Movies', series: 'Shows' }[String(type).toLowerCase()];
+                return plain && translatedType === (type.charAt(0).toUpperCase() + type.slice(1)) ? `${translatedName} · ${plain}` : `${translatedName} - ${translatedType}`;
             }
 
             return translatedName;

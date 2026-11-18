@@ -130,8 +130,19 @@ const People = ({ onError }) => {
                         <div className={styles['tmain']}>{p.name}{p.isKid ? <span className={styles['tag']}>Kids</span> : null}{p.hasPin ? <span className={styles['tag']}>PIN</span> : null}</div>
                         <span />
                         <span className={styles['row-actions']}>
-                            {p.hasPin ? <button type="button" className={styles['btn-sm']} onClick={() => run(() => api('POST', `/api/profiles/${p.id}/pin/remove`, {}))}>Reset PIN</button> : null}
-                            <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => window.confirm(`Delete profile "${p.name}" and its library?`) && run(() => api('DELETE', `/api/profiles/${p.id}`))}>Delete</button>
+                            <button type="button" className={styles['btn-sm']} onClick={() => {
+                                const name = window.prompt('Profile name', p.name);
+                                if (name && name.trim() && name.trim() !== p.name) run(() => api('PATCH', `/api/profiles/${p.id}`, { name: name.trim() }));
+                            }}>Edit</button>
+                            {/* destructive actions sit behind a menu, with a confirm step, instead of being the only visible choice */}
+                            <details className={styles['more']}>
+                                <summary className={styles['btn-sm']} aria-label={`More actions for ${p.name}`}>⋯</summary>
+                                <div className={styles['more-menu']}>
+                                    <button type="button" onClick={() => run(() => api('PATCH', `/api/profiles/${p.id}`, { isKid: !p.isKid }))}>{p.isKid ? 'Remove kids mode' : 'Make a kids profile'}</button>
+                                    {p.hasPin ? <button type="button" onClick={() => run(() => api('POST', `/api/profiles/${p.id}/pin/remove`, {}))}>Reset PIN</button> : null}
+                                    <button type="button" className={styles['danger-item']} onClick={() => window.confirm(`Delete profile "${p.name}" and its library? This cannot be undone.`) && run(() => api('DELETE', `/api/profiles/${p.id}`))}>Delete profile…</button>
+                                </div>
+                            </details>
                         </span>
                     </div>
                 ))}

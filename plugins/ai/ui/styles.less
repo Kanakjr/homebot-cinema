@@ -5,6 +5,13 @@
 @fg: var(--primary-foreground-color);
 @accent: var(--primary-accent-color);
 
+.scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 89;
+    background: rgba(0, 0, 0, 0.45);
+}
+
 .drawer {
     position: fixed;
     top: var(--horizontal-nav-bar-size, 4rem);

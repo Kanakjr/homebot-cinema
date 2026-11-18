@@ -4,6 +4,7 @@ const SECTIONS = {
     INTERFACE: 'interface',
     STREAMING: 'streaming',
     SHORTCUTS: 'shortcuts',
+    ABOUT: 'about',
 };
 
 export {

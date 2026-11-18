@@ -17,7 +17,7 @@ const TABS = [
     { id: 'series', label: 'Series', count: 'series' }
 ];
 
-const Card = ({ item }) => {
+const Card = ({ item, admin }) => {
     const [imgFailed, setImgFailed] = React.useState(false);
     const sub = item.type === 'series' ?
         `${item.seasons.length} season${item.seasons.length === 1 ? '' : 's'} · ${item.episodeCount} ep`
@@ -30,8 +30,8 @@ const Card = ({ item }) => {
                     <img src={item.poster} alt="" loading="lazy" onError={() => setImgFailed(true)} />
                     :
                     <div className={styles['no-art']}>{item.title}</div>}
-                <span className={styles['badge']}>On Server</span>
-                {!item.matched ? <span className={classnames(styles['badge'], styles['warn'])}>Unmatched</span> : null}
+                {/* every card here is on the server, so no "On Server" badge; only the exception is marked */}
+                {!item.matched ? <span className={classnames(styles['badge'], styles['warn'])}>{admin ? 'Fix match' : 'Unmatched'}</span> : null}
             </div>
             <div className={styles['card-title']}>{item.title}</div>
             <div className={styles['card-sub']}>{sub}</div>
@@ -39,7 +39,7 @@ const Card = ({ item }) => {
     );
 };
 
-Card.propTypes = { item: PropTypes.object.isRequired };
+Card.propTypes = { item: PropTypes.object.isRequired, admin: PropTypes.bool };
 
 const ServerLibrary = () => {
     const navigate = useNavigate();
@@ -149,7 +149,7 @@ const ServerLibrary = () => {
                 </div>
                 : null}
             <div className={styles['grid']}>
-                {data ? data.items.map((item) => <Card key={item.id} item={item} />) : null}
+                {data ? data.items.map((item) => <Card key={item.id} item={item} admin={admin} />) : null}
             </div>
         </div>
     );

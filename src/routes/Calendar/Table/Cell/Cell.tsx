@@ -21,6 +21,12 @@ const Cell = ({ selected, monthInfo, date, items, onClick }: Props) => {
         date.day === selected?.day,
         date.day === monthInfo.today,
     ], [selected, monthInfo, date]);
+    // HomeBot: days before today are dimmed, so the eye lands on what is still to come
+    const past = useMemo(() => {
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        return new Date(date.year, date.month - 1, date.day) < startOfToday;
+    }, [date]);
 
     const onCellClick = () => {
         onClick && onClick(date);
@@ -34,7 +40,7 @@ const Cell = ({ selected, monthInfo, date, items, onClick }: Props) => {
 
     return (
         <Button
-            className={classNames(styles['cell'], { [styles['active']]: active, [styles['today']]: today })}
+            className={classNames(styles['cell'], { [styles['active']]: active, [styles['today']]: today, [styles['past']]: past })}
             onClick={onCellClick}
         >
             <div className={styles['heading']}>

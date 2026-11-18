@@ -12,8 +12,14 @@
         .sections-container {
             flex: 1;
             align-self: stretch;
-            padding: 0 3rem;
+            padding: 3rem 3rem 0;
             overflow-y: auto;
+
+            // text and forms stay a readable width in a wide window
+            .sections-inner {
+                max-width: 60rem;
+                padding-bottom: 3rem;
+            }
         }
     }
 }

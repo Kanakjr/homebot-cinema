@@ -121,6 +121,8 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
         onSaved(saved);
     });
 
+    const canSave = !busy && !!name.trim() && !(pin.length > 0 && pinConfirm.length < PIN_LENGTH);
+
     const onFile = (e) => run(async () => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -133,20 +135,17 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
             <div className={classNames(styles['modal'], styles['editor'])} onClick={(e) => e.stopPropagation()}>
                 <div className={styles['modal-title']}>{isNew ? 'Add profile' : 'Edit profile'}</div>
                 <img className={styles['editor-avatar']} src={avatar} alt="" />
-                <input className={styles['text-input']} value={name} maxLength={24} placeholder="Name" onChange={(e) => setName(e.target.value)} autoFocus />
+                <input className={styles['text-input']} value={name} maxLength={24} placeholder="Name" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && canSave) save(); }} autoFocus />
+                <div className={styles['field-label']}>Look</div>
                 <div className={styles['avatar-grid']}>
+                    <button type="button" className={styles['avatar-choice']} onClick={() => fileRef.current && fileRef.current.click()} title="Upload a picture" aria-label="Upload a picture">＋</button>
+                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={onFile} />
                     {avatars.map((a) => (
                         <button key={a.url} type="button" title={a.label} className={classNames(styles['avatar-choice'], { [styles['selected']]: avatar === a.url })} onClick={() => setAvatar(a.url)}>
                             <img src={a.url} alt="" />
                         </button>
                     ))}
-                    <button type="button" className={styles['avatar-choice']} onClick={() => fileRef.current && fileRef.current.click()} title="Upload a picture">＋</button>
-                    <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={onFile} />
                 </div>
-                <label className={styles['toggle-row']}>
-                    <input type="checkbox" checked={isKid} onChange={(e) => setIsKid(e.target.checked)} />
-                    <span>Kids profile</span>
-                </label>
                 <label className={styles['toggle-row']}>
                     <input type="checkbox" checked={amoled} onChange={(e) => setAmoled(e.target.checked)} />
                     <span>AMOLED black background</span>
@@ -166,6 +165,12 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                         />
                     ))}
                 </div>
+                <div className={styles['field-label']}>Access</div>
+                <label className={styles['toggle-row']}>
+                    <input type="checkbox" checked={isKid} onChange={(e) => setIsKid(e.target.checked)} />
+                    <span>Kids profile</span>
+                </label>
+                <div className={styles['field-hint']}>Labels this profile as a child’s in the picker and the activity log. It doesn’t restrict content.</div>
                 {/* PIN fields: a visible label, digits masked (a text input, so browsers don't offer to save it as a password), and a confirm step */}
                 {!isNew && profile.hasPin && !isAdmin ?
                     <label className={styles['field']}>
@@ -222,8 +227,9 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                         }}>Delete</button>
                         : <span />}
                     <span>
+                        {!name.trim() ? <span className={styles['field-hint']} style={{ marginRight: '0.6rem' }}>Enter a name to save</span> : null}
                         <button type="button" className={styles['secondary']} onClick={onClose}>Cancel</button>
-                        <button type="button" className={styles['primary']} disabled={busy || !name.trim() || (pin.length > 0 && pinConfirm.length < PIN_LENGTH)} onClick={save}>Save</button>
+                        <button type="button" className={styles['primary']} disabled={!canSave} onClick={save}>Save</button>
                     </span>
                 </div>
             </div>
@@ -307,10 +313,11 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
                         <button key={p.id} type="button" className={styles['profile']} onClick={() => choose(p)}>
                             <span className={classNames(styles['avatar'], { [styles['editing']]: manage })}>
                                 <img src={p.avatar} alt="" />
-                                {p.hasPin ? <span className={styles['lock']}>🔒</span> : null}
+                                {p.hasPin ? <span className={styles['lock']} title="PIN protected" aria-label="PIN protected">🔒</span> : null}
+                                {p.isKid ? <span className={styles['kid-badge']}>Kids</span> : null}
                                 {manage ? <span className={styles['edit-badge']}>✎</span> : null}
                             </span>
-                            <span className={styles['name']}>{p.name}{p.isKid ? ' · Kids' : ''}</span>
+                            <span className={styles['name']}>{p.name}</span>
                         </button>
                     ))}
                     {profiles.length < 8 ?
@@ -328,7 +335,7 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
             </label>
             <div className={styles['footer-actions']}>
                 <button type="button" className={styles['secondary']} onClick={() => setManage((m) => !m)}>{manage ? 'Done' : 'Manage profiles'}</button>
-                <a className={styles['secondary']} href={pm.signOutUrl()}>Sign out</a>
+                <a className={styles['link-quiet']} href={pm.signOutUrl()}>Sign out</a>
             </div>
             {pinFor ?
                 <PinPad

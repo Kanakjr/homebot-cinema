@@ -9,6 +9,7 @@ const classnames = require('classnames');
 const NotFound = require('stremio/routes/NotFound');
 const { useProfile, useNotifications, useOnScrollToBottom, withCoreSuspender } = require('stremio/common');
 const { default: toPath } = require('stremio-router/toPath');
+const PageHeader = require('stremio/components/PageHeader');
 const { DelayedRenderer, Chips, Image, MainNavBars, LibItem, MultiselectMenu } = require('stremio/components');
 const { default: Placeholder } = require('./Placeholder');
 const useLibrary = require('./useLibrary');
@@ -76,9 +77,18 @@ const Library = ({ model }) => {
                 // eslint-disable-next-line no-constant-condition
                 true ?
                     <div className={styles['library-content']}>
-                        <div className={styles['server-switch']}>
-                            <span className={styles['on']}>Your library</span>
-                            <a href="#/server">On server</a>
+                        <div className={styles['page-header']}>
+                            <PageHeader
+                                eyebrow="Library"
+                                title={model === 'library' ? 'Your library' : 'Continue watching'}
+                                subtitle={library.catalog.length ? `${library.catalog.length}${hasNextPage ? '+' : ''} title${library.catalog.length === 1 ? '' : 's'}` : null}
+                                actions={
+                                    <div className={styles['server-switch']}>
+                                        <span className={styles['on']}>Your library</span>
+                                        <a href="#/server">On server</a>
+                                    </div>
+                                }
+                            />
                         </div>
                         <div className={styles['selectable-inputs-container']}>
                             <MultiselectMenu {...typeSelect} className={styles['select-input-container']} />

@@ -5,6 +5,7 @@ import { useParams } from 'react-router';
 import { useMediaQuery, useProfile, withCoreSuspender } from 'stremio/common';
 import screenSizes from 'stremio/common/screen-sizes.less';
 import { MainNavBars, BottomSheet } from 'stremio/components';
+import PageHeader from 'stremio/components/PageHeader';
 import Selector from './Selector';
 import Table from './Table';
 import List from './List';
@@ -46,6 +47,9 @@ const Calendar = () => {
                     true ?
                         <div className={classNames(styles['content'], 'animation-fade-in')}>
                             <div className={styles['main']}>
+                                <div className={styles['page-header']}>
+                                    <PageHeader eyebrow="Calendar" title="Coming up" subtitle="Episodes from the shows you follow, by air date" />
+                                </div>
                                 <Selector
                                     selected={calendar.selected}
                                     selectable={calendar.selectable}

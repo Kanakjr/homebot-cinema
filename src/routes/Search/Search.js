@@ -7,6 +7,7 @@ const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalo
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { withCoreSuspender } = require('stremio/common');
 const { Image, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
+const PageHeader = require('stremio/components/PageHeader');
 const useSearch = require('./useSearch');
 const styles = require('./styles');
 const { useSearchParams } = require('react-router-dom');
@@ -38,6 +39,14 @@ const Search = () => {
     return (
         <MainNavBars className={styles['search-container']} route={'search'} query={query}>
             <div ref={scrollContainerRef} className={styles['search-content']} onScroll={onScroll}>
+                {
+                    query !== null && !noResults && search.catalogs.length > 0 ?
+                        <div className={styles['search-page-header']}>
+                            <PageHeader eyebrow="Search" title={`Results for “${query}”`} />
+                        </div>
+                        :
+                        null
+                }
                 {
                     query === null ?
                         <div className={classnames(styles['search-hints-wrapper'])}>

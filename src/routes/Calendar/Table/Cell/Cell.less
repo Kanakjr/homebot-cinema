@@ -134,6 +134,12 @@
         color: var(--primary-foreground-color);
     }
 
+    &.past:not(.active) {
+        .heading, .items {
+            opacity: 0.5;
+        }
+    }
+
     &.today {
         .heading {
             padding: 0.3rem;

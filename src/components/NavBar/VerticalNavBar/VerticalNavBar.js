@@ -16,7 +16,7 @@ const VerticalNavBar = React.memo(React.forwardRef(({ className, selected, tabs 
                     tabs.map((tab, index) => (
                         <NavTabButton
                             key={index}
-                            className={styles['nav-tab-button']}
+                            className={classnames(styles['nav-tab-button'], { [styles['pinned-bottom']]: tab.id === 'settings' })}
                             selected={tab.id === selected}
                             href={tab.href}
                             logo={tab.logo}

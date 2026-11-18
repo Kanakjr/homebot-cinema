@@ -9,7 +9,7 @@ const BASE_TABS = [
     { id: 'downloads', label: 'Downloads', icon: 'download', href: '/downloads' },
     { id: 'settings', label: 'SETTINGS', icon: 'settings', href: '/settings' },
 ];
-const ADMIN_TAB = { id: 'admin', label: 'Admin', icon: 'lock', href: '/admin' };
+const ADMIN_TAB = { id: 'admin', label: 'Admin', icon: 'person', href: '/admin' };
 
 const navTabs = (isAdmin) => (isAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS);
 

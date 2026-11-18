@@ -1,5 +1,8 @@
 import React, { useMemo } from 'react';
+import { Button } from 'stremio/components';
 import styles from './User.less';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { switchProfile, signOutUrl } = require('stremio/common/profileManager');
 
 type Props = {
     profile: Profile,
@@ -33,6 +36,11 @@ const User = ({ profile }: Props) => {
                         {(window as unknown as { ssoIsAdmin?: boolean }).ssoIsAdmin ? 'Signed in · admin' : 'Signed in'}
                     </div>
                 </div>
+            </div>
+            {/* HomeBot: the account actions live here, first in Settings, not only in the avatar menu */}
+            <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.2rem' }}>
+                <Button className={styles['action']} onClick={switchProfile}>Switch profile</Button>
+                <a className={styles['action']} href={signOutUrl()}>Sign out</a>
             </div>
         </div>
     );

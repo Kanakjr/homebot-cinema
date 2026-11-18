@@ -131,6 +131,14 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/Video/Video.js` | 22 | Phase 4: renders Next up badge on current unwatched/in-progress episode and displays episode runtime tag. |
 | `src/routes/Board/styles.less` | 12 | Phase 4: max-width 1/4 constraint on board-row-landscape cards to maintain 16:9 aspect ratio and alignment with Upcoming row. |
 | `src/routes/MetaDetails/VideosList/VideosList.js` | 67 | Phase 4: episode watch progress tracking, runtime pass-through, next-up episode detection. |
+| `src/common/useTranslate.js` | 6 | Phase 7: catalog rows read "Popular · Movies" instead of "Popular - Movie" (English movie/series only). |
+| `src/components/NavBar/VerticalNavBar/styles.less` | 6 | Phase 7: Settings and Admin pinned to the bottom of the rail. |
+| `src/routes/Calendar/Calendar.less` | 10 | Phase 6: compact page header. |
+| `src/routes/Calendar/List/List.tsx` | 12 | Phase 7: the agenda opens at today. |
+| `src/routes/Calendar/Table/Cell/Cell.tsx` | 8 | Phase 7: days before today are dimmed. |
+| `src/routes/Settings/General/User/User.less` | 10 | Phase 6: Switch profile / Sign out buttons in the Account pane. |
+| `src/routes/Settings/Settings.less` | 8 | Phase 6: readable max width for the pane. |
+| `src/routes/Settings/constants.ts` | 1 | Phase 6: `ABOUT` section id. |
 | `src/components/LibItem/LibItem.js` | 2 | Context menu: pass explicit id/_id to MetaItem for right-click actions. |
 | `src/components/MetaItem/MetaItem.js` | 30 | Context menu: right-click menu with Instant Play, Add/Remove Library, Mark Watched/Unwatched, Details, Copy Link. |
 

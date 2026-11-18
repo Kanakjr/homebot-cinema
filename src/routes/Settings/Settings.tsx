@@ -2,9 +2,9 @@
 
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
-import throttle from 'lodash.throttle';
-import { usePlatform, useProfile, useStreamingServer, useRouteFocused, withCoreSuspender } from 'stremio/common';
+import { usePlatform, useProfile, useStreamingServer, withCoreSuspender } from 'stremio/common';
 import { MainNavBars } from 'stremio/components';
+import PageHeader from 'stremio/components/PageHeader';
 import { SECTIONS } from './constants';
 import Menu from './Menu';
 import General from './General';
@@ -17,113 +17,61 @@ import Info from './Info';
 import styles from './Settings.less';
 
 const Settings = () => {
-    const routeFocused = useRouteFocused();
     const profile = useProfile();
     const platform = usePlatform();
     const streamingServer = useStreamingServer();
 
     const sectionsContainerRef = useRef<HTMLDivElement>(null);
-    const generalSectionRef = useRef<HTMLDivElement>(null);
-    const interfaceSectionRef = useRef<HTMLDivElement>(null);
-    const playerSectionRef = useRef<HTMLDivElement>(null);
-    const streamingServerSectionRef = useRef<HTMLDivElement>(null);
-    const shortcutsSectionRef = useRef<HTMLDivElement>(null);
 
     // sections contributed by plugins (slot "settingsSections"), shown right after General
     const pluginSections = useMemo(() => slot('settingsSections').map((s: any) => ({ ...s, ref: React.createRef<HTMLDivElement>() })), []);
 
-    const sections = useMemo(() => ([
-        { ref: generalSectionRef, id: SECTIONS.GENERAL },
-        ...pluginSections.map((s: any) => ({ ref: s.ref, id: s.id })),
-        { ref: interfaceSectionRef, id: SECTIONS.INTERFACE },
-        { ref: playerSectionRef, id: SECTIONS.PLAYER },
-        { ref: streamingServerSectionRef, id: SECTIONS.STREAMING },
-        { ref: shortcutsSectionRef, id: SECTIONS.SHORTCUTS },
-    ]), [pluginSections]);
-
-    const [selectedSectionId, setSelectedSectionId] = useState(SECTIONS.GENERAL);
-
-    const updateSelectedSectionId = useCallback(() => {
-        const container = sectionsContainerRef.current;
-        if (!container) return;
-
-        const availableSections = sections.filter((section) => section.ref.current);
-        if (!availableSections.length) return;
-
-        const { scrollTop, clientHeight, scrollHeight, offsetTop } = container;
-        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-
-        if (isAtBottom) {
-            setSelectedSectionId(availableSections[availableSections.length - 1].id);
-            return;
-        }
-
-        // HomeBot: the section in the upper third of the view is the current one (a 50px marker kept the previous,
-        // mostly scrolled-away section lit), measured like the menu click (container offset subtracted, not added)
-        const marker = scrollTop + clientHeight / 3;
-        const activeSection = availableSections.reduce((current, section) => {
-            const sectionTop = section.ref.current!.offsetTop - offsetTop;
-            return sectionTop <= marker ? section : current;
-        }, availableSections[0]);
-
-        setSelectedSectionId(activeSection.id);
-    }, [sections]);
+    // HomeBot: one pane per section (the menu and the content can no longer disagree, which also retires the scroll-spy)
+    const [selectedSectionId, setSelectedSectionId] = useState<string>(SECTIONS.GENERAL);
 
     const onMenuSelect = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-        const section = sections.find((section) => {
-            return section.id === event.currentTarget.dataset.section;
-        });
-
-        const container = sectionsContainerRef.current;
-        section && container?.scrollTo({
-            top: section.ref.current!.offsetTop - container!.offsetTop,
-            behavior: 'smooth'
-        });
-    }, [sections]);
-
-    const onContainerScroll = useCallback(throttle(() => {
-        updateSelectedSectionId();
-    }, 50), []);
+        const id = event.currentTarget.dataset.section;
+        if (id) {
+            setSelectedSectionId(id);
+        }
+    }, []);
 
     useLayoutEffect(() => {
-        if (routeFocused) {
-            updateSelectedSectionId();
+        if (sectionsContainerRef.current) {
+            sectionsContainerRef.current.scrollTop = 0;
         }
-    }, [routeFocused]);
+    }, [selectedSectionId]);
+
+    const selectedPlugin = pluginSections.find((s: any) => s.id === selectedSectionId);
+    const titles: Record<string, string> = {
+        [SECTIONS.GENERAL]: 'Account',
+        [SECTIONS.INTERFACE]: 'Interface',
+        [SECTIONS.PLAYER]: 'Player',
+        [SECTIONS.STREAMING]: 'Streaming',
+        [SECTIONS.SHORTCUTS]: 'Shortcuts',
+        [SECTIONS.ABOUT]: 'About',
+    };
 
     return (
         <MainNavBars className={styles['settings-container']} route={'settings'}>
             <div className={classnames(styles['settings-content'], 'animation-fade-in')}>
                 <Menu
                     selected={selectedSectionId}
-                    streamingServer={streamingServer}
                     extraSections={pluginSections}
                     onSelect={onMenuSelect}
                 />
 
-                <div ref={sectionsContainerRef} className={styles['sections-container']} onScroll={onContainerScroll}>
-                    <General
-                        ref={generalSectionRef}
-                        profile={profile}
-                    />
-                    {pluginSections.map((s: any) => renderPlugin(s, 'settingsSections', {}, s.ref))}
-                    <Interface
-                        ref={interfaceSectionRef}
-                        profile={profile}
-                    />
-                    <Player
-                        ref={playerSectionRef}
-                        profile={profile}
-                    />
-                    <Streaming
-                        ref={streamingServerSectionRef}
-                        profile={profile}
-                        streamingServer={streamingServer}
-                    />
-                    {
-                        !platform.isMobile && <Shortcuts ref={shortcutsSectionRef} />
-                    }
-                    <Info streamingServer={streamingServer} />
+                <div ref={sectionsContainerRef} className={styles['sections-container']}>
+                    <div className={styles['sections-inner']}>
+                        <PageHeader eyebrow="Settings" title={selectedPlugin ? selectedPlugin.label : (titles[selectedSectionId] || 'Settings')} />
+                        {selectedSectionId === SECTIONS.GENERAL && <General profile={profile} />}
+                        {selectedPlugin && renderPlugin(selectedPlugin, 'settingsSections', {}, selectedPlugin.ref)}
+                        {selectedSectionId === SECTIONS.INTERFACE && <Interface profile={profile} />}
+                        {selectedSectionId === SECTIONS.PLAYER && <Player profile={profile} />}
+                        {selectedSectionId === SECTIONS.STREAMING && <Streaming profile={profile} streamingServer={streamingServer} />}
+                        {selectedSectionId === SECTIONS.SHORTCUTS && !platform.isMobile && <Shortcuts />}
+                        {selectedSectionId === SECTIONS.ABOUT && <Info streamingServer={streamingServer} />}
+                    </div>
                 </div>
             </div>
         </MainNavBars>

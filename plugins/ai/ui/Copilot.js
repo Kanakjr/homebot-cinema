@@ -113,62 +113,66 @@ const Copilot = () => {
     if (isPlayer || !loaded || (!configured && !admin)) return null;
 
     return (
-        <aside className={classnames(styles['drawer'], { [styles['open']]: open })} role="complementary" aria-label="Copilot" aria-hidden={!open}>
-            <header className={styles['head']}>
-                <BrandMark size={26} />
-                <div className={styles['head-title']}>Copilot<span className={styles['beta']}>beta</span></div>
-                <div className={styles['head-actions']}>
-                    {turns.length ? <button type="button" className={styles['icon-btn']} title="New chat" aria-label="New chat" onClick={() => setTurns([])}>↺</button> : null}
-                    <button type="button" className={styles['icon-btn']} title="Close" aria-label="Close" onClick={() => setOpen(false)}>✕</button>
-                </div>
-            </header>
-
-            {!configured ?
-                <div className={styles['setup']}>
-                    <strong>Not set up yet.</strong> Add <code>GEMINI_API_KEY</code> to the server settings, then restart the cinema container.
-                </div>
-                :
-                <>
-                    <div className={styles['list']} ref={listRef} aria-live="polite">
-                        {turns.length === 0 ?
-                            <div className={styles['welcome']}>
-                                <div className={styles['welcome-title']}>{kids ? 'Hi! What shall we watch?' : 'What are we watching?'}</div>
-                                <div className={styles['welcome-sub']}>
-                                    {kids ? 'Ask me for a cartoon, a funny movie or something for the family.' : 'Ask for ideas, check the server, or have me prepare a download. You always confirm before anything starts.'}
-                                </div>
-                                <div className={styles['chips']}>
-                                    {SUGGESTIONS[kids ? 'kids' : 'adult'].map((s) => <button key={s} type="button" className={styles['chip']} onClick={() => send(s)}>{s}</button>)}
-                                </div>
-                            </div>
-                            : turns.map((t) => (
-                                <div key={t.id} className={classnames(styles['turn'], styles[t.role], { [styles['turn-error']]: t.error })}>
-                                    {t.content ? <div className={styles['bubble']}><FormattedText text={t.content} /></div> : null}
-                                    {t.titles && t.titles.length ? <TitleStrip titles={t.titles} onNavigate={onNavigate} /> : null}
-                                    {(t.staged || []).map((s) => <StagedCard key={s.id} action={s} onChange={(u) => updateStaged(t.id, u)} />)}
-                                    {t.trace && t.trace.length ?
-                                        <div className={styles['trace']}>
-                                            {[...new Set(t.trace.filter((x) => x.ok && TOOL_LABELS[x.name]).map((x) => TOOL_LABELS[x.name]))].map((l) => <span key={l}>{l}</span>)}
-                                        </div>
-                                        : null}
-                                </div>
-                            ))}
-                        {busy ? <div className={classnames(styles['turn'], styles['assistant'])}><div className={classnames(styles['bubble'], styles['thinking'])} aria-label="Thinking"><i /><i /><i /></div></div> : null}
+        <>
+            {/* a scrim behind the drawer: a click outside closes it (Esc already does) */}
+            {open ? <div className={styles['scrim']} onClick={() => setOpen(false)} aria-hidden="true" /> : null}
+            <aside className={classnames(styles['drawer'], { [styles['open']]: open })} role="complementary" aria-label="Copilot" aria-hidden={!open}>
+                <header className={styles['head']}>
+                    <BrandMark size={26} />
+                    <div className={styles['head-title']}>Copilot<span className={styles['beta']}>beta</span></div>
+                    <div className={styles['head-actions']}>
+                        {turns.length ? <button type="button" className={styles['icon-btn']} title="New chat" aria-label="New chat" onClick={() => setTurns([])}>↺</button> : null}
+                        <button type="button" className={styles['icon-btn']} title="Close" aria-label="Close" onClick={() => setOpen(false)}>✕</button>
                     </div>
-                    <form className={styles['composer']} onSubmit={(e) => { e.preventDefault(); send(input); }}>
-                        <textarea
-                            ref={inputRef}
-                            rows={1}
-                            value={input}
-                            maxLength={MAX_CHARS}
-                            placeholder={kids ? 'Ask for a cartoon…' : 'Ask anything…'}
-                            aria-label="Message the copilot"
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
-                        />
-                        <button type="submit" className={styles['send']} disabled={busy || !input.trim()} aria-label="Send">➤</button>
-                    </form>
-                </>}
-        </aside>
+                </header>
+
+                {!configured ?
+                    <div className={styles['setup']}>
+                        <strong>Not set up yet.</strong> Add <code>GEMINI_API_KEY</code> to the server settings, then restart the cinema container.
+                    </div>
+                    :
+                    <>
+                        <div className={styles['list']} ref={listRef} aria-live="polite">
+                            {turns.length === 0 ?
+                                <div className={styles['welcome']}>
+                                    <div className={styles['welcome-title']}>{kids ? 'Hi! What shall we watch?' : 'What are we watching?'}</div>
+                                    <div className={styles['welcome-sub']}>
+                                        {kids ? 'Ask me for a cartoon, a funny movie or something for the family.' : 'Ask for ideas, check the server, or have me prepare a download. You always confirm before anything starts.'}
+                                    </div>
+                                    <div className={styles['chips']}>
+                                        {SUGGESTIONS[kids ? 'kids' : 'adult'].map((s) => <button key={s} type="button" className={styles['chip']} onClick={() => send(s)}>{s}</button>)}
+                                    </div>
+                                </div>
+                                : turns.map((t) => (
+                                    <div key={t.id} className={classnames(styles['turn'], styles[t.role], { [styles['turn-error']]: t.error })}>
+                                        {t.content ? <div className={styles['bubble']}><FormattedText text={t.content} /></div> : null}
+                                        {t.titles && t.titles.length ? <TitleStrip titles={t.titles} onNavigate={onNavigate} /> : null}
+                                        {(t.staged || []).map((s) => <StagedCard key={s.id} action={s} onChange={(u) => updateStaged(t.id, u)} />)}
+                                        {t.trace && t.trace.length ?
+                                            <div className={styles['trace']}>
+                                                {[...new Set(t.trace.filter((x) => x.ok && TOOL_LABELS[x.name]).map((x) => TOOL_LABELS[x.name]))].map((l) => <span key={l}>{l}</span>)}
+                                            </div>
+                                            : null}
+                                    </div>
+                                ))}
+                            {busy ? <div className={classnames(styles['turn'], styles['assistant'])}><div className={classnames(styles['bubble'], styles['thinking'])} aria-label="Thinking"><i /><i /><i /></div></div> : null}
+                        </div>
+                        <form className={styles['composer']} onSubmit={(e) => { e.preventDefault(); send(input); }}>
+                            <textarea
+                                ref={inputRef}
+                                rows={1}
+                                value={input}
+                                maxLength={MAX_CHARS}
+                                placeholder={kids ? 'Ask for a cartoon…' : 'Ask anything…'}
+                                aria-label="Message the copilot"
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); } }}
+                            />
+                            <button type="submit" className={styles['send']} disabled={busy || !input.trim()} aria-label="Send">➤</button>
+                        </form>
+                    </>}
+            </aside>
+        </>
     );
 };
 

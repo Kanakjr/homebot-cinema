@@ -20,7 +20,7 @@
 
 .page {
     padding: 1.6rem 2.4rem 5rem;
-    max-width: 66rem;
+    max-width: 80rem;
     color: @fg;
     box-sizing: border-box;
 
@@ -34,7 +34,7 @@
     .section { display: flex; align-items: center; gap: 0.6rem; margin: 1.8rem 0 0.8rem; font-size: 1.3rem; font-weight: 800; }
     .count { padding: 0.1rem 0.6rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); font-size: 0.82rem; }
 
-    .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 0.9rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.9rem; }
     .stat { padding: 1.1rem 1.2rem; border: 1px solid @border; border-radius: 1rem; background: @surface; }
     .stat-label { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: @muted; }
     .stat-value { margin-top: 0.35rem; font-size: 1.9rem; font-weight: 800; }
@@ -59,7 +59,16 @@
     .tag { padding: 0.1rem 0.5rem; border-radius: 0.4rem; background: rgba(255, 255, 255, 0.12); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .avatar { width: 2.4rem; height: 2.4rem; border-radius: 0.6rem; object-fit: cover; }
     .quota { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: @muted; input { width: 5rem; padding: 0.35rem 0.5rem; border: 1px solid @border; border-radius: 0.5rem; background: @surface-2; color: @fg; font: inherit; } }
-    .row-actions { display: flex; gap: 0.4rem; }
+    .row-actions { display: flex; gap: 0.4rem; align-items: center; overflow: visible; }
+    // the global reset hides overflow everywhere; the actions menu has to hang outside its row
+    .table, .trow { overflow: visible; }
+    .more { position: relative; overflow: visible; summary { list-style: none; cursor: pointer; &::-webkit-details-marker { display: none; } } }
+    .more-menu {
+        position: absolute; right: 0; z-index: 5; overflow: visible; margin-top: 0.3rem; min-width: 12rem; padding: 0.3rem;
+        border: 1px solid @border; border-radius: 0.8rem; background: @surface-2; box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.5);
+        button { display: block; width: 100%; padding: 0.55rem 0.8rem; border: none; border-radius: 0.5rem; background: none; color: @fg; font: inherit; font-size: 0.88rem; text-align: left; cursor: pointer; &:hover { background: rgba(255, 255, 255, 0.08); } }
+        .danger-item { color: #ff6b6b; }
+    }
     .log { grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 1.2fr); }
     .plugin { grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.6fr) auto; .tmain { flex-wrap: wrap; } }
     .hint code { font-size: 0.85em; }

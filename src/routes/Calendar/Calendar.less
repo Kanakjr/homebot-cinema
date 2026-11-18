@@ -18,6 +18,15 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+
+            .page-header {
+                flex: none;
+                padding-top: 1rem;
+
+                // the month selector below already carries the date, so the header stays compact
+                h1 { font-size: 2rem; }
+                > header { margin-bottom: 0; }
+            }
         }
     }
 }

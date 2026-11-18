@@ -22,6 +22,11 @@
         width: calc(var(--vertical-nav-bar-size) - 1.2rem);
         height: calc(var(--vertical-nav-bar-size) - 1.2rem);
         min-height: 3.5rem;
+
+        // Settings and Admin sit together at the bottom of the rail
+        &.pinned-bottom {
+            margin-top: auto;
+        }
     }
 }
 
