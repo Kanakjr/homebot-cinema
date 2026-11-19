@@ -1,0 +1,67 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+// Settings styling for Game controllers plugin.
+
+.hint {
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--secondary-foreground-color, rgba(255, 255, 255, 0.65));
+}
+
+.empty-hint {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--secondary-foreground-color, rgba(255, 255, 255, 0.5));
+}
+
+.pads-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+.pad-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: var(--overlay-color, rgba(255, 255, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius, 8px);
+    font-size: 0.85rem;
+    color: var(--primary-foreground-color, #ffffff);
+}
+
+.pad-name {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.battery-chip {
+    flex: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-foreground-color, #ffffff);
+}
+
+.input-row {
+    transition: background-color 0.1s ease, border-color 0.1s ease;
+    border-radius: var(--border-radius, 8px);
+    border: 1px solid transparent;
+    padding: 0.25rem 0.5rem;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+
+    &.pressed {
+        background-color: rgba(255, 255, 255, 0.14);
+        border-color: var(--primary-accent-color, rgba(255, 255, 255, 0.3));
+    }
+}

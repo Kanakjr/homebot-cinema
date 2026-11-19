@@ -22,6 +22,10 @@ local addresses; everything else must be `https`.
 - `mpv.rs` + `glview.rs`: libmpv bound at run time; frames rendered into a layer beneath the transparent web view, so
   fullscreen and resizing work in one window.
 - `home.rs`: home mode (switches between the public and the home-network address, handing the sign-in across).
+- `gamepad.rs` + `gamepad/gamepad_bridge.m` + `gamepad_shim.js`: game controllers (Xbox, PlayStation, MFi, Siri Remote).
+  - **Reading:** done natively with Apple's GameController framework, polled at 60 Hz. Input arrives only while the app is in front.
+  - **Mapping:** the shim turns presses into the key presses and shell media keys the web UI already understands, using a layout people can change in Settings > Controllers (plugin `controllers`).
+  - **Gamepad API:** the shim serves `navigator.getGamepads()` for the web UI's own gamepad support. WebKit's built-in Gamepad API stays idle, because it would deliver every press twice.
 - `dist/setup.html`: the first-run page.
 
 The page is remote content, so: mpv scripts and ytdl are off, `mpv-command` is limited to `stop` and http(s) `loadfile`,

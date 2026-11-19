@@ -1,0 +1,9 @@
+{
+    "id": "controllers",
+    "name": "Game controllers",
+    "description": "Xbox, PlayStation and other game controllers in the macOS desktop app: button layout, live tester, battery and connect notices.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "server": null,
+    "env": []
+}

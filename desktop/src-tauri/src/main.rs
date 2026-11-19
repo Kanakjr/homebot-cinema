@@ -13,6 +13,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![cfg_attr(not(feature = "dev-tools"), allow(dead_code, unused_imports))]
 
+mod gamepad;
 mod glview;
 mod home;
 mod metal;
@@ -526,11 +527,13 @@ fn main() {
                 .inner_size(1280.0, 760.0)
                 .min_inner_size(640.0, 400.0)
                 .transparent(true)
-                .initialization_script(shell::SHIM);
+                .initialization_script(shell::SHIM)
+                .initialization_script(gamepad::SHIM);
             if remote && std::env::var("SPIKE_INCOGNITO").is_ok() {
                 builder = builder.incognito(true); // opt-in: fresh storage for this run
             }
             let win = builder.build()?;
+            gamepad::start(app.handle());
             if let Some((public, local)) = ui.and_then(|u| u.home) {
                 home::spawn_watcher(app.handle().clone(), public, local);
             }
