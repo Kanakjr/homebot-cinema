@@ -5,6 +5,7 @@ import { Item, ItemPlaceholder } from './Item';
 import styles from './List.less';
 
 type Props = {
+    className?: string,
     items: CalendarItem[],
     loading: boolean,
     selected: CalendarDate | null,
@@ -13,7 +14,7 @@ type Props = {
     onChange: (date: CalendarDate) => void,
 };
 
-const List = ({ items, loading, selected, monthInfo, profile, onChange }: Props) => {
+const List = ({ className, items, loading, selected, monthInfo, profile, onChange }: Props) => {
     const filteredItems = useMemo(() => {
         return items.filter(({ items }) => items.length);
     }, [items]);
@@ -31,7 +32,7 @@ const List = ({ items, loading, selected, monthInfo, profile, onChange }: Props)
     }, [filteredItems, loading, monthInfo.today]);
 
     return (
-        <div ref={listRef} className={styles['list']}>
+        <div ref={listRef} className={`${styles['list']}${className ? ` ${className}` : ''}`}>
             {
                 items.length === 0 || loading ?
                     [1, 2, 3].map((index) => (

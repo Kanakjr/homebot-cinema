@@ -29,6 +29,14 @@ const Calendar = () => {
     const { toDayMonth } = useCalendarDate(profile);
 
     const [selected, setSelected] = useState<CalendarDate | null>(null);
+    // HomeBot: Month (grid + list) or Agenda (the list alone, full width); remembered on this device
+    const [view, setView] = useState<'month' | 'agenda'>(() => {
+        try { return window.localStorage.getItem('homebot_calendar_view') === 'agenda' ? 'agenda' : 'month'; } catch (_) { return 'month'; }
+    });
+    const changeView = (next: 'month' | 'agenda') => {
+        setView(next);
+        try { window.localStorage.setItem('homebot_calendar_view', next); } catch (_) { /* not remembered */ }
+    };
     const detailsInSheet = useMediaQuery(`(max-width: ${screenSizes.small}) and (orientation: portrait), (max-width: ${screenSizes.xsmall}) and (orientation: landscape)`);
 
     const detailsTitle = useMemo(() => toDayMonth(selected), [selected, toDayMonth]);
@@ -45,7 +53,7 @@ const Calendar = () => {
                 {
                     // eslint-disable-next-line no-constant-condition
                     true ?
-                        <div className={classNames(styles['content'], 'animation-fade-in')}>
+                        <div className={classNames(styles['content'], 'animation-fade-in', { [styles['agenda']]: view === 'agenda' })}>
                             <div className={styles['main']}>
                                 <div className={styles['page-header']}>
                                     <PageHeader eyebrow="Calendar" title="Coming up" subtitle="Episodes from the shows you follow, by air date" />
@@ -56,14 +64,24 @@ const Calendar = () => {
                                     profile={profile}
                                     showToday={calendar.monthInfo.today === null}
                                 />
-                                <Table
-                                    items={calendar.items}
-                                    selected={selected}
-                                    monthInfo={calendar.monthInfo}
-                                    onChange={setSelected}
-                                />
+                                <div className={styles['view-switch']} role="group" aria-label="Calendar view">
+                                    {(['month', 'agenda'] as const).map((v) => (
+                                        <button key={v} type="button" aria-pressed={view === v} className={classNames({ [styles['on']]: view === v })} onClick={() => changeView(v)}>
+                                            {v === 'month' ? 'Month' : 'Agenda'}
+                                        </button>
+                                    ))}
+                                </div>
+                                {view === 'month' ?
+                                    <Table
+                                        items={calendar.items}
+                                        selected={selected}
+                                        monthInfo={calendar.monthInfo}
+                                        onChange={setSelected}
+                                    />
+                                    : null}
                             </div>
                             <List
+                                className={view === 'agenda' ? styles['agenda-list'] : undefined}
                                 items={calendar.items}
                                 loading={loading}
                                 selected={selected}

@@ -27,12 +27,12 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (strict-origin-when-cross-origin). |
-| `src/App/App.js` | 115 | Streaming server URL fixed to the origin; slot appOverlays; NewOnServer toaster; addons loader; number keys follow the sidebar (`common/navTabs.js`); Phase 3: shell-navigate handler (Go menu, Settings ⌘,, Search ⌘F) & fullscreen sync. |
+| `src/App/App.js` | 130 | Streaming server URL fixed to the origin; slot appOverlays; NewOnServer toaster; addons loader; number keys follow the sidebar (`common/navTabs.js`); Phase 3: shell-navigate handler (Go menu, Settings ⌘,, Search ⌘F) & fullscreen sync; "/" focuses search. |
 | `.gitignore` | 77 | Secrets, data/, local notes. |
 | `src/index.js` | 71 | Boot: plugin list, profile gate, SSO isolation before rendering; our English wording (`common/stringOverrides.js`). |
 | `CONTRIBUTING.md` | 68 | Fork contributing guide. |
 | `src/components/NavBar/HorizontalNavBar/NavMenu/NavMenuContent.js` | 64 | Profile switch, sign out, dashboard link. |
-| `src/routes/Calendar/Calendar.tsx` | 63 | On-server / auto-download markers. |
+| `src/routes/Calendar/Calendar.tsx` | 90 | On-server / auto-download markers; Month/Agenda switch. |
 | `src/routes/MetaDetails/MetaDetails.js` | 72 | MediaDownloadBar (downloads + Sentinel); slot metaDetailsSections under the description (collections). |
 | `src/App/useInterfaceScale.ts` | 55 | Default zoom 90%. |
 | `src/routes/Settings/General/User/User.tsx` | 51 | SSO identity instead of a Stremio account ("Signed in" line). |
@@ -45,7 +45,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 32 | Brand mark, profile avatar, slot navButtons; Phase 3: data-tauri-drag-region. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 29 | Badge; Phase 2: inactive-icon opacity 0.35→0.55 (3:1 non-text minimum). |
 | `webpack.config.js` | 30 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API); five system images left out of the offline cache (private `data/art/` override). |
-| `src/routes/Board/Board.js` | 44 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row. |
+| `src/routes/Board/Board.js` | 44 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row; per-profile row hide/reorder/dedupe (`rowPrefs.js`, `RowsEditor.js`). |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 15 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
 | `src/App/styles.less` | 45 | Branding; Phase 2: :root token defaults (--secondary/tertiary/quaternary-accent-color unified to primary; --primary-accent-rgb, --accent-foreground-color, --accent-thumb-color); Phase 3: --mac-traffic-lights-inset for data-shell=macos and data-fullscreen. |
@@ -129,12 +129,12 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 
 <!-- Phase 4: Play-first title pages and 1-click playback -->
 | `src/components/Video/Video.js` | 22 | Phase 4: renders Next up badge on current unwatched/in-progress episode and displays episode runtime tag. |
-| `src/routes/Board/styles.less` | 12 | Phase 4: max-width 1/4 constraint on board-row-landscape cards to maintain 16:9 aspect ratio and alignment with Upcoming row. |
+| `src/routes/Board/styles.less` | 12 | Phase 4: max-width 1/4 constraint on board-row-landscape cards to maintain 16:9 aspect ratio and alignment with Upcoming row; "Customize rows" button. |
 | `src/routes/MetaDetails/VideosList/VideosList.js` | 67 | Phase 4: episode watch progress tracking, runtime pass-through, next-up episode detection. |
 | `src/common/useTranslate.js` | 6 | Phase 7: catalog rows read "Popular · Movies" instead of "Popular - Movie" (English movie/series only). |
-| `src/components/NavBar/VerticalNavBar/styles.less` | 6 | Phase 7: Settings and Admin pinned to the bottom of the rail. |
-| `src/routes/Calendar/Calendar.less` | 10 | Phase 6: compact page header. |
-| `src/routes/Calendar/List/List.tsx` | 12 | Phase 7: the agenda opens at today. |
+| `src/components/NavBar/VerticalNavBar/styles.less` | 22 | Phase 7: Settings and Admin pinned to the bottom of the rail; icons-only rail in windows under 480px tall. |
+| `src/routes/Calendar/Calendar.less` | 30 | Phase 6: compact page header; Phase 7: Month/Agenda switch. |
+| `src/routes/Calendar/List/List.tsx` | 14 | Phase 7: the agenda opens at today; `className` prop for the full-width Agenda. |
 | `src/routes/Calendar/Table/Cell/Cell.tsx` | 8 | Phase 7: days before today are dimmed. |
 | `src/routes/Settings/General/User/User.less` | 10 | Phase 6: Switch profile / Sign out buttons in the Account pane. |
 | `src/routes/Settings/Settings.less` | 8 | Phase 6: readable max width for the pane. |

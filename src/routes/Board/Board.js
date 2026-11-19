@@ -16,6 +16,9 @@ const useBoard = require('./useBoard');
 const useContinueWatchingPreview = require('./useContinueWatchingPreview');
 const { default: useLiveTvContinueWatching } = require('./useLiveTvContinueWatching');
 const styles = require('./styles');
+const rowPrefs = require('./rowPrefs');
+const RowsEditor = require('./RowsEditor');
+const { readStored } = require('stremio/common/profileManager');
 const { default: StreamingServerWarning } = require('./StreamingServerWarning');
 
 const THRESHOLD = 5;
@@ -50,12 +53,21 @@ const Board = () => {
             isNaN(profile.settings.streamingServerWarningDismissed.getTime()) ||
             profile.settings.streamingServerWarningDismissed.getTime() < Date.now());
     }, [profile.settings, streamingServer.settings]);
-    const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
+    const { catalogRows: allRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
         catalogs: board.catalogs,
         loadRange: loadBoardRows,
         leadingRows: boardCatalogsOffset,
         preloadRows: THRESHOLD,
     });
+    // per-profile Home rows: drop duplicates, hide and reorder (local to this device)
+    const profileId = (readStored() || {}).id;
+    const [prefs, setPrefs] = React.useState(() => rowPrefs.load(profileId));
+    const [editing, setEditing] = React.useState(false);
+    const updatePrefs = React.useCallback((next) => { setPrefs(next); rowPrefs.save(profileId, next); }, [profileId]);
+    const catalogRows = React.useMemo(() => rowPrefs.applyRowPrefs(allRows, prefs), [allRows, prefs]);
+    const editorRows = React.useMemo(() => rowPrefs.applyRowPrefs(allRows, prefs, { includeHidden: true })
+        .filter(({ catalog }) => catalog.content?.type === 'Ready')
+        .map(({ catalog }) => ({ key: rowPrefs.rowKey(catalog), title: t.catalogTitle(catalog) || 'Row', hidden: prefs.hidden.includes(rowPrefs.rowKey(catalog)) })), [allRows, prefs, t]);
     // hero banner: a mix from the first catalogs that have loaded, minus what is already watched or in Continue watching
     const heroItems = React.useMemo(() => pickHeroItems(
         catalogRows
@@ -142,8 +154,22 @@ const Board = () => {
                             }
                         }
                     })}
+                    <div className={styles['customize-row']}>
+                        <button type="button" className={styles['customize-button']} onClick={() => setEditing(true)}>Customize rows</button>
+                    </div>
                 </div>
             </MainNavBars>
+            {
+                editing ?
+                    <RowsEditor
+                        rows={editorRows}
+                        onToggle={(key) => updatePrefs(rowPrefs.toggleHidden(prefs, key))}
+                        onMove={(key, delta) => updatePrefs(rowPrefs.move(prefs, editorRows.map((r) => r.key), key, delta))}
+                        onClose={() => setEditing(false)}
+                    />
+                    :
+                    null
+            }
             {
                 showStreamingServerWarning ?
                     <StreamingServerWarning className={styles['board-warning-container']} />

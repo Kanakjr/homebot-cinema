@@ -1,0 +1,16 @@
+.scrim { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; }
+.panel {
+    width: min(460px, calc(100vw - 32px)); max-height: 80vh; overflow-y: auto; padding: 20px 22px;
+    background: var(--modal-background-color, #1a1a22); color: var(--primary-foreground-color, #fff); border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    .head { display: flex; align-items: center; justify-content: space-between; h2 { font-size: 1.25rem; margin: 0; } }
+    .hint { opacity: 0.7; font-size: 0.9rem; margin: 6px 0 12px; }
+    .done { border: 0; border-radius: 8px; padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; background: var(--primary-accent-color, #7b5bf5); color: #fff; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    li.off span:first-of-type { opacity: 0.5; }
+    input[type=checkbox] { appearance: auto; -webkit-appearance: checkbox; width: 18px; height: 18px; flex: none; accent-color: var(--primary-accent-color, #7b5bf5); }
+    label { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 0; }
+    .moves button { width: 32px; height: 32px; margin-left: 4px; border: 0; border-radius: 6px; cursor: pointer; background: rgba(255, 255, 255, 0.1); color: inherit; font: inherit; }
+    .moves button:disabled { opacity: 0.3; cursor: default; }
+}

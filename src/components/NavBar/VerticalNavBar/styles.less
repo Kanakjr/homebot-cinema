@@ -51,12 +51,23 @@
     }
 }
 
-@media only screen and (max-height: @minimum) {
+// HomeBot: short windows (down to 640x400) keep every tab, with icons only; the title attribute names them
+@media only screen and (max-height: 480px) and (min-width: @minimum) {
     .vertical-nav-bar-container {
+        gap: 0.25rem;
+        padding: 0.5rem 0;
+
         .nav-tab-button {
+            min-height: 2.75rem;
+            height: 2.75rem;
+
             &:last-child {
-                display: none;
+                display: flex;
             }
+
+            // the label and icon classes belong to NavTabButton's own module
+            [class*="label"] { display: none; }
+            [class*="icon"], [class*="logo"] { margin-bottom: 0; }
         }
     }
 }

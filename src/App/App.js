@@ -101,6 +101,21 @@ const App = () => {
         return () => shell.off('shell-navigate', onShellNavigate);
     }, [shell, navigate, goBack]);
 
+    // HomeBot: "/" jumps to search from any page (⌘F does the same in the desktop app)
+    React.useEffect(() => {
+        const onKeyDown = (event) => {
+            if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+            const el = event.target;
+            if (el && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) return;
+            if (window.location.hash.startsWith('#/player')) return;
+            event.preventDefault();
+            const input = document.querySelector('input[placeholder*="Search" i]');
+            if (input) input.focus(); else navigate('/search');
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [navigate]);
+
     // HomeBot: sync desktop shell fullscreen state to dataset for traffic-light padding
     React.useEffect(() => {
         if (!shell || !shell.on) return;

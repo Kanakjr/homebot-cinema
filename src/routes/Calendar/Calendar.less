@@ -28,6 +28,42 @@
                 > header { margin-bottom: 0; }
             }
         }
+
+        .view-switch {
+            flex: none;
+            align-self: flex-start;
+            display: flex;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+
+            button {
+                border: 0;
+                border-radius: 999px;
+                padding: 0.35rem 1rem;
+                background: transparent;
+                color: inherit;
+                font: inherit;
+                cursor: pointer;
+                opacity: 0.75;
+
+                &.on { background: var(--primary-accent-color, #7b5bf5); color: #fff; opacity: 1; }
+            }
+        }
+
+        &.agenda {
+            flex-direction: column;
+            .main { flex: none; }
+        }
+
+        .agenda-list {
+            flex: auto;
+            width: 100%;
+            max-width: 52rem;
+            display: flex;
+            padding: 0 1rem 0 0;
+        }
     }
 }
 
