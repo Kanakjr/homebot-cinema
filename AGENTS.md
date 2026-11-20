@@ -37,7 +37,7 @@ Read this file instead of exploring; open only the files named here.
 | `server/downloads_manager.js`, `transmission.js` | Download records, Transmission RPC, ffmpeg remux |
 | `server/events.js`, `snapshots.js` | SSE hints (`/api/events`); daily DB snapshot (keeps 7) |
 | `server/proxy_rewrite.js`, `streamlinks.js` | Host rewriting for proxied URLs, HEVC→H.264 for HLS; signed stream links (`.../video.mp4/?exp&sig`, trailing slash on purpose) |
-| `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `similar`, `metalfx`, `controllers`, `remote`, `telegram`, `gdrive` |
+| `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `similar`, `metalfx`, `controllers`, `remote`, `mdblist`, `telegram`, `gdrive` |
 | `src/plugins/` | UI plugin host: registry, `slot()`, `<PluginSlot>` |
 | `src/worker/` | Core worker entry with the Stremio API fetch guard |
 | `src/common/` | `ssoManager.js` (per-profile storage; complete `DEFAULT_SETTINGS` or the core crashes), `profileManager.js`, `profileGate.js`, `serverApi.js`, `theme.js`, `useServerEvents.js`, `newOnServer.js` |

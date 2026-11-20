@@ -1,0 +1,14 @@
+{
+    "id": "mdblist",
+    "name": "MDBList Ratings",
+    "description": "Rotten Tomatoes (Tomatometer & Audience), Metacritic, IMDb and Letterboxd ratings from MDBList.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "env": [
+        {
+            "name": "MDBLIST_API_KEY",
+            "required": true,
+            "description": "MDBList API key for Rotten Tomatoes, Metacritic, IMDb and Letterboxd scores."
+        }
+    ]
+}

@@ -15,6 +15,7 @@ a plugin off removes its routes, its UI and its background work. Core never impo
 | `metalfx` | Apple MetalFX AI 4K Upscaler in the player overlay and Settings (macOS native desktop app) | on | macOS Apple Silicon |
 | `controllers` | Settings > Controllers for game controllers in the macOS desktop app: layout presets, remapping per button, live tester, connect and battery notices | on | the desktop app (the controller reading is in `desktop/`) |
 | `remote` | Push-to-play casting and real-time remote control between devices (e.g. Android phone to Mac Mini) | on | nothing |
+| `mdblist` | Rotten Tomatoes (Tomatometer & Audience), Metacritic, IMDb and Letterboxd ratings on movie and series pages | on | `MDBLIST_API_KEY` |
 | `ai` | AI copilot drawer (sparkle button): recommendations, server questions, staged downloads | off | `GEMINI_API_KEY` |
 | `telegram` | Household alerts (for example Sentinel queued an episode) to a Telegram chat | off | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
 | `gdrive` | Mounted cloud folders as extra library roots, plus a plan for moving watched files there | off | `LIBRARY_EXTRA_MOVIES_DIRS` / `LIBRARY_EXTRA_TV_DIRS` |
