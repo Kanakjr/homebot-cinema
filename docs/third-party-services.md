@@ -23,6 +23,7 @@ Search, Library, Calendar and Settings (playback not exercised), plus a search o
 | `anime-kitsu.strem.fun` | Community | Anime catalogs | Catalog requests |
 | `api.tmdb.org`, `image.tmdb.org` | TMDB | Smart filters, copilot, movie collections (server-side key) | Filters and titles |
 | `api.introdb.app` | IntroDB (community) | `skip` plugin, server-side: intro, recap and credits times when the file has no chapter markers. Asked once per episode or movie when it is played, cached in SQLite. `SKIP_INTRODB_URL=off` turns it off | IMDb id, season and episode of what is played (from the server's IP) |
+| `api.mdblist.com` | MDBList (community) | `mdblist` plugin, server-side: Rotten Tomatoes (Tomatometer & Audience), Metacritic, IMDb and Letterboxd ratings. Cached in SQLite. | IMDb ids of titles browsed and title pages opened (from the server's IP) |
 | `generativelanguage.googleapis.com`, `api.telegram.org` | Google, Telegram | `ai` and `telegram` plugins, server-side | Copilot prompts (titles only); alert text |
 | Your addons and stream sources | You choose | Whatever you add to `data/addons.json` / `STREAM_ADDON_URL` | Their requests |
 | `stremio/server` container | Stremio | Streaming and transcoding | Not audited yet |

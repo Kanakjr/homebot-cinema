@@ -49,6 +49,9 @@ file and one folder you can back up.
   "on a streaming service in your country", powered by [TMDB](https://www.themoviedb.org). 40 ready-made quick picks
   (charts, genres, languages, short on time), a hover info panel, and a kid-safe mode.
 - **Phone friendly and installable** as a PWA; interface zoom (default 90%); a clean full-screen layout on small screens.
+- **Native companion apps**:
+  - **macOS app** ([`desktop/`](desktop/)): Tauri 2 + libmpv direct playback (no transcoding), home LAN streaming, Apple GameController gamepad support, and macOS Now Playing media keys / Control Center bridge.
+  - **Android app** ([`android/`](android/)): Kotlin + Jetpack Compose companion app with Media3 (ExoPlayer) hardware decoding, snap Continue Watching, and real-time remote control / cast integration ([`remote` plugin](plugins/remote/)).
 
 ### AI copilot
 <img src="docs/screenshots/copilot-mobile.webp" alt="The AI copilot on a phone, suggesting titles as poster cards" align="right" width="30%">
@@ -183,6 +186,9 @@ you switch on or off, so you run only what you want:
 | `collections` | "Part of the X collection" on movie pages (TMDB) | on |
 | `similar` | "More like this" row on movie and series pages (TMDB recommendations) | on |
 | `metalfx` | 4K AI upscale button and live GPU stats in the macOS desktop app (Apple MetalFX); inert in the browser | on |
+| `controllers` | Settings > Controllers for game controllers in the macOS desktop app: presets, remapping, battery notices | on |
+| `remote` | Push-to-play casting and real-time remote control between household devices (e.g. phone to Mac Mini) | on |
+| `mdblist` | Rotten Tomatoes, Metacritic, IMDb and Letterboxd ratings on title pages and poster cards | on |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |
 | `gdrive` | Google Drive (rclone) folders as extra library roots | off |
@@ -204,6 +210,7 @@ All settings are environment variables; [`.env.example`](.env.example) has every
 | `STREAM_ADDON_URL` | The Stremio stream addon Sentinel and the copilot ask for releases (base URL or install link). **No default**: without it they find nothing |
 | `TMDB_API_KEY`, `WATCH_REGION` | Smart filters, and the country whose streaming catalogs are searched (two letters, any case; default `IN`) |
 | `CINEMA_PLUGINS` | Which plugins run (`all`, `none`, a list, `-id`); otherwise `data/plugins.json`, otherwise each plugin's default |
+| `MDBLIST_API_KEY` | Plugin `mdblist`: Rotten Tomatoes, Metacritic, IMDb and Letterboxd ratings |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | Plugin `ai`: the AI copilot |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Plugin `telegram`: alerts |
 | `LIBRARY_EXTRA_MOVIES_DIRS`, `LIBRARY_EXTRA_TV_DIRS` | Plugin `gdrive`: cloud folders as extra library roots ([setup](plugins/gdrive/README.md)) |

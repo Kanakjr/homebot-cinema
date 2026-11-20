@@ -14,17 +14,19 @@ means faster starts, no washed-out HDR, and no MKV-to-MP4 copies on disk.
 ## Status
 | Platform | Web view + video | State |
 |---|---|---|
-| macOS (Apple Silicon) | WKWebView + libmpv OpenGL render API, VideoToolbox decode | **In `desktop/`**: first-run server screen, direct play, home mode, DMG built and published by CI |
+| macOS (Apple Silicon) | WKWebView + libmpv OpenGL render API, VideoToolbox decode | **In `desktop/`**: first-run server screen, direct play, home mode, GameController, Now Playing media keys / Control Center, DMG built and published by CI |
+| Android | Jetpack Compose + Media3 (ExoPlayer) | **In `android/`**: native companion app for phones/tablets/TV, direct hardware decoding, remote control & cast target/sender |
 | Windows 10/11 | WebView2 + libmpv (D3D11) | Not started |
 | Linux | WebKitGTK + libmpv (EGL) | Not started |
-| Mobile | | PWA for now |
+| iOS | | PWA for now |
 
 ## Roadmap
-1. ~~Merge the macOS app into `desktop/`; server address setting~~ done. Still to do: media keys, pause on minimize.
-2. macOS signing and notarization; bundle libmpv in the app.
-3. Windows port and signed installer; Linux AppImage, then Flatpak.
-4. ~~GitHub Actions builds on each tag, attached to a GitHub Release~~ done for macOS (`.github/workflows/desktop.yml`); add Windows/Linux jobs with their ports. In-app updates (`tauri-plugin-updater`) later.
-5. The website's download section links to the latest release (done for macOS).
+1. ~~Merge the macOS app into `desktop/`; server address setting, GameController, Now Playing media keys~~ done. Still to do: pause on minimize.
+2. ~~Native Android companion app in `android/`~~ done.
+3. macOS signing and notarization; bundle libmpv in the app.
+4. Windows port and signed installer; Linux AppImage, then Flatpak.
+5. ~~GitHub Actions builds on each tag, attached to a GitHub Release~~ done for macOS (`.github/workflows/desktop.yml`); add Windows/Linux jobs with their ports. In-app updates (`tauri-plugin-updater`) later.
+6. The website's download section links to the latest release (done for macOS).
 
 ## Watch out for
 - **Licences**: the project is GPL-2.0; ship mpv/FFmpeg licence texts and a source offer with every binary.

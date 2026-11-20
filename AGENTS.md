@@ -44,7 +44,8 @@ Read this file instead of exploring; open only the files named here.
 | `src/routes/` | Our routes: `ServerLibrary`, `Downloads`, `Admin` (incl. Plugins tab); upstream routes with small edits |
 | `scripts/` | `new-plugin.js`, `upstream-check.js`, `graft-upstream-history.sh`, `build-site.sh`, `brand/` (icons, avatars) |
 | `site/` | GitHub Pages website (`.github/workflows/pages.yml`) |
-| `desktop/` | macOS app (Tauri + libmpv); `git tag vX.Y.Z` builds the DMG and attaches it to a GitHub Release (`.github/workflows/desktop.yml`, docs in `desktop/README.md`) |
+| `desktop/` | macOS app (Tauri + libmpv); GameController + Now Playing media keys; `git tag vX.Y.Z` builds the DMG and attaches it to a GitHub Release (`.github/workflows/desktop.yml`, docs in `desktop/README.md`) |
+| `android/` | Android companion app (Kotlin, Jetpack Compose, Media3/ExoPlayer, Material 3); `scripts/build-android.sh`, docs in `android/README.md` |
 
 ## Behaviours worth knowing
 - Profiles are household-wide; admin is a login (`ADMIN_EMAILS`), not a profile. Streaming-server settings (cache, transcoding)
@@ -76,6 +77,8 @@ pnpm check:upstream              # needs the upstream-base tag (docs/upstream-sy
 # Desktop app:
 zsh desktop/scripts/package-dmg.sh                     # public build (first-run setup wizard)
 CINEMA_ORIGIN=<url> CINEMA_LOCAL_ORIGIN=<local> zsh desktop/scripts/package-dmg.sh  # private build (URLs baked in; see data/LOCAL.md)
+# Android app:
+scripts/build-android.sh                               # build debug APK (android/app/build/outputs/apk/debug/app-debug.apk)
 ```
 Dev run: `CINEMA_DATA_DIR=<scratch> PORT=3099 NODE_ENV=development DEV_EMAIL=<admin> ADMIN_EMAILS=<admin> CINEMA_PLUGINS=all node http_server.js`
 (`NODE_PATH=.cache/server-deps/node_modules` after one `pnpm test:server`). Headless browsers report no window focus: use CDP

@@ -26,6 +26,9 @@ local addresses; everything else must be `https`.
   - **Reading:** done natively with Apple's GameController framework, polled at 60 Hz. Input arrives only while the app is in front.
   - **Mapping:** the shim turns presses into the key presses and shell media keys the web UI already understands, using a layout people can change in Settings > Controllers (plugin `controllers`).
   - **Gamepad API:** the shim serves `navigator.getGamepads()` for the web UI's own gamepad support. WebKit's built-in Gamepad API stays idle, because it would deliver every press twice.
+- `nowplaying.rs` + `nowplaying/nowplaying_bridge.m`: system "Now Playing" integration.
+  - Registers the app with macOS `MPNowPlayingInfoCenter` and `MPRemoteCommandCenter` while video plays.
+  - Routes hardware media keys (Play/Pause, Previous/Next track, Seek), AirPods stem squeezes, Touch Bar scrubbers, and Control Center media widgets directly to mpv and the web player instead of hijacking Music.app.
 - `dist/setup.html`: the first-run page.
 
 The page is remote content, so: mpv scripts and ytdl are off, `mpv-command` is limited to `stop` and http(s) `loadfile`,
