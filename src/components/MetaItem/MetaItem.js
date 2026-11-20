@@ -15,10 +15,11 @@ const Multiselect = require('stremio/components/Multiselect');
 const useBinaryState = require('stremio/common/useBinaryState');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { ICON_FOR_TYPE } = require('stremio/common/CONSTANTS');
+const { useCardRating } = require('stremio/common/cardRatings');
 const MetaContextMenu = require('stremio/components/MetaContextMenu');
 const styles = require('./styles');
 
-const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, subtitle, rating: customRating, imdbRating, links, ...props }) => {
+const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, subtitle, rating: customRating, imdbRating, links, app_extras, ...props }) => {
     const { t } = useTranslation();
     const artwork = poster && typeof poster === 'object' ? poster : { src: poster, shape: posterShape, changeCursor: posterChangeCursor };
     const { navigateWithOrigin } = useNavigateWithOrigin();
@@ -30,12 +31,19 @@ const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster
     }, [customHref, deepLinks]);
     const itemId = id || _id || (dataset && dataset.id) || (href ? (/tt\d+/.exec(href) || [])[0] : null);
     // HomeBot: show sleek top-right rating badge (matching Smart filters) when available
-    const rating = React.useMemo(() => {
+    const initialRating = React.useMemo(() => {
         let val = customRating ?? imdbRating;
-        if (val === undefined || val === null) {
-            if (Array.isArray(links)) {
-                const imdbLink = links.find((l) => l && (l.category === 'imdb' || l.category === 'IMDb'));
-                if (imdbLink && imdbLink.name) val = imdbLink.name;
+        if (val === undefined || val === null || val === '') {
+            if (app_extras && typeof app_extras === 'object') {
+                const r = app_extras.ratings;
+                if (r && r.imdb && r.imdb.rating) val = r.imdb.rating;
+                else if (r && r.tmdb && r.tmdb.rating) val = r.tmdb.rating;
+            }
+            if (val === undefined || val === null || val === '') {
+                if (Array.isArray(links)) {
+                    const imdbLink = links.find((l) => l && (l.category === 'imdb' || l.category === 'IMDb'));
+                    if (imdbLink && imdbLink.name) val = imdbLink.name;
+                }
             }
         }
         if (typeof val === 'number' && !isNaN(val) && val > 0) {
@@ -49,7 +57,9 @@ const MetaItem = React.memo(({ className, id, _id, inLibrary, type, name, poster
             }
         }
         return null;
-    }, [customRating, imdbRating, links]);
+    }, [customRating, imdbRating, links, app_extras]);
+
+    const rating = useCardRating(itemId, initialRating);
     const onContextMenu = React.useCallback((event) => {
         if (event.shiftKey) return;
         event.preventDefault();
@@ -263,6 +273,7 @@ MetaItem.propTypes = {
     rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     imdbRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     links: PropTypes.array,
+    app_extras: PropTypes.object,
     poster: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.shape({

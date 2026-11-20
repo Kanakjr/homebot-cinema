@@ -144,6 +144,7 @@ function register(ctx) {
                 saveCached(fresh);
                 return res.json({ rating: fresh });
             }
+            saveCached({ id, type, score: null });
             res.json({ rating: null });
         } catch (e) {
             ctx.log.warn(`mdblist lookup failed for ${id}: ${e.message}`);
@@ -170,10 +171,17 @@ function register(ctx) {
         if (missing.length > 0) {
             try {
                 const freshList = await fetchBatch(missing);
+                const found = new Set();
                 for (const item of freshList) {
                     if (item && item.id) {
                         saveCached(item);
                         out[item.id] = item;
+                        found.add(item.id);
+                    }
+                }
+                for (const id of missing) {
+                    if (!found.has(id)) {
+                        saveCached({ id, type: 'movie', score: null });
                     }
                 }
             } catch (e) {
