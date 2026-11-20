@@ -41,7 +41,7 @@
         "buffer": "6.0.3",
         "classnames": "2.5.1",
         "eventemitter3": "5.0.4",
-        "fast-equals": "^6.0.0",
+        "fast-equals": "^6.2.2",
         "filter-invalid-dom-props": "3.0.1",
         "hat": "^0.0.3",
         "i18next": "^24.2.3",
