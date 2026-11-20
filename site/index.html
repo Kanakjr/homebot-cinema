@@ -80,7 +80,10 @@
                 <article class="card"><h3>Downloads to your disk</h3><p>Through Transmission, with quality profiles (4K, HD, direct play, space saver, your own) and a live swarm check.</p></article>
                 <article class="card"><h3>Sentinel</h3><p>Keeps shows up to date: new episodes only, chosen seasons, or everything. Never re-fetches what you deleted.</p></article>
                 <article class="card"><h3>A better player path</h3><p>Deep HLS buffer, smooth HEVC handling, signed expiring links for VLC and friends. Native apps play files as they are.</p></article>
+                <article class="card"><h3>Universal ratings & details</h3><p>Rotten Tomatoes, Metacritic, IMDb and Letterboxd scores on poster cards across Home and Discover, with widened details.</p></article>
                 <article class="card"><h3>Admin and live updates</h3><p>Overview, people, activity log; pages refresh by themselves; a daily database snapshot.</p></article>
+                <article class="card"><h3>Watch stats & history</h3><p>Tautulli-style play logs kept on your server: hours per day, streaks, top devices, and CSV export.</p></article>
+                <article class="card"><h3>Casting & remote control</h3><p>Push-to-play casting from your phone to your living room Mac Mini, with a real-time virtual remote control.</p></article>
             </div>
             <div class="gallery">
                 <figure class="shot"><img loading="lazy" src="screenshots/smart-filters.webp" alt="Smart filters by rating, genre and streaming service"><figcaption>Smart filters (plugin <code>find</code>)</figcaption></figure>
@@ -99,11 +102,19 @@
             <p class="sub">Each plugin is one folder with its server code, its UI, its tests and its notes. Switch them with one setting.</p>
             <div class="grid plugins">
                 <article class="card"><span class="tag on">on by default</span><h3>find</h3><p>Smart filters: rating, votes, genre, language, runtime, year, "streaming on X in your country" (TMDB).</p></article>
-                <article class="card"><span class="tag on">on by default</span><h3>themes</h3><p>Appearance per profile and ten extra accent colours. Theme packs are plugins too.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>themes</h3><p>Appearance per profile and ten extra accent colours. Custom theme packs.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>skip</h3><p>Skip intro, recap and credits in the player; chapter & IntroDB marks on the seek bar.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>nowplaying</h3><p>Admin > Now playing, and Watch stats (<code>#/stats</code>): hours per day, streaks, device breakdown, CSV.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>mdblist</h3><p>Rotten Tomatoes (Tomatometer & Audience), Metacritic, IMDb and Letterboxd ratings on cards and pages.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>remote</h3><p>Push-to-play casting and real-time remote control between devices (e.g. phone to Mac Mini).</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>controllers</h3><p>Settings > Controllers: full gamepad navigation (Xbox, PS, MFi) with custom remapping and HUD.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>similar</h3><p>"More like this" recommendations under title descriptions with 10rem cards and ratings.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>collections</h3><p>"Part of the X collection" on movie pages with release timeline.</p></article>
+                <article class="card"><span class="tag on">on by default</span><h3>metalfx</h3><p>Apple MetalFX AI 4K Upscaler and live GPU statistics in the macOS desktop player.</p></article>
                 <article class="card"><span class="tag">opt-in</span><h3>ai</h3><p>A copilot drawer (Gemini). Recommends, answers questions about the server, stages downloads you confirm.</p></article>
                 <article class="card"><span class="tag">opt-in</span><h3>telegram</h3><p>Household alerts, for example "Sentinel queued a new episode".</p></article>
-                <article class="card"><span class="tag">opt-in</span><h3>gdrive</h3><p>Google Drive (rclone) folders as extra library roots, offline-safe, plus a plan for moving watched files there.</p></article>
-                <article class="card dashed"><span class="tag next">next</span><h3>yours</h3><p>A Plex-style watch tracker, more Plex features, your own sources. <code>pnpm plugin:new my-plugin</code></p></article>
+                <article class="card"><span class="tag">opt-in</span><h3>gdrive</h3><p>Google Drive (rclone) folders as extra library roots, offline-safe.</p></article>
+                <article class="card dashed"><span class="tag next">next</span><h3>yours</h3><p>Your own plugins, hooks and slots. <code>pnpm plugin:new my-plugin</code></p></article>
             </div>
             <div class="two code-row">
                 <div>
@@ -137,7 +148,7 @@ module.exports = {
             <div class="diagram" role="img" aria-label="Browsers and native apps talk to the HomeBot Cinema server, which runs core and plugins and talks to the streaming server, Transmission and your media folders">
                 <div class="col">
                     <div class="node">Browser / PWA</div>
-                    <div class="node">Native app<br><small>macOS · Windows · Linux</small></div>
+                    <div class="node">Native apps<br><small>macOS · Android · Windows · Linux</small></div>
                 </div>
                 <div class="arrow" aria-hidden="true">&rarr;</div>
                 <div class="col">
@@ -179,12 +190,13 @@ cp docker-compose.example.yml docker-compose.yml</code></pre>
     <section id="download">
         <div class="wrap">
             <h2>Apps</h2>
-            <p class="sub">The web app works everywhere and installs as a PWA. Native desktop apps play files directly with mpv (HEVC, AV1, Dolby audio, embedded subtitles) instead of asking the server to transcode.</p>
+            <p class="sub">The web app works everywhere and installs as a PWA. Native apps play files directly with hardware decoding (HEVC, AV1, Dolby audio, embedded subtitles) and support real-time remote casting.</p>
             <div class="grid dl">
-                <article class="card"><h3>macOS</h3><p>Apple Silicon, macOS 12+. Needs <code>brew install mpv</code> once. Not notarized yet: right-click &rarr; Open the first time.</p><a class="btn small" href="https://github.com/Kanakjr/homebot-cinema/releases/latest/download/HomeBot-Cinema-arm64.dmg">Download .dmg</a><span class="tag next">preview</span></article>
+                <article class="card"><h3>macOS</h3><p>Apple Silicon, macOS 12+. Direct mpv play, home LAN mode, GameController support, and Now Playing media keys / Control Center.</p><a class="btn small" href="https://github.com/Kanakjr/homebot-cinema/releases/latest/download/HomeBot-Cinema-arm64.dmg">Download .dmg</a><span class="tag next">preview</span></article>
+                <article class="card"><h3>Android</h3><p>Native app for phones, tablets and Android TV (Kotlin, Compose, Media3). Hardware decoding, 16:9 snap Continue Watching, and remote control.</p><a class="btn small" href="https://github.com/Kanakjr/homebot-cinema/tree/main/android#readme">Android Guide</a><span class="tag on">available</span></article>
+                <article class="card"><h3>PWA / Any device</h3><p>Open your server in any browser and choose "Install" / "Add to Home Screen". Responsive mobile UI with gesture navigation.</p><span class="tag on">available</span></article>
                 <article class="card"><h3>Windows</h3><p>Windows 10 and 11, WebView2 + mpv.</p><span class="tag">planned</span></article>
                 <article class="card"><h3>Linux</h3><p>AppImage first, then Flatpak and .deb.</p><span class="tag">planned</span></article>
-                <article class="card"><h3>Any device</h3><p>Open your server in a browser and choose "Install" / "Add to Home Screen".</p><span class="tag on">available</span></article>
             </div>
             <p class="note center">All versions and checksums are on <a href="https://github.com/Kanakjr/homebot-cinema/releases">GitHub Releases</a>. <a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/native-apps.md">Native apps plan</a>.</p>
         </div>
@@ -208,10 +220,10 @@ cp docker-compose.example.yml docker-compose.yml</code></pre>
         <div class="wrap">
             <h2>Where it is going</h2>
             <ul class="roadmap">
-                <li><b>Watch tracker</b>: plays, stats and "On deck", Plex-style, as a plugin.</li>
-                <li><b>More Plex features</b>: collections, per-file details, sharing a title with another profile.</li>
-                <li><b>Our own metadata</b>: a TMDB-backed catalog served from your server, so browsing does not depend on outside catalogs.</li>
-                <li><b>Signed native apps</b> for macOS, Windows and Linux, with automatic updates.</li>
+                <li><b>Our own metadata</b>: a TMDB-backed catalog served directly from your server, so browsing does not depend on outside catalogs.</li>
+                <li><b>Native desktop ports</b>: signed Windows installer and Linux AppImage/Flatpak ports.</li>
+                <li><b>Automatic desktop updates</b>: seamless in-app updater for macOS and future desktop platforms.</li>
+                <li><b>Advanced subtitles</b>: sidecar subtitle auto-matching and local library search.</li>
             </ul>
         </div>
     </section>
