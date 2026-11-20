@@ -80,7 +80,7 @@
         "@types/react": "^18.3.28",
         "@types/react-dom": "^18.3.7",
         "babel-loader": "10.1.1",
-        "copy-webpack-plugin": "12.0.2",
+        "copy-webpack-plugin": "14.0.0",
         "css-loader": "6.11.0",
         "cssnano": "7.1.9",
         "cssnano-preset-advanced": "7.0.16",
