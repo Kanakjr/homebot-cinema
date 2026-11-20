@@ -262,6 +262,8 @@ const MetaContextMenu = ({ position, onClose, item }) => {
         }
     }, [item, onClose]);
 
+    const triggerElementRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
+
     React.useEffect(() => {
         if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-gamepad-mode') === 'true') {
             const timer = setTimeout(() => {
@@ -270,7 +272,12 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                     firstBtn.focus();
                 }
             }, 30);
-            return () => clearTimeout(timer);
+            return () => {
+                clearTimeout(timer);
+                if (triggerElementRef.current && typeof triggerElementRef.current.focus === 'function') {
+                    triggerElementRef.current.focus();
+                }
+            };
         }
     }, []);
 
