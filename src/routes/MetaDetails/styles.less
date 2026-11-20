@@ -35,7 +35,7 @@
             position: absolute;
             inset: 0;
             background:
-                linear-gradient(to right, rgba(11, 12, 15, 0.95) 0%, rgba(11, 12, 15, 0.88) 32%, rgba(11, 12, 15, 0.5) 55%, rgba(11, 12, 15, 0.15) 75%, rgba(11, 12, 15, 0) 100%),
+                linear-gradient(to right, rgba(11, 12, 15, 0.96) 0%, rgba(11, 12, 15, 0.92) 42%, rgba(11, 12, 15, 0.6) 68%, rgba(11, 12, 15, 0.15) 85%, rgba(11, 12, 15, 0) 100%),
                 linear-gradient(to bottom, rgba(11, 12, 15, 0.5) 0%, rgba(11, 12, 15, 0) 25%, rgba(11, 12, 15, 0) 70%, rgba(11, 12, 15, 0.95) 100%);
             pointer-events: none;
         }
@@ -88,18 +88,21 @@
             }
         }
 
+        // HomeBot: wider details pane for synopsis, cast & plugin sections ("More like this")
         .meta-preview {
-            flex: 1 1 0;
+            flex: 1 1 auto;
             align-self: stretch;
-            padding: 0 3rem 2rem 4rem;
-            max-width: calc(100% - 34rem);
+            padding: 0 2.5rem 2rem 4rem;
+            width: min(62rem, calc(100% - 37rem));
+            max-width: calc(100% - 36rem);
             min-width: 0;
 
             padding-left: max(1rem, calc(4rem - var(--safe-area-inset-left)));
         }
 
         .spacing {
-            flex: 1;
+            flex: 1 1 2rem;
+            min-width: 1.5rem;
         }
 
         // right column: "On your server" strip + the streams (or episodes) panel

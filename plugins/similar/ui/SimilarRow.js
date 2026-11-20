@@ -30,12 +30,18 @@ const SimilarRow = ({ type, id }) => {
                         href={`#/detail/${m.type}/${encodeURIComponent(m.id)}`}
                         title={m.year ? `${m.name} (${m.year})` : m.name}
                     >
-                        {m.poster ? <img className={styles['poster']} src={m.poster} alt="" loading="lazy" /> : <div className={styles['poster']}>{m.name}</div>}
-                        <div className={styles['meta']}>
-                            {m.rating ? <span className={styles['rating']}>★ {m.rating.toFixed(1)}</span> : null}
-                            {m.year ? <span>{m.year}</span> : null}
+                        <div className={styles['poster-container']}>
+                            {m.poster ? (
+                                <img className={styles['poster']} src={m.poster} alt="" loading="lazy" />
+                            ) : (
+                                <div className={styles['poster']}>{m.name}</div>
+                            )}
+                            {m.rating ? (
+                                <span className={styles['rating']}>★ {m.rating.toFixed(1)}</span>
+                            ) : null}
                         </div>
                         <div className={styles['name']}>{m.name}</div>
+                        {m.year ? <div className={styles['year']}>{m.year}</div> : null}
                     </a>
                 ))}
             </div>

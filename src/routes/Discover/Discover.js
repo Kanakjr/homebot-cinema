@@ -251,6 +251,9 @@ const Discover = () => {
                         playname={selectedMetaItemIndex === index}
                         deepLinks={metaItem.deepLinks}
                         watched={metaItem.watched}
+                        imdbRating={metaItem.imdbRating}
+                        links={metaItem.links}
+                        rating={metaItem.rating}
                         data-index={index}
                         onClick={metaItemOnClick}
                     />

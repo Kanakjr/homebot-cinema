@@ -75,13 +75,27 @@
         flex: 1;
         align-self: stretch;
         overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 
-        &:not(:hover) {
-            scrollbar-color: transparent transparent;
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
 
-            &::-webkit-scrollbar-thumb, &::-webkit-scrollbar-track {
-                background-color: transparent;
-            }
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: transparent;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.25);
         }
 
         .logo, .logo-placeholder {
