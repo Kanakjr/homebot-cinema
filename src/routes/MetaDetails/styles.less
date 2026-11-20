@@ -8,6 +8,7 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
+    overflow: hidden;
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
 
@@ -48,7 +49,9 @@
     }
 
     .metadetails-content {
-        flex: 1;
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: hidden;
         align-self: stretch;
         position: relative;
         z-index: 0;
@@ -92,6 +95,9 @@
         .meta-preview {
             flex: 1 1 auto;
             align-self: stretch;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
             padding: 0 2.5rem 2rem 4rem;
             width: min(62rem, calc(100% - 37rem));
             max-width: calc(100% - 36rem);
