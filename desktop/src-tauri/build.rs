@@ -50,6 +50,14 @@ fn main() {
     println!("cargo:rustc-link-lib=framework=QuartzCore");
     println!("cargo:rustc-link-lib=framework=Cocoa");
 
+    // System "Now Playing" (media keys, Control Center), driven by src/nowplaying.rs
+    println!("cargo:rerun-if-changed=src/nowplaying/nowplaying_bridge.m");
+    cc::Build::new()
+        .file("src/nowplaying/nowplaying_bridge.m")
+        .flag("-fobjc-arc")
+        .compile("nowplaying_bridge");
+    println!("cargo:rustc-link-lib=framework=MediaPlayer");
+
     // Declaring the app commands makes Tauri's ACL cover them: each gets an `allow-<name>` permission.
     // Only `shell_ipc` is granted to the remote web UI; see capabilities/.
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(

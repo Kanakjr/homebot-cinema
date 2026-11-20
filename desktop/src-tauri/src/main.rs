@@ -18,6 +18,7 @@ mod home;
 mod metal;
 mod metalview;
 mod mpv;
+mod nowplaying;
 mod server;
 mod shell;
 

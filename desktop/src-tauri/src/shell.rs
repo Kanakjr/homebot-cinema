@@ -122,9 +122,10 @@ fn invoke(app: &AppHandle, window: &WebviewWindow, method: &str, args: &[Value])
         }
         "app-ready" => eprintln!("[shell] app-ready"),
         "quit" => app.exit(0),
-        // accepted and ignored in the spike
-        "media.status" | "media.metadata" | "win-set-interface-scale" | "autoupdater-notif-clicked"
-        | "pick-cache-directory" => {}
+        // { title, artist?, artUrl? } for the system's Now Playing (play state comes from mpv itself)
+        "media.metadata" => crate::nowplaying::on_metadata(app, args.first().unwrap_or(&Value::Null)),
+        // accepted and ignored in the spike. Never send `media.status` back: the page treats it as a play/pause request.
+        "media.status" | "win-set-interface-scale" | "autoupdater-notif-clicked" | "pick-cache-directory" => {}
         other => eprintln!("[shell] unhandled method {other}: {args:?}"),
     }
 }
@@ -357,6 +358,10 @@ fn clean_version(s: &str) -> String {
 }
 
 pub fn spawn_event_loop(app: AppHandle, mpv: Arc<Mpv>) {
+    // Now Playing follows these whether or not a page asks for them (ShellVideo does; it then gets the cached values).
+    for name in crate::nowplaying::PROPS {
+        observe(&app, name);
+    }
     std::thread::spawn(move || {
         // time-pos / demuxer-cache-time change on every frame; ShellVideo only updates the UI about once a
         // second. Coalesce to <= 4/s but always deliver the latest value (trailing edge) so a seek while
@@ -386,6 +391,7 @@ pub fn spawn_event_loop(app: AppHandle, mpv: Arc<Mpv>) {
                                 }
                             }
                             st.last.lock().unwrap().insert(name.clone(), value.clone());
+                            crate::nowplaying::on_prop(&app, &name, &value);
                             if name == "time-pos" || name == "demuxer-cache-time" {
                                 pending.insert(name, value);
                             } else {
@@ -396,6 +402,7 @@ pub fn spawn_event_loop(app: AppHandle, mpv: Arc<Mpv>) {
                             // property became unavailable (e.g. time-pos after stop): forget it
                             st.last.lock().unwrap().remove(&name);
                             pending.remove(&name);
+                            crate::nowplaying::on_prop(&app, &name, &Value::Null);
                         }
                     },
                     mpv::EVENT_END_FILE => unsafe {
