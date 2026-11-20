@@ -217,8 +217,22 @@
 
         var RUNS = {
             back: function () {
-                // Escape closes menus and dialogs and leaves the player; elsewhere Backspace goes back a page.
-                tap(inPlayer() || env.overlayOpen() ? 'escape' : 'backspace');
+                // If a modal or player menu is open, close it; in player without open menus, exit player;
+                // elsewhere Backspace goes back a page in router history.
+                if (env.overlayOpen()) {
+                    if (typeof env.closeOverlay === 'function' && env.closeOverlay()) {
+                        return;
+                    }
+                    tap('escape');
+                } else if (inPlayer()) {
+                    if (typeof env.exitPlayer === 'function') {
+                        env.exitPlayer();
+                    } else {
+                        tap('backspace');
+                    }
+                } else {
+                    tap('backspace');
+                }
             },
             home: function () { env.navigate('/'); },
             search: function () { env.navigate('/search'); },
@@ -235,6 +249,8 @@
         };
 
         function start(id, actionId, extra) {
+            if (typeof env.setGamepadMode === 'function') env.setGamepadMode(true);
+            if (typeof env.ensureFocus === 'function') env.ensureFocus();
             var a = ACTIONS[actionId];
             if (!a || actionId === 'none' || a.pad !== undefined) return;
             if (a.player && !inPlayer()) return;
@@ -299,6 +315,7 @@
                 var id = slot + ':' + input;
                 if (!act) return;
                 if (is) {
+                    if (typeof env.setGamepadMode === 'function') env.setGamepadMode(true);
                     if (capture) {
                         var fn = capture;
                         capture = null;
@@ -330,6 +347,7 @@
                 if (cur) stop(id);
                 return;
             }
+            if (typeof env.setGamepadMode === 'function') env.setGamepadMode(true);
             if (cur && cur.dir === d.dir) {
                 cur.m = d.m;
                 return;
@@ -731,11 +749,113 @@
                 '}',
                 '[class*="card"][data-gamepad-focused="true"] {',
                 '    transform: scale(1.03) !important;',
+                '}',
+                'html[data-gamepad-mode="true"], html[data-gamepad-mode="true"] * {',
+                '    cursor: none !important;',
+                '}',
+                'html[data-gamepad-mode="true"] {',
+                '    pointer-events: none !important;',
+                '}',
+                'html[data-gamepad-mode="true"] [data-gamepad-focused="true"],',
+                'html[data-gamepad-mode="true"] :focus,',
+                'html[data-gamepad-mode="true"] :focus-within {',
+                '    pointer-events: auto !important;',
+                '}',
+                'html[data-gamepad-mode="true"] .meta-item-container.hovered:not(:focus-within):not([data-gamepad-focused="true"]) .poster-container {',
+                '    box-shadow: none !important;',
+                '}',
+                'html[data-gamepad-mode="true"] .meta-item-container.hovered:not(:focus-within):not([data-gamepad-focused="true"]) .poster-image-layer {',
+                '    transform: none !important;',
+                '}',
+                'html[data-gamepad-mode="true"] [class*="card"]:not(:focus):not(:focus-within):not([data-gamepad-focused="true"]) {',
+                '    transform: none !important;',
                 '}'
             ].join('\n');
             if (doc.head) doc.head.appendChild(styleEl);
             else if (doc.documentElement) doc.documentElement.appendChild(styleEl);
         } catch (_) { void 0; }
+
+        function setGamepadMode(active) {
+            if (!doc || !doc.documentElement || typeof doc.documentElement.setAttribute !== 'function') return;
+            try {
+                if (active) {
+                    if (doc.documentElement.getAttribute('data-gamepad-mode') !== 'true') {
+                        doc.documentElement.setAttribute('data-gamepad-mode', 'true');
+                    }
+                } else {
+                    if (doc.documentElement.hasAttribute && doc.documentElement.hasAttribute('data-gamepad-mode')) {
+                        doc.documentElement.removeAttribute('data-gamepad-mode');
+                    }
+                }
+            } catch (_) { void 0; }
+        }
+
+        try {
+            var onMouseMove = function (e) {
+                if (e && (Math.abs(e.movementX || 0) > 1 || Math.abs(e.movementY || 0) > 1)) {
+                    setGamepadMode(false);
+                }
+            };
+            var onMouseDown = function () {
+                setGamepadMode(false);
+            };
+            if (doc && typeof doc.addEventListener === 'function') {
+                doc.addEventListener('mousemove', onMouseMove, true);
+                doc.addEventListener('mousedown', onMouseDown, true);
+            }
+        } catch (_) { void 0; }
+
+        try {
+            var onFullscreenChange = function () {
+                try {
+                    if (win && typeof win.focus === 'function') win.focus();
+                } catch (_) { void 0; }
+                if (win && typeof win.setTimeout === 'function') {
+                    win.setTimeout(function () {
+                        try {
+                            if (win && typeof win.focus === 'function') win.focus();
+                            if (doc && (!doc.activeElement || doc.activeElement === doc.body)) {
+                                var scope = getScope(doc);
+                                var candidates = getCandidates(scope, win);
+                                var target = findInitialCandidate(candidates, win);
+                                if (target) focusTarget(target, win);
+                            }
+                        } catch (_) { void 0; }
+                    }, 50);
+                }
+            };
+            if (doc && typeof doc.addEventListener === 'function') {
+                doc.addEventListener('fullscreenchange', onFullscreenChange);
+                doc.addEventListener('webkitfullscreenchange', onFullscreenChange);
+            }
+        } catch (_) { void 0; }
+
+        function closePlayerOverlay(doc) {
+            if (!doc || typeof doc.querySelector !== 'function') return false;
+            try {
+                var shortcutsOverlay = doc.querySelector('[class*="shortcuts-modal-overlay"]');
+                if (shortcutsOverlay && typeof shortcutsOverlay.click === 'function') {
+                    shortcutsOverlay.click();
+                    return true;
+                }
+                var drawerClose = doc.querySelector('[class*="side-drawer"] [class*="close-button"]');
+                if (drawerClose && typeof drawerClose.click === 'function') {
+                    drawerClose.click();
+                    return true;
+                }
+                var backdropLayer = doc.querySelector('.player-container > div[class*="layer"]:not([class*="-layer"])');
+                if (backdropLayer && typeof backdropLayer.click === 'function') {
+                    backdropLayer.click();
+                    return true;
+                }
+                var modalClose = doc.querySelector('.modals-container [class*="close"], [data-gamepad-modal] [class*="close"]');
+                if (modalClose && typeof modalClose.click === 'function') {
+                    modalClose.click();
+                    return true;
+                }
+            } catch (_) { void 0; }
+            return false;
+        }
 
         doc.addEventListener('focusout', function (e) {
             if (e.target && typeof e.target.removeAttribute === 'function') {
@@ -797,7 +917,18 @@
             now: function () { return Date.now(); },
             setTimer: function (fn, ms) { return win.setTimeout(fn, ms); },
             clearTimer: function (id) { win.clearTimeout(id); },
-            focused: function () { return !doc.hasFocus || doc.hasFocus(); },
+            focused: function () {
+                return typeof doc.hidden === 'boolean' ? !doc.hidden : (!doc.hasFocus || doc.hasFocus());
+            },
+            ensureFocus: function () {
+                try {
+                    if (win && typeof win.focus === 'function') win.focus();
+                    if (doc && doc.body && typeof doc.body.focus === 'function' && (!doc.activeElement || doc.activeElement === doc.body)) {
+                        doc.body.focus();
+                    }
+                } catch (_) { void 0; }
+            },
+            setGamepadMode: setGamepadMode,
             route: function () { return String(win.location.hash || '#/').slice(1).split('?')[0] || '/'; },
             navigate: function (path) { win.location.hash = '#' + path; },
             mediaKey: function (action) {
@@ -807,7 +938,45 @@
                 }
             },
             overlayOpen: function () {
-                return !!doc.querySelector('.modals-container > *, [data-gamepad-modal], [class*="dropdown"][class*="open"]');
+                if (!doc || typeof doc.querySelector !== 'function') return false;
+                return !!doc.querySelector(
+                    '.modals-container > *, [data-gamepad-modal], [class*="dropdown"][class*="open"], [class*="context-menu"], ' +
+                    '[class*="menu-layer"], [class*="side-drawer-layer"], [class*="shortcuts-modal"], [class*="next-video-popup"]'
+                );
+            },
+            closeOverlay: function () {
+                return closePlayerOverlay(doc);
+            },
+            exitPlayer: function () {
+                try {
+                    var backBtn = doc.querySelector && doc.querySelector('[class*="back-button-container"], .back-button-container');
+                    if (backBtn && typeof backBtn.click === 'function') {
+                        backBtn.click();
+                    } else if (win.history && typeof win.history.back === 'function') {
+                        win.history.back();
+                    } else {
+                        key(KEYS.backspace, 'keydown', false);
+                        key(KEYS.backspace, 'keyup', false);
+                    }
+                } catch (_) {
+                    key(KEYS.backspace, 'keydown', false);
+                    key(KEYS.backspace, 'keyup', false);
+                }
+                try {
+                    if (win && typeof win.focus === 'function') win.focus();
+                    if (doc && doc.body && typeof doc.body.focus === 'function') doc.body.focus();
+                } catch (_) { void 0; }
+                if (win && typeof win.setTimeout === 'function') {
+                    win.setTimeout(function () {
+                        try {
+                            if (win && typeof win.focus === 'function') win.focus();
+                            var scope = getScope(doc);
+                            var candidates = getCandidates(scope, win);
+                            var target = findInitialCandidate(candidates, win);
+                            if (target) focusTarget(target, win);
+                        } catch (_) { void 0; }
+                    }, 100);
+                }
             },
             key: key,
             moveFocus: function (dir) {

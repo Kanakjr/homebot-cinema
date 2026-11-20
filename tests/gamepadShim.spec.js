@@ -34,6 +34,8 @@ function makeEnv(options = {}) {
     const mediaKeys = [];
     const connections = [];
     const activations = [];
+    const gamepadModes = [];
+    const focusCalls = [];
 
     let nextTimerId = 1;
     const timers = new Map();
@@ -81,6 +83,10 @@ function makeEnv(options = {}) {
             keys.push(type + ':' + spec.key + (repeat ? ':r' : ''));
             return !(options.prevented && options.prevented(spec, type));
         },
+        setGamepadMode: function (mode) { gamepadModes.push(mode); },
+        ensureFocus: function () { focusCalls.push(t); },
+        gamepadModes: gamepadModes,
+        focusCalls: focusCalls,
         activate: function () { activations.push(t); },
         activations: activations,
         keys: keys,
@@ -224,21 +230,50 @@ describe('gamepadShim controller mapping', () => {
         expect(env.keys).toEqual([]);
     });
 
-    it('6. B (back): Escape in player, Escape with overlayOpen, Backspace outside without overlay', () => {
+    it('6. B (back): exitPlayer in player without overlay, Escape with overlayOpen, Backspace outside without overlay', () => {
         const envPlayer = makeEnv({ route: '/player/123' });
+        let playerExited = false;
+        envPlayer.exitPlayer = () => { playerExited = true; };
         const cPlayer = createController(envPlayer);
         cPlayer.update(pad({ buttons: { b: 1 } }));
-        expect(envPlayer.keys).toEqual(['keydown:Escape', 'keyup:Escape']);
+        expect(playerExited).toBe(true);
+
+        const envPlayerFallback = makeEnv({ route: '/player/123' });
+        const cPlayerFallback = createController(envPlayerFallback);
+        cPlayerFallback.update(pad({ buttons: { b: 1 } }));
+        expect(envPlayerFallback.keys).toEqual(['keydown:Backspace', 'keyup:Backspace']);
 
         const envOverlay = makeEnv({ route: '/', overlayOpen: true });
         const cOverlay = createController(envOverlay);
         cOverlay.update(pad({ buttons: { b: 1 } }));
         expect(envOverlay.keys).toEqual(['keydown:Escape', 'keyup:Escape']);
 
+        const envOverlayClose = makeEnv({ route: '/player/123', overlayOpen: true });
+        let closedOverlay = false;
+        envOverlayClose.closeOverlay = () => { closedOverlay = true; return true; };
+        const cOverlayClose = createController(envOverlayClose);
+        cOverlayClose.update(pad({ buttons: { b: 1 } }));
+        expect(closedOverlay).toBe(true);
+        expect(envOverlayClose.keys).toEqual([]);
+
         const envNormal = makeEnv({ route: '/', overlayOpen: false });
         const cNormal = createController(envNormal);
         cNormal.update(pad({ buttons: { b: 1 } }));
         expect(envNormal.keys).toEqual(['keydown:Backspace', 'keyup:Backspace']);
+    });
+
+    it('6b. Controller input triggers setGamepadMode(true) and ensureFocus()', () => {
+        const env = makeEnv({ route: '/' });
+        const controller = createController(env);
+
+        controller.update(pad({ buttons: { a: 1 } }));
+        expect(env.gamepadModes).toContain(true);
+        expect(env.focusCalls.length).toBeGreaterThan(0);
+
+        const envStick = makeEnv({ route: '/' });
+        const cStick = createController(envStick);
+        cStick.update(pad({ axes: [0, 0.8, 0, 0] }));
+        expect(envStick.gamepadModes).toContain(true);
     });
 
     it('7. X (playPause) calls mediaKey, Home navigates to /, Y navigates to /search', () => {
