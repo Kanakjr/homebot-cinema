@@ -42,6 +42,14 @@ fn main() {
         .flag("-DGL_SILENCE_DEPRECATION")
         .compile("metalfx_bridge");
 
+    // Game controllers (GameController framework), read by src/gamepad.rs
+    println!("cargo:rerun-if-changed=src/gamepad/gamepad_bridge.m");
+    cc::Build::new()
+        .file("src/gamepad/gamepad_bridge.m")
+        .flag("-fobjc-arc")
+        .compile("gamepad_bridge");
+    println!("cargo:rustc-link-lib=framework=GameController");
+
     println!("cargo:rustc-link-lib=framework=Metal");
     println!("cargo:rustc-link-lib=framework=MetalFX");
     println!("cargo:rustc-link-lib=framework=MetalPerformanceShaders");
