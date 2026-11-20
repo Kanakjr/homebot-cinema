@@ -3,11 +3,13 @@
 
 const React = require('react');
 const { api } = require('./serverApi');
+const { isActive } = require('stremio/plugins');
 
 const ratingsCache = new Map(); // imdbId -> formatted rating string (e.g. "7.4") or null
 const listeners = new Map(); // imdbId -> Set of callbacks
 const pendingIds = new Set();
 let batchTimeout = null;
+let serverDisabled = false;
 
 const noop = () => {
     // noop
@@ -30,6 +32,16 @@ function notify(id, rating) {
 function flushBatch() {
     batchTimeout = null;
     if (pendingIds.size === 0) return;
+
+    if (serverDisabled || !isActive('mdblist')) {
+        const ids = Array.from(pendingIds);
+        pendingIds.clear();
+        ids.forEach((id) => {
+            ratingsCache.set(id, null);
+            notify(id, null);
+        });
+        return;
+    }
 
     const ids = Array.from(pendingIds).slice(0, 50);
     ids.forEach((id) => pendingIds.delete(id));
@@ -55,7 +67,10 @@ function flushBatch() {
                 batchTimeout = setTimeout(flushBatch, 100);
             }
         })
-        .catch(() => {
+        .catch((err) => {
+            if (err && (err.status === 404 || err.status === 403)) {
+                serverDisabled = true;
+            }
             for (const id of ids) {
                 ratingsCache.set(id, null);
                 notify(id, null);
@@ -64,12 +79,17 @@ function flushBatch() {
 }
 
 function requestRating(id, callback) {
-    if (!id || !/^tt\d+$/.test(id)) {
+    if (!id || !/^tt\d+$/.test(id) || serverDisabled) {
         callback(null);
         return noop;
     }
     if (ratingsCache.has(id)) {
         callback(ratingsCache.get(id));
+        return noop;
+    }
+    if (!isActive('mdblist')) {
+        ratingsCache.set(id, null);
+        callback(null);
         return noop;
     }
 
