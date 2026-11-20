@@ -205,6 +205,11 @@
         var lastUpdate = 0;
         var capture = null;
         var listeners = [];
+        var homeHoldTimer = null;
+        var homeHoldTriggered = false;
+        var aHoldTimer = null;
+        var aHoldTriggered = false;
+        var lastLowBatteryNotify = 0;
 
         function inPlayer() {
             return String(env.route() || '').indexOf('/player/') === 0;
@@ -254,14 +259,55 @@
             var a = ACTIONS[actionId];
             if (!a || actionId === 'none' || a.pad !== undefined) return;
             if (a.player && !inPlayer()) return;
+            if (actionId === 'home') {
+                if (typeof env.toggleQuickMenu === 'function') {
+                    homeHoldTriggered = false;
+                    homeHoldTimer = env.setTimer(function () {
+                        homeHoldTimer = null;
+                        homeHoldTriggered = true;
+                        env.toggleQuickMenu();
+                    }, 500);
+                    active[id] = { home: true };
+                    return;
+                }
+                RUNS.home();
+                return;
+            }
+            if (typeof env.isVirtualKeyboardOpen === 'function' && env.isVirtualKeyboardOpen()) {
+                if (actionId === 'playPause' || actionId === 'pad.x') {
+                    if (typeof env.virtualKeyPress === 'function') {
+                        env.virtualKeyPress('BACKSPACE');
+                        return;
+                    }
+                }
+                if (actionId === 'search' || actionId === 'pad.y') {
+                    if (typeof env.virtualKeyPress === 'function') {
+                        env.virtualKeyPress('SPACE');
+                        return;
+                    }
+                }
+            }
             if (a.run) {
                 RUNS[a.run]();
                 return;
             }
-            if (actionId === 'select' && inPlayer()) {
-                var hasCtrl = typeof env.hasActiveControl === 'function' ? env.hasActiveControl() : false;
-                if (!hasCtrl) {
-                    env.mediaKey('play-pause');
+            if (actionId === 'select') {
+                if (inPlayer()) {
+                    var hasCtrl = typeof env.hasActiveControl === 'function' ? env.hasActiveControl() : false;
+                    if (!hasCtrl) {
+                        env.mediaKey('play-pause');
+                        return;
+                    }
+                } else if (typeof env.isCardTarget === 'function' && env.isCardTarget()) {
+                    aHoldTriggered = false;
+                    aHoldTimer = env.setTimer(function () {
+                        aHoldTimer = null;
+                        aHoldTriggered = true;
+                        if (typeof env.triggerContextMenu === 'function') {
+                            env.triggerContextMenu();
+                        }
+                    }, 500);
+                    active[id] = { holdA: true };
                     return;
                 }
             }
@@ -297,6 +343,30 @@
             var entry = active[id];
             if (!entry) return;
             delete active[id];
+            if (entry.home) {
+                if (homeHoldTimer !== null) {
+                    env.clearTimer(homeHoldTimer);
+                    homeHoldTimer = null;
+                    if (!homeHoldTriggered) {
+                        RUNS.home();
+                    }
+                }
+                homeHoldTriggered = false;
+                return;
+            }
+            if (entry.holdA) {
+                if (aHoldTimer !== null) {
+                    env.clearTimer(aHoldTimer);
+                    aHoldTimer = null;
+                    if (!aHoldTriggered) {
+                        var specA = KEYS.enter;
+                        var unhandledA = env.key(specA, 'keydown', false);
+                        if (unhandledA !== false) env.activate();
+                    }
+                }
+                aHoldTriggered = false;
+                return;
+            }
             if (entry.spec) env.key(entry.spec, 'keyup', false);
         }
 
@@ -447,6 +517,14 @@
                 };
                 pads[slot] = cur;
                 if (!prev) env.connection('gamepadconnected', gamepadObject(cur));
+                if (cur.battery !== null && cur.battery <= 0.15 && !cur.charging) {
+                    if (!lastLowBatteryNotify || now - lastLowBatteryNotify > 15 * 60 * 1000) {
+                        lastLowBatteryNotify = now || 1;
+                        if (typeof env.notifyLowBattery === 'function') {
+                            env.notifyLowBattery(cur.battery);
+                        }
+                    }
+                }
                 handleButtons(slot, cur, act);
                 STICKS.forEach(function (stick) { handleStick(slot, cur, stick, act); });
             });
@@ -776,7 +854,51 @@
                 '}',
                 'html[data-gamepad-mode="true"] [class*="card"]:not(:focus):not(:focus-within):not([data-gamepad-focused="true"]) {',
                 '    transform: none !important;',
-                '}'
+                '}',
+                '/* HUD */',
+                '#cinema-controller-hud {',
+                '    position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-24px);',
+                '    background: rgba(18, 18, 24, 0.94); border: 1px solid rgba(255, 255, 255, 0.16);',
+                '    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); color: #ffffff; padding: 10px 22px; border-radius: 9999px;',
+                '    display: flex; align-items: center; gap: 10px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;',
+                '    font-size: 14px; font-weight: 600; letter-spacing: 0.2px; z-index: 1000001; opacity: 0; pointer-events: none;',
+                '    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);',
+                '}',
+                '#cinema-controller-hud.visible { opacity: 1; transform: translateX(-50%) translateY(0); }',
+                '#cinema-controller-hud .hud-icon { font-size: 18px; }',
+                '/* Quick Menu */',
+                '#cinema-quick-menu-overlay {',
+                '    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);',
+                '    z-index: 1000000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease-out;',
+                '}',
+                '#cinema-quick-menu-overlay.visible { opacity: 1; }',
+                '#cinema-quick-menu-card {',
+                '    background: #151520; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(123, 91, 245, 0.25);',
+                '    border-radius: 20px; width: 440px; max-width: 90vw; padding: 24px; display: flex; flex-direction: column; gap: 16px;',
+                '    transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);',
+                '}',
+                '#cinema-quick-menu-overlay.visible #cinema-quick-menu-card { transform: scale(1); }',
+                '.quick-menu-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }',
+                '.quick-menu-title { font-size: 18px; font-weight: 700; color: #fff; }',
+                '.quick-menu-controller-badge { display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9999px; padding: 4px 12px; font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.85); }',
+                '.quick-menu-list { display: flex; flex-direction: column; gap: 8px; }',
+                '.quick-menu-item { display: flex; align-items: center; gap: 14px; padding: 11px 16px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid transparent; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.15s; user-select: none; }',
+                '.quick-menu-item:hover, .quick-menu-item[data-gamepad-focused="true"], .quick-menu-item:focus { background: rgba(123, 91, 245, 0.22) !important; border-color: var(--primary-accent-color, #7b5bf5) !important; outline: none !important; transform: translateX(4px); }',
+                '.quick-menu-item.danger:hover, .quick-menu-item.danger[data-gamepad-focused="true"], .quick-menu-item.danger:focus { background: rgba(239, 68, 68, 0.22) !important; border-color: #ef4444 !important; }',
+                '.quick-menu-item-icon { font-size: 20px; width: 28px; text-align: center; }',
+                '.quick-menu-item-text { display: flex; flex-direction: column; gap: 2px; }',
+                '.quick-menu-item-label { font-size: 15px; font-weight: 600; color: #ffffff; }',
+                '.quick-menu-item-desc { font-size: 12px; color: rgba(255, 255, 255, 0.5); }',
+                '.quick-menu-hint { display: flex; justify-content: center; gap: 16px; padding-top: 6px; font-size: 12px; color: rgba(255, 255, 255, 0.45); }',
+                '/* On-Screen Keyboard */',
+                '#cinema-gamepad-keyboard { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(18, 18, 26, 0.96); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(123, 91, 245, 0.25); border-radius: 20px; padding: 14px 18px; z-index: 999990; display: none; flex-direction: column; gap: 6px; max-width: 95vw; width: 660px; opacity: 0; transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }',
+                '#cinema-gamepad-keyboard.visible { opacity: 1; transform: translateX(-50%) translateY(0); }',
+                '.gamepad-kb-row { display: flex; justify-content: center; gap: 5px; }',
+                '.gamepad-kb-key { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 15px; font-weight: 600; padding: 9px 0; width: 46px; border-radius: 9px; text-align: center; cursor: pointer; user-select: none; transition: background 0.12s, border-color 0.12s, transform 0.12s; }',
+                '.gamepad-kb-key[data-gamepad-focused="true"], .gamepad-kb-key:focus, .gamepad-kb-key:hover { background: var(--primary-accent-color, #7b5bf5) !important; border-color: #ffffff !important; transform: scale(1.08); outline: none !important; }',
+                '.gamepad-kb-key.wide { width: 80px; font-size: 13px; }',
+                '.gamepad-kb-key.extra-wide { width: 130px; font-size: 13px; }',
+                '.gamepad-kb-shortcuts { display: flex; justify-content: space-between; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 2px; }'
             ].join('\n');
             if (doc.head) doc.head.appendChild(styleEl);
             else if (doc.documentElement) doc.documentElement.appendChild(styleEl);
@@ -789,10 +911,12 @@
                     if (doc.documentElement.getAttribute('data-gamepad-mode') !== 'true') {
                         doc.documentElement.setAttribute('data-gamepad-mode', 'true');
                     }
+                    syncKeyboardWithRoute();
                 } else {
                     if (doc.documentElement.hasAttribute && doc.documentElement.hasAttribute('data-gamepad-mode')) {
                         doc.documentElement.removeAttribute('data-gamepad-mode');
                     }
+                    hideGamepadKeyboard();
                 }
             } catch (_) { void 0; }
         }
@@ -837,9 +961,329 @@
             }
         } catch (_) { void 0; }
 
+        var hudEl = null;
+        var hudTimer = null;
+        function showControllerHud(text, icon, durationMs) {
+            if (!doc || !doc.body) return;
+            try {
+                if (!hudEl) {
+                    hudEl = doc.createElement('div');
+                    hudEl.id = 'cinema-controller-hud';
+                    doc.body.appendChild(hudEl);
+                }
+                hudEl.innerHTML = '<span class="hud-icon">' + (icon || '🎮') + '</span><span class="hud-text">' + text + '</span>';
+                hudEl.classList.add('visible');
+                if (hudTimer) win.clearTimeout(hudTimer);
+                hudTimer = win.setTimeout(function () {
+                    if (hudEl) hudEl.classList.remove('visible');
+                    hudTimer = null;
+                }, durationMs || 3200);
+            } catch (_) { void 0; }
+        }
+
+        var quickMenuEl = null;
+        var QUICK_ITEMS = [
+            { id: 'home', icon: '🏠', label: 'Home', desc: 'Main board & Continue Watching', run: function () { win.location.hash = '#/'; } },
+            { id: 'library', icon: '📚', label: 'Library', desc: 'Saved movies and TV series', run: function () { win.location.hash = '#/library'; } },
+            { id: 'downloads', icon: '📥', label: 'Downloads', desc: 'Torrents & Sentinel monitors', run: function () { win.location.hash = '#/downloads'; } },
+            { id: 'search', icon: '🔍', label: 'Search', desc: 'Search movies, series & actors', run: function () { win.location.hash = '#/search'; } },
+            { id: 'controller', icon: '🎮', label: 'Controller Status', desc: 'Show battery & connection HUD', run: function () {
+                var padState = (controller && typeof controller.getState === 'function') ? controller.getState() : null;
+                var activePad = padState && padState.pads && padState.pads[0];
+                var padName = activePad ? activePad.id : 'Controller';
+                var padBat = activePad && activePad.battery !== null ? Math.round(activePad.battery * 100) + '%' : 'N/A';
+                showControllerHud(padName + ' • ' + (activePad && activePad.charging ? '⚡ ' : '🔋 ') + padBat, '🎮', 4000);
+            } },
+            { id: 'reload', icon: '🔄', label: 'Reload App', desc: 'Refresh interface & state', run: function () { win.location.reload(); } },
+            { id: 'quit', icon: '❌', label: 'Quit App', desc: 'Close HomeBot Cinema', danger: true, run: function () {
+                if (typeof win.__shellDispatch === 'function') {
+                    win.__shellDispatch(JSON.stringify({ id: 0, type: 6, args: ['quit'] }));
+                } else {
+                    win.close();
+                }
+            } }
+        ];
+
+        function isQuickMenuOpen() {
+            return !!(quickMenuEl && quickMenuEl.classList.contains('visible'));
+        }
+
+        function closeQuickMenu() {
+            if (!quickMenuEl) return;
+            quickMenuEl.classList.remove('visible');
+            quickMenuEl.removeAttribute('data-gamepad-modal');
+            win.setTimeout(function () {
+                if (quickMenuEl && !quickMenuEl.classList.contains('visible')) {
+                    quickMenuEl.style.display = 'none';
+                }
+            }, 200);
+        }
+
+        function openQuickMenu() {
+            if (!doc || !doc.body) return;
+            if (!quickMenuEl) {
+                quickMenuEl = doc.createElement('div');
+                quickMenuEl.id = 'cinema-quick-menu-overlay';
+                quickMenuEl.setAttribute('role', 'dialog');
+                quickMenuEl.setAttribute('aria-label', 'Quick Actions');
+                doc.body.appendChild(quickMenuEl);
+            }
+            quickMenuEl.setAttribute('data-gamepad-modal', 'true');
+            quickMenuEl.style.display = 'flex';
+
+            var padState = (controller && typeof controller.getState === 'function') ? controller.getState() : null;
+            var activePad = padState && padState.pads && padState.pads[0];
+            var padName = activePad ? activePad.id : 'Controller';
+            var padBat = activePad && activePad.battery !== null ? Math.round(activePad.battery * 100) + '%' : null;
+            var batText = padBat ? ' • ' + (activePad.charging ? '⚡ ' : '🔋 ') + padBat : '';
+            var padBadge = '🎮 ' + padName + batText;
+
+            var itemsHtml = QUICK_ITEMS.map(function (item, idx) {
+                var cls = 'quick-menu-item' + (item.danger ? ' danger' : '') + (idx === 0 ? ' selected' : '');
+                return '<div class="' + cls + '" data-quick-index="' + idx + '" tabindex="0" role="menuitem">' +
+                    '<span class="quick-menu-item-icon">' + item.icon + '</span>' +
+                    '<div class="quick-menu-item-text">' +
+                        '<span class="quick-menu-item-label">' + item.label + '</span>' +
+                        '<span class="quick-menu-item-desc">' + item.desc + '</span>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            quickMenuEl.innerHTML = [
+                '<div id="cinema-quick-menu-card">',
+                '    <div class="quick-menu-header">',
+                '        <div class="quick-menu-title">Quick Actions</div>',
+                '        <div class="quick-menu-controller-badge">' + padBadge + '</div>',
+                '    </div>',
+                '    <div class="quick-menu-list">' + itemsHtml + '</div>',
+                '    <div class="quick-menu-hint">',
+                '        <span><b>A</b> Select</span>',
+                '        <span><b>B</b> Close</span>',
+                '    </div>',
+                '</div>'
+            ].join('\n');
+
+            var itemEls = quickMenuEl.querySelectorAll('.quick-menu-item');
+            for (var i = 0; i < itemEls.length; i++) {
+                (function (idx) {
+                    itemEls[idx].addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        closeQuickMenu();
+                        QUICK_ITEMS[idx].run();
+                    });
+                })(i);
+            }
+
+            quickMenuEl.addEventListener('click', function (e) {
+                if (e.target === quickMenuEl) {
+                    closeQuickMenu();
+                }
+            });
+
+            win.setTimeout(function () {
+                if (quickMenuEl) {
+                    quickMenuEl.classList.add('visible');
+                    var first = quickMenuEl.querySelector('.quick-menu-item');
+                    if (first) focusTarget(first, win);
+                }
+            }, 10);
+        }
+
+        function toggleQuickMenu() {
+            if (isQuickMenuOpen()) {
+                closeQuickMenu();
+            } else {
+                openQuickMenu();
+            }
+        }
+
+        function triggerContextMenu(target) {
+            if (!target) return;
+            try {
+                var rect = target.getBoundingClientRect();
+                var cx = rect.left + rect.width / 2;
+                var cy = rect.top + rect.height / 2;
+                var ev;
+                try {
+                    ev = new win.MouseEvent('contextmenu', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: win,
+                        clientX: cx,
+                        clientY: cy,
+                    });
+                } catch (_) {
+                    ev = doc.createEvent('MouseEvents');
+                    ev.initMouseEvent('contextmenu', true, true, win, 1, cx, cy, cx, cy, false, false, false, false, 2, null);
+                }
+                target.dispatchEvent(ev);
+            } catch (_) { void 0; }
+        }
+
+        function isCardTarget() {
+            var el = doc.activeElement;
+            if (!el || el === doc.body || el === doc.documentElement) return false;
+            if (typeof el.closest === 'function') {
+                return !!el.closest('.meta-item-container, [class*="card"], [class*="meta-item-link"], [class*="continue-watching-card"], [class*="upcoming-card"]');
+            }
+            return false;
+        }
+
+        var kbEl = null;
+        var KB_ROWS = [
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+            ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+            ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+            ['Z', 'X', 'C', 'V', 'B', 'N', 'M'],
+            [
+                { id: 'SPACE', label: 'Space', wide: 'extra-wide' },
+                { id: 'BACKSPACE', label: '⌫ Delete', wide: 'wide' },
+                { id: 'CLEAR', label: 'Clear', wide: 'wide' },
+                { id: 'DONE', label: 'Done 🔍', wide: 'wide' }
+            ]
+        ];
+
+        function isGamepadKeyboardOpen() {
+            return !!(kbEl && kbEl.classList.contains('visible'));
+        }
+
+        function hideGamepadKeyboard() {
+            if (!kbEl) return;
+            kbEl.classList.remove('visible');
+            win.setTimeout(function () {
+                if (kbEl && !kbEl.classList.contains('visible')) {
+                    kbEl.style.display = 'none';
+                }
+            }, 200);
+        }
+
+        function getSearchInput() {
+            return doc.querySelector('[class*="search-input"] input, [class*="search-bar"] input, input[type="text"][placeholder*="Search" i], input[type="search"]');
+        }
+
+        function setReactInputValue(input, val) {
+            if (!input) return;
+            try {
+                var proto = win.HTMLInputElement && win.HTMLInputElement.prototype;
+                var desc = proto ? Object.getOwnPropertyDescriptor(proto, 'value') : null;
+                if (desc && desc.set) {
+                    desc.set.call(input, val);
+                } else {
+                    input.value = val;
+                }
+            } catch (_) {
+                input.value = val;
+            }
+            try {
+                var ev = new win.Event('input', { bubbles: true, cancelable: true });
+                input.dispatchEvent(ev);
+                var ev2 = new win.Event('change', { bubbles: true, cancelable: true });
+                input.dispatchEvent(ev2);
+            } catch (_) { void 0; }
+        }
+
+        function onVirtualKeyPress(keyVal) {
+            var searchInput = getSearchInput();
+            if (!searchInput) return;
+            var currentVal = searchInput.value || '';
+            if (keyVal === 'SPACE') {
+                setReactInputValue(searchInput, currentVal + ' ');
+            } else if (keyVal === 'BACKSPACE') {
+                if (currentVal.length > 0) {
+                    setReactInputValue(searchInput, currentVal.slice(0, -1));
+                }
+            } else if (keyVal === 'CLEAR') {
+                setReactInputValue(searchInput, '');
+            } else if (keyVal === 'DONE') {
+                hideGamepadKeyboard();
+                win.setTimeout(function () {
+                    var scope = getScope(doc);
+                    var candidates = getCandidates(scope, win);
+                    var target = findInitialCandidate(candidates, win);
+                    if (target) focusTarget(target, win);
+                }, 50);
+            } else {
+                setReactInputValue(searchInput, currentVal + keyVal.toLowerCase());
+            }
+        }
+
+        function showGamepadKeyboard() {
+            if (!doc || !doc.body) return;
+            if (!kbEl) {
+                kbEl = doc.createElement('div');
+                kbEl.id = 'cinema-gamepad-keyboard';
+                kbEl.setAttribute('role', 'region');
+                kbEl.setAttribute('aria-label', 'Virtual Keyboard');
+
+                var rowsHtml = KB_ROWS.map(function (row) {
+                    var keysHtml = row.map(function (k) {
+                        var isObj = typeof k === 'object';
+                        var keyId = isObj ? k.id : k;
+                        var label = isObj ? k.label : k;
+                        var wideClass = isObj ? ' ' + k.wide : '';
+                        return '<div class="gamepad-kb-key' + wideClass + '" data-key="' + keyId + '" tabindex="0" role="button">' + label + '</div>';
+                    }).join('');
+                    return '<div class="gamepad-kb-row">' + keysHtml + '</div>';
+                }).join('');
+
+                kbEl.innerHTML = rowsHtml +
+                    '<div class="gamepad-kb-shortcuts">' +
+                    '    <span><b>X</b> Delete</span>' +
+                    '    <span><b>Y</b> Space</span>' +
+                    '    <span><b>B</b> Done / Results</span>' +
+                    '</div>';
+
+                kbEl.addEventListener('click', function (e) {
+                    var keyEl = e.target && e.target.closest('.gamepad-kb-key');
+                    if (keyEl) {
+                        var k = keyEl.getAttribute('data-key');
+                        if (k) onVirtualKeyPress(k);
+                    }
+                });
+
+                doc.body.appendChild(kbEl);
+            }
+
+            kbEl.style.display = 'flex';
+            win.setTimeout(function () {
+                if (kbEl) {
+                    kbEl.classList.add('visible');
+                    var firstKey = kbEl.querySelector('.gamepad-kb-key');
+                    if (firstKey && (!doc.activeElement || doc.activeElement === doc.body || doc.activeElement.tagName === 'INPUT')) {
+                        focusTarget(firstKey, win);
+                    }
+                }
+            }, 10);
+        }
+
+        function syncKeyboardWithRoute() {
+            var route = String(win.location.hash || '#/').slice(1).split('?')[0] || '/';
+            if (route === '/search') {
+                if (doc.documentElement.getAttribute('data-gamepad-mode') === 'true') {
+                    showGamepadKeyboard();
+                }
+            } else {
+                hideGamepadKeyboard();
+            }
+        }
+        win.addEventListener('hashchange', syncKeyboardWithRoute);
+
         function closePlayerOverlay(doc) {
             if (!doc || typeof doc.querySelector !== 'function') return false;
             try {
+                if (isQuickMenuOpen()) {
+                    closeQuickMenu();
+                    return true;
+                }
+                if (isGamepadKeyboardOpen()) {
+                    hideGamepadKeyboard();
+                    return true;
+                }
+                var ctxOverlay = doc.querySelector('.MetaContextMenu-overlay, [class*="MetaContextMenu"][class*="overlay"], [class*="context-menu"]');
+                if (ctxOverlay && typeof ctxOverlay.click === 'function') {
+                    ctxOverlay.click();
+                    return true;
+                }
                 var shortcutsOverlay = doc.querySelector('[class*="shortcuts-modal-overlay"]');
                 if (shortcutsOverlay && typeof shortcutsOverlay.click === 'function') {
                     shortcutsOverlay.click();
@@ -894,6 +1338,12 @@
             var ev;
             try { ev = new win.Event(type); } catch (e) { ev = { type: type }; }
             try { Object.defineProperty(ev, 'gamepad', { value: gamepad }); } catch (e) { ev.gamepad = gamepad; }
+            if (type === 'gamepadconnected' && gamepad) {
+                var name = gamepad.id || 'Game controller';
+                showControllerHud(name + ' Connected', '🎮', 3200);
+            } else if (type === 'gamepaddisconnected') {
+                showControllerHud('Controller Disconnected', '🎮', 3200);
+            }
             var handlers = gamepadListeners[type].slice();
             if (typeof win['on' + type] === 'function') handlers.push(win['on' + type]);
             handlers.forEach(function (h) {
@@ -945,6 +1395,7 @@
                 }
             },
             overlayOpen: function () {
+                if (isQuickMenuOpen()) return true;
                 if (!doc || typeof doc.querySelector !== 'function') return false;
                 return !!doc.querySelector(
                     '.modals-container > *, [data-gamepad-modal], [class*="dropdown"][class*="open"], [class*="context-menu"], ' +
@@ -953,6 +1404,28 @@
             },
             closeOverlay: function () {
                 return closePlayerOverlay(doc);
+            },
+            toggleQuickMenu: function () {
+                toggleQuickMenu();
+            },
+            isVirtualKeyboardOpen: function () {
+                return isGamepadKeyboardOpen();
+            },
+            virtualKeyPress: function (key) {
+                onVirtualKeyPress(key);
+            },
+            notifyLowBattery: function (level) {
+                var pct = Math.round(level * 100);
+                showControllerHud('Controller Battery Low (' + pct + '%)', '🪫', 5000);
+            },
+            isCardTarget: function () {
+                return isCardTarget();
+            },
+            triggerContextMenu: function () {
+                var el = doc.activeElement;
+                if (!el) return;
+                var target = (typeof el.closest === 'function' && el.closest('.meta-item-container, [class*="card"], [class*="meta-item-link"], [class*="continue-watching-card"], [class*="upcoming-card"]')) || el;
+                triggerContextMenu(target);
             },
             exitPlayer: function () {
                 try {
