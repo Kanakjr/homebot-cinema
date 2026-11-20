@@ -8,13 +8,13 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    height: var(--horizontal-nav-bar-size);
+    box-sizing: border-box;
+    height: calc(var(--horizontal-nav-bar-size) + var(--safe-area-inset-top));
+    padding-top: var(--safe-area-inset-top);
     padding-right: 1rem;
     padding-left: var(--mac-traffic-lights-inset, 0rem);
     transition: padding-left 0.2s ease;
     overflow: visible;
-    padding-top: var(--safe-area-inset-top);
-    box-sizing: content-box;
 
     .logo-container {
         flex: none;
@@ -134,17 +134,76 @@
 @media only screen and (max-width: @minimum) {
     .horizontal-nav-bar-container {
         justify-content: space-between;
-        padding-right: 0;
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
 
         .logo-container {
             width: var(--horizontal-nav-bar-size);
+            height: 100%;
+
+            .logo, svg {
+                width: 1.85rem;
+                height: 1.85rem;
+            }
+        }
+
+        .back-button-container {
+            margin-left: 0;
+        }
+
+        .buttons-container {
+            gap: 0.25rem;
+            flex: 0 0 auto;
         }
 
         .button-container {
-            margin: 0 1rem;
+            margin: 0;
+            width: 2.35rem;
+            height: 2.35rem;
+            border-radius: 0.5rem;
+
+            .icon {
+                width: 1.35rem;
+                height: 1.35rem;
+            }
+
+            .avatar-img {
+                width: 2rem;
+                height: 2rem;
+            }
 
             &:not(.back-button-container):not(.menu-button-container) {
                 display: none;
+            }
+        }
+
+        .search-bar {
+            height: 2.35rem;
+            margin: 0 0.35rem;
+            min-width: 0;
+            flex: 1 1 auto;
+            border-radius: 2rem;
+
+            input, [class*="search-input"] {
+                padding: 0 0.25rem 0 0.75rem;
+                font-size: 0.85rem;
+
+                &::placeholder, [class*="placeholder-label"] {
+                    font-size: 0.85rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+
+            [class*="submit-button-container"] {
+                height: 2.35rem;
+                padding: 0 0.55rem;
+
+                .icon, svg {
+                    width: 1.15rem;
+                    height: 1.15rem;
+                }
             }
         }
     }

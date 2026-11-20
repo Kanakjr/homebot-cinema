@@ -1,0 +1,8 @@
+<resources>
+    <color name="cinema_primary_accent">#7B5BF5</color>
+    <color name="cinema_background">#0E0E10</color>
+    <color name="cinema_surface">#18181C</color>
+    <color name="cinema_card_bg">#141416</color>
+    <color name="white">#FFFFFF</color>
+    <color name="text_secondary">#A0A0A8</color>
+</resources>

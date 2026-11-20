@@ -1,0 +1,8 @@
+{
+    "id": "remote",
+    "name": "Remote & Cast",
+    "description": "Push-to-play casting and real-time remote control between devices.",
+    "version": "1.0.0",
+    "defaultEnabled": true,
+    "env": []
+}

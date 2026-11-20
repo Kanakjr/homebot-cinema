@@ -24,6 +24,7 @@
         "plugin:new": "node scripts/new-plugin.js",
         "check:upstream": "node scripts/upstream-check.js",
         "lint": "eslint src plugins --max-warnings 287",
+        "test:mobile": "node scripts/test-mobile-browser.js",
         "scan-translations": "pnpx jest ./tests/i18nScan.test.js"
     },
     "engines": {

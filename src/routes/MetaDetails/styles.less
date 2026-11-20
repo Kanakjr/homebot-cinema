@@ -157,10 +157,17 @@
             }
         }
 
+        .nav-bar {
+            background: linear-gradient(180deg, rgba(11, 12, 15, 0.95) 0%, rgba(11, 12, 15, 0.7) 70%, transparent 100%);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
         .metadetails-content {
             display: block;
             overflow-y: auto;
-            padding-top: calc(var(--top-overlay-size) + var(--safe-area-inset-top));
+            margin-top: calc((var(--horizontal-nav-bar-size) + var(--safe-area-inset-top)) * -1);
+            padding-top: calc(var(--horizontal-nav-bar-size) + var(--safe-area-inset-top) + 0.5rem);
 
             .spacing {
                 display: none;
@@ -169,16 +176,25 @@
             .side-column {
                 display: block;
                 width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
                 height: auto;
-                padding: 0.5rem;
+                padding: 0.5rem 0.75rem 2rem;
             }
 
             .meta-preview {
-                padding: 0 1.5rem 2rem;
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+                padding: 0 1.25rem 1.5rem;
             }
 
             .videos-list, .streams-list {
-                border-radius: var(--border-radius) var(--border-radius) 0 0;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                border-radius: var(--border-radius);
             }
         }
     }
