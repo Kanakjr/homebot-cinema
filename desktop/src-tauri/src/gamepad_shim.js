@@ -71,10 +71,10 @@
         // handler took the Enter, the focused element is clicked, as the web UI's own gamepad support does.
         select: { label: 'Select', key: 'enter', click: true },
         back: { label: 'Back', run: 'back' },
-        up: { label: 'Move up', key: 'up', repeat: true },
-        down: { label: 'Move down', key: 'down', repeat: true },
-        left: { label: 'Move left', key: 'left', repeat: true },
-        right: { label: 'Move right', key: 'right', repeat: true },
+        up: { label: 'Move up', key: 'up', repeat: true, dir: 'up' },
+        down: { label: 'Move down', key: 'down', repeat: true, dir: 'down' },
+        left: { label: 'Move left', key: 'left', repeat: true, dir: 'left' },
+        right: { label: 'Move right', key: 'right', repeat: true, dir: 'right' },
         home: { label: 'Home', run: 'home' },
         search: { label: 'Search', run: 'search' },
         prevTab: { label: 'Previous tab', run: 'prevTab' },
@@ -242,6 +242,20 @@
                 RUNS[a.run]();
                 return;
             }
+            if (a.dir && !inPlayer() && typeof env.moveFocus === 'function') {
+                var handled = env.moveFocus(a.dir);
+                if (handled) {
+                    var now = env.now();
+                    var entry = { spec: KEYS[a.key], repeat: !!a.repeat, next: now + REPEAT_DELAY, dir: a.dir };
+                    if (extra) {
+                        entry.stick = true;
+                        entry.m = extra.m;
+                        entry.next = now + stickInterval(extra.m);
+                    }
+                    active[id] = entry;
+                    return;
+                }
+            }
             var spec = KEYS[a.key];
             var unhandled = env.key(spec, 'keydown', false);
             if (a.click && unhandled !== false) env.activate();
@@ -260,7 +274,7 @@
             var entry = active[id];
             if (!entry) return;
             delete active[id];
-            env.key(entry.spec, 'keyup', false);
+            if (entry.spec) env.key(entry.spec, 'keyup', false);
         }
 
         function releaseSlot(slot) {
@@ -362,7 +376,11 @@
             Object.keys(active).forEach(function (id) {
                 var e = active[id];
                 if (!(e.repeat || e.stick) || now < e.next) return;
-                env.key(e.spec, 'keydown', true);
+                if (e.dir && !inPlayer() && typeof env.moveFocus === 'function') {
+                    env.moveFocus(e.dir);
+                } else if (e.spec) {
+                    env.key(e.spec, 'keydown', true);
+                }
                 e.next = now + (e.stick ? stickInterval(e.m) : REPEAT_EVERY);
             });
             schedule();
@@ -474,11 +492,256 @@
         };
     }
 
+    var CANDIDATE_SELECTOR = [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])',
+        '[role="button"]:not([disabled])',
+        '[role="tab"]',
+        '[role="menuitem"]',
+        '[role="link"]',
+        '[class*="toggle-container"]',
+        '[class*="meta-item-link"]',
+        '[class*="continue-watching-card"]',
+        '[class*="card"]',
+        '[class*="nav-tab-button"]',
+        '[class*="button-container"]'
+    ].join(',');
+
+    function isNavigable(el, win) {
+        if (!el || el.nodeType !== 1) return false;
+        if (el.disabled) return false;
+        if (el.getAttribute('aria-hidden') === 'true') return false;
+        var rect = el.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return false;
+        if (win && typeof win.getComputedStyle === 'function') {
+            var style = win.getComputedStyle(el);
+            if (style.visibility === 'hidden' || style.display === 'none' || parseFloat(style.opacity) === 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function getScope(doc) {
+        if (!doc) return null;
+        var modal = doc.querySelector('.modals-container > *, [data-gamepad-modal]');
+        if (modal) return modal;
+        var dropdown = doc.querySelector('[class*="dropdown"][class*="open"], [class*="menu-container"][class*="open"], [class*="context-menu"]');
+        if (dropdown) return dropdown;
+        return doc.body || doc.documentElement;
+    }
+
+    function getCandidates(scope, win) {
+        if (!scope) return [];
+        var raw = scope.querySelectorAll(CANDIDATE_SELECTOR);
+        var list = [];
+        for (var i = 0; i < raw.length; i++) {
+            var el = raw[i];
+            if (isNavigable(el, win)) list.push(el);
+        }
+        return list.filter(function (el) {
+            for (var j = 0; j < list.length; j++) {
+                if (list[j] !== el && el.contains(list[j])) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    function findInitialCandidate(candidates, win) {
+        if (!candidates || !candidates.length) return null;
+        var vh = win && win.innerHeight ? win.innerHeight : 800;
+        var vw = win && win.innerWidth ? win.innerWidth : 1200;
+        var visible = [];
+        for (var i = 0; i < candidates.length; i++) {
+            var r = candidates[i].getBoundingClientRect();
+            if (r.bottom > 20 && r.top < vh - 20 && r.right > 20 && r.left < vw - 20) {
+                visible.push(candidates[i]);
+            }
+        }
+        var pool = visible.length ? visible : candidates;
+        var best = null;
+        var bestScore = Infinity;
+        for (var j = 0; j < pool.length; j++) {
+            var box = pool[j].getBoundingClientRect();
+            var score = Math.max(0, box.top) * 3 + Math.max(0, box.left);
+            if (score < bestScore) {
+                bestScore = score;
+                best = pool[j];
+            }
+        }
+        return best;
+    }
+
+    function findNextCandidate(current, candidates, dir) {
+        if (!current || !candidates || !candidates.length) return null;
+        var cur = current.getBoundingClientRect();
+        var cx = cur.left + cur.width / 2;
+        var cy = cur.top + cur.height / 2;
+
+        var best = null;
+        var bestScore = Infinity;
+
+        for (var i = 0; i < candidates.length; i++) {
+            var el = candidates[i];
+            if (el === current || el.contains(current) || current.contains(el)) continue;
+
+            var r = el.getBoundingClientRect();
+            var ex = r.left + r.width / 2;
+            var ey = r.top + r.height / 2;
+
+            var valid = false;
+            if (dir === 'down') {
+                valid = (r.top >= cur.top + 6 && ey > cy + 4);
+            } else if (dir === 'up') {
+                valid = (r.bottom <= cur.bottom - 6 && ey < cy - 4);
+            } else if (dir === 'right') {
+                valid = (r.left >= cur.left + 6 && ex > cx + 4);
+            } else if (dir === 'left') {
+                valid = (r.right <= cur.right - 6 && ex < cx - 4);
+            }
+            if (!valid) continue;
+
+            var isHorizontal = (dir === 'left' || dir === 'right');
+            var score;
+
+            if (isHorizontal) {
+                var overlapY = Math.max(0, Math.min(cur.bottom, r.bottom) - Math.max(cur.top, r.top));
+                var dx = dir === 'right' ? (r.left >= cur.right ? r.left - cur.right : ex - cx)
+                                         : (cur.left >= r.right ? cur.left - r.right : cx - ex);
+                var dy = Math.abs(ey - cy);
+                var primaryH = Math.max(0, dx);
+                if (overlapY > 0) {
+                    score = primaryH * 1.0 + dy * 0.5;
+                } else {
+                    score = primaryH * 1.0 + dy * 3.0 + 3000;
+                }
+            } else {
+                var overlapX = Math.max(0, Math.min(cur.right, r.right) - Math.max(cur.left, r.left));
+                var dyV = dir === 'down' ? (r.top >= cur.bottom ? r.top - cur.bottom : ey - cy)
+                                         : (cur.top >= r.bottom ? cur.top - r.bottom : cy - ey);
+                var dxV = Math.abs(ex - cx);
+                var primaryV = Math.max(0, dyV);
+                if (overlapX > 0) {
+                    score = primaryV * 2.0 + dxV * 0.8;
+                } else {
+                    score = primaryV * 2.0 + dxV * 1.6 + 80;
+                }
+            }
+
+            if (score < bestScore) {
+                bestScore = score;
+                best = el;
+            }
+        }
+        return best;
+    }
+
+    function focusTarget(el, win) {
+        if (!el) return false;
+        var doc = el.ownerDocument || (win && win.document);
+        if (doc) {
+            var prev = doc.querySelectorAll('[data-gamepad-focused="true"]');
+            for (var i = 0; i < prev.length; i++) {
+                prev[i].removeAttribute('data-gamepad-focused');
+            }
+        }
+        if (el.tabIndex < 0) {
+            el.tabIndex = 0;
+        }
+        el.setAttribute('data-gamepad-focused', 'true');
+        if (typeof el.focus === 'function') {
+            try {
+                el.focus({ preventScroll: true });
+            } catch (_) {
+                el.focus();
+            }
+        }
+        try {
+            el.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest'
+            });
+        } catch (_) {
+            if (typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView(false);
+            }
+        }
+        return true;
+    }
+
+    function navigateDirection(doc, win, dir) {
+        if (!doc) return false;
+        var scope = getScope(doc);
+        var candidates = getCandidates(scope, win);
+        if (!candidates.length) return false;
+
+        var cur = doc.activeElement;
+        if (!cur || cur === doc.body || cur === doc.documentElement || !isNavigable(cur, win) || !scope.contains(cur)) {
+            var initial = findInitialCandidate(candidates, win);
+            if (initial) {
+                return focusTarget(initial, win);
+            }
+            return false;
+        }
+
+        var next = findNextCandidate(cur, candidates, dir);
+        if (next) {
+            return focusTarget(next, win);
+        }
+
+        if (dir === 'up' && scope === (doc.body || doc.documentElement)) {
+            var header = doc.querySelector('.horizontal-nav-bar, [class*="horizontal-nav-bar"], header');
+            if (header) {
+                var headerCandidates = getCandidates(header, win);
+                var headerTarget = findInitialCandidate(headerCandidates, win);
+                if (headerTarget && headerTarget !== cur) {
+                    return focusTarget(headerTarget, win);
+                }
+            }
+        }
+
+        return false;
+    }
+
     function install(win) {
         var doc = win.document;
         var STORAGE_KEY = 'cinema.controller.v1';
         var saved = null;
         try { saved = JSON.parse(win.localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { void e; }
+
+        try {
+            var styleEl = doc.createElement('style');
+            styleEl.id = 'cinema-gamepad-focus-style';
+            styleEl.textContent = [
+                ':focus-visible, [data-gamepad-focused="true"] {',
+                '    outline: 2px solid var(--primary-accent-color, #7b5bf5) !important;',
+                '    outline-offset: 2px !important;',
+                '}',
+                '[class*="toggle-container"][data-gamepad-focused="true"] {',
+                '    outline: 2px solid var(--primary-accent-color, #7b5bf5) !important;',
+                '    outline-offset: 3px !important;',
+                '    border-radius: 1rem !important;',
+                '}',
+                '[class*="card"][data-gamepad-focused="true"] {',
+                '    transform: scale(1.03) !important;',
+                '}'
+            ].join('\n');
+            if (doc.head) doc.head.appendChild(styleEl);
+            else if (doc.documentElement) doc.documentElement.appendChild(styleEl);
+        } catch (_) { void 0; }
+
+        doc.addEventListener('focusout', function (e) {
+            if (e.target && typeof e.target.removeAttribute === 'function') {
+                e.target.removeAttribute('data-gamepad-focused');
+            }
+        }, true);
 
         // gamepadconnected / gamepaddisconnected listeners are kept here, away from WebKit: a DOM listener for them
         // (or a call to WebKit's getGamepads) would start WebKit's own gamepad provider.
@@ -547,6 +810,9 @@
                 return !!doc.querySelector('.modals-container > *, [data-gamepad-modal], [class*="dropdown"][class*="open"]');
             },
             key: key,
+            moveFocus: function (dir) {
+                return navigateDirection(doc, win, dir);
+            },
             activate: function () {
                 var el = doc.activeElement;
                 if (!el || el === doc.body || el === doc.documentElement || el.isContentEditable) return;
@@ -607,5 +873,10 @@
         tabIndex: tabIndex,
         createController: createController,
         install: install,
+        findNextCandidate: findNextCandidate,
+        findInitialCandidate: findInitialCandidate,
+        getCandidates: getCandidates,
+        focusTarget: focusTarget,
+        navigateDirection: navigateDirection,
     };
 });

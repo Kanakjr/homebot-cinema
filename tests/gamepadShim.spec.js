@@ -16,6 +16,11 @@ const {
     tabIndex,
     createController,
     install,
+    findNextCandidate,
+    findInitialCandidate,
+    getCandidates,
+    focusTarget,
+    navigateDirection,
 } = require('../desktop/src-tauri/src/gamepad_shim.js');
 
 function makeEnv(options = {}) {
@@ -538,5 +543,183 @@ describe('gamepadShim select', () => {
         controller.update(pad({ buttons: { up: 0 } }));
         expect(env.keys).toEqual(['keydown:ArrowUp', 'keyup:ArrowUp']);
         expect(env.activations.length).toBe(0);
+    });
+});
+
+describe('gamepadShim smart spatial navigation', () => {
+    function makeMockElement(options = {}) {
+        const attributes = new Map();
+        const children = [];
+        const el = {
+            nodeType: 1,
+            tagName: options.tagName || 'DIV',
+            className: options.className || '',
+            disabled: !!options.disabled,
+            tabIndex: options.tabIndex !== undefined ? options.tabIndex : 0,
+            children: children,
+            parentElement: null,
+            setAttribute: (k, v) => attributes.set(k, String(v)),
+            getAttribute: (k) => attributes.get(k) || null,
+            removeAttribute: (k) => attributes.delete(k),
+            contains: function (other) {
+                if (other === this) return true;
+                return children.some((c) => c.contains ? c.contains(other) : c === other);
+            },
+            appendChild: function (child) {
+                child.parentElement = this;
+                child.ownerDocument = el.ownerDocument;
+                children.push(child);
+                return child;
+            },
+            querySelectorAll: function (sel) {
+                const found = [];
+                function visit(node) {
+                    for (const c of node.children) {
+                        found.push(c);
+                        visit(c);
+                    }
+                }
+                visit(this);
+                return found;
+            },
+            focus: options.focus || (() => {}),
+            scrollIntoView: options.scrollIntoView || (() => {}),
+            getBoundingClientRect: () => ({
+                left: options.left || 0,
+                top: options.top || 0,
+                width: options.width || 100,
+                height: options.height || 100,
+                right: (options.left || 0) + (options.width || 100),
+                bottom: (options.top || 0) + (options.height || 100),
+            }),
+        };
+        return el;
+    }
+
+    it('1. env.moveFocus intercepts directional actions and avoids unhandled keydown', () => {
+        const focusCalls = [];
+        const env = makeEnv();
+        env.moveFocus = (dir) => {
+            focusCalls.push(dir);
+            return true;
+        };
+
+        const controller = createController(env);
+        controller.update(pad({ buttons: { down: 1 } }));
+        expect(focusCalls).toEqual(['down']);
+        // When handled by smart navigation, raw keydown is suppressed (no 40px scroll)
+        expect(env.keys).toEqual([]);
+
+        controller.update(pad({ buttons: { down: 0 } }));
+        // Keyup is cleanly emitted on release
+        expect(env.keys).toEqual(['keyup:ArrowDown']);
+    });
+
+    it('2. holding direction repeatedly triggers moveFocus on timer ticks', () => {
+        const focusCalls = [];
+        const env = makeEnv();
+        env.moveFocus = (dir) => {
+            focusCalls.push(dir);
+            return true;
+        };
+
+        const controller = createController(env);
+        controller.update(pad({ buttons: { right: 1 } }));
+        expect(focusCalls).toEqual(['right']);
+
+        env.advanceClock(450);
+        env.runTimers();
+        expect(focusCalls).toEqual(['right', 'right']);
+
+        controller.update(pad({ buttons: { right: 0 } }));
+    });
+
+    it('3. findNextCandidate moves horizontally along cards in the same row', () => {
+        const card1 = makeMockElement({ left: 100, top: 200, width: 150, height: 220 });
+        const card2 = makeMockElement({ left: 280, top: 200, width: 150, height: 220 });
+        const card3 = makeMockElement({ left: 460, top: 200, width: 150, height: 220 });
+
+        const candidates = [card1, card2, card3];
+        const nextRight = findNextCandidate(card1, candidates, 'right');
+        expect(nextRight).toBe(card2);
+
+        const nextLeft = findNextCandidate(card2, candidates, 'left');
+        expect(nextLeft).toBe(card1);
+    });
+
+    it('4. findNextCandidate jumps vertically between rows preserving column alignment', () => {
+        // Row 1 (Continue Watching)
+        const row1Card1 = makeMockElement({ left: 100, top: 100, width: 150, height: 100 });
+        const row1Card2 = makeMockElement({ left: 300, top: 100, width: 150, height: 100 });
+
+        // Row 2 (Upcoming)
+        const row2Card1 = makeMockElement({ left: 100, top: 300, width: 150, height: 100 });
+        const row2Card2 = makeMockElement({ left: 300, top: 300, width: 150, height: 100 });
+
+        const candidates = [row1Card1, row1Card2, row2Card1, row2Card2];
+
+        // Down from Row 1 Card 2 must jump directly to Row 2 Card 2 (vertically aligned)
+        const downCandidate = findNextCandidate(row1Card2, candidates, 'down');
+        expect(downCandidate).toBe(row2Card2);
+
+        // Up from Row 2 Card 2 must jump directly to Row 1 Card 2 (vertically aligned)
+        const upCandidate = findNextCandidate(row2Card2, candidates, 'up');
+        expect(upCandidate).toBe(row1Card2);
+    });
+
+    it('5. navigateDirection recovers focus to the first visible card when activeElement is body', () => {
+        const win = { innerWidth: 1280, innerHeight: 800 };
+        const body = makeMockElement({ tagName: 'BODY', left: 0, top: 0, width: 1280, height: 800 });
+        const doc = {
+            body: body,
+            documentElement: body,
+            activeElement: body,
+            querySelector: () => null,
+            querySelectorAll: () => [],
+        };
+        body.ownerDocument = doc;
+
+        let focusedEl = null;
+        const card1 = makeMockElement({
+            className: 'card',
+            left: 120,
+            top: 150,
+            width: 180,
+            height: 120,
+            focus: function () { focusedEl = card1; },
+        });
+        card1.ownerDocument = doc;
+
+        const card2 = makeMockElement({
+            className: 'card',
+            left: 340,
+            top: 150,
+            width: 180,
+            height: 120,
+        });
+        card2.ownerDocument = doc;
+
+        body.appendChild(card1);
+        body.appendChild(card2);
+
+        const handled = navigateDirection(doc, win, 'down');
+        expect(handled).toBe(true);
+        expect(focusedEl).toBe(card1);
+        expect(card1.getAttribute('data-gamepad-focused')).toBe('true');
+    });
+
+    it('6. Settings toggle: enables tabIndex and marks focused', () => {
+        const toggle = makeMockElement({
+            className: 'toggle-container button-container',
+            tabIndex: -1, // Upstream hardcoded -1
+            left: 500,
+            top: 300,
+            width: 60,
+            height: 30,
+        });
+
+        focusTarget(toggle);
+        expect(toggle.tabIndex).toBe(0);
+        expect(toggle.getAttribute('data-gamepad-focused')).toBe('true');
     });
 });
