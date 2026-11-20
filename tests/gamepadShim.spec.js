@@ -28,6 +28,9 @@ function makeEnv(options = {}) {
     let currentRoute = options.route !== undefined ? options.route : '/';
     let isFocused = options.focused !== undefined ? options.focused : true;
     let isOverlayOpen = options.overlayOpen !== undefined ? options.overlayOpen : false;
+    let isQuickMenuOpen = false;
+    let isVirtualKeyboardOpen = false;
+    let cardTarget = options.cardTarget !== undefined ? options.cardTarget : false;
 
     const keys = [];
     const navigations = [];
@@ -36,6 +39,10 @@ function makeEnv(options = {}) {
     const activations = [];
     const gamepadModes = [];
     const focusCalls = [];
+    const quickMenuCalls = [];
+    const contextMenuCalls = [];
+    const lowBatteryNotifications = [];
+    const virtualKeypresses = [];
 
     let nextTimerId = 1;
     const timers = new Map();
@@ -93,6 +100,22 @@ function makeEnv(options = {}) {
         navigations: navigations,
         mediaKeys: mediaKeys,
         connections: connections,
+        toggleQuickMenu: function () {
+            isQuickMenuOpen = !isQuickMenuOpen;
+            quickMenuCalls.push(t);
+        },
+        isQuickMenuOpen: function () { return isQuickMenuOpen; },
+        quickMenuCalls: quickMenuCalls,
+        isCardTarget: function () { return cardTarget; },
+        setCardTarget: function (c) { cardTarget = c; },
+        triggerContextMenu: function () { contextMenuCalls.push(t); },
+        contextMenuCalls: contextMenuCalls,
+        notifyLowBattery: function (level) { lowBatteryNotifications.push(level); },
+        lowBatteryNotifications: lowBatteryNotifications,
+        isVirtualKeyboardOpen: function () { return isVirtualKeyboardOpen; },
+        setVirtualKeyboardOpen: function (v) { isVirtualKeyboardOpen = v; },
+        virtualKeyPress: function (k) { virtualKeypresses.push(k); },
+        virtualKeypresses: virtualKeypresses,
     };
 }
 
@@ -300,11 +323,91 @@ describe('gamepadShim controller mapping', () => {
         controller.update(pad({ buttons: { x: 0 } }));
 
         controller.update(pad({ buttons: { home: 1 } }));
-        expect(env.navigations).toEqual(['/']);
         controller.update(pad({ buttons: { home: 0 } }));
+        expect(env.navigations).toEqual(['/']);
 
         controller.update(pad({ buttons: { y: 1 } }));
         expect(env.navigations).toEqual(['/', '/search']);
+        controller.update(pad({ buttons: { y: 0 } }));
+    });
+
+    it('7b. Home hold (>= 500ms) toggles Quick Menu instead of navigating Home', () => {
+        const env = makeEnv({ route: '/library' });
+        const controller = createController(env);
+
+        controller.update(pad({ buttons: { home: 1 } }));
+        expect(env.quickMenuCalls.length).toBe(0);
+        expect(env.navigations.length).toBe(0);
+
+        // Advance timers by 500ms to trigger hold
+        env.runTimers();
+        expect(env.quickMenuCalls.length).toBe(1);
+
+        // Releasing home should not navigate to '/'
+        controller.update(pad({ buttons: { home: 0 } }));
+        expect(env.navigations.length).toBe(0);
+    });
+
+    it('7c. Card target A short tap activates, hold (>= 500ms) triggers context menu', () => {
+        // Short tap
+        const env1 = makeEnv({ route: '/', cardTarget: true });
+        const c1 = createController(env1);
+
+        c1.update(pad({ buttons: { a: 1 } }));
+        expect(env1.activations.length).toBe(0);
+        expect(env1.contextMenuCalls.length).toBe(0);
+
+        c1.update(pad({ buttons: { a: 0 } }));
+        expect(env1.activations.length).toBe(1);
+        expect(env1.contextMenuCalls.length).toBe(0);
+
+        // Long hold (>= 500ms)
+        const env2 = makeEnv({ route: '/', cardTarget: true });
+        const c2 = createController(env2);
+
+        c2.update(pad({ buttons: { a: 1 } }));
+        expect(env2.contextMenuCalls.length).toBe(0);
+
+        env2.runTimers();
+        expect(env2.contextMenuCalls.length).toBe(1);
+
+        c2.update(pad({ buttons: { a: 0 } }));
+        expect(env2.activations.length).toBe(0);
+    });
+
+    it('7d. Low battery notification triggers at <= 15% and throttles', () => {
+        const env = makeEnv();
+        const controller = createController(env);
+
+        // Initial connect with 80% battery
+        controller.update(pad({ battery: 0.8, charging: false }));
+        expect(env.lowBatteryNotifications.length).toBe(0);
+
+        // Battery drops to 12%
+        controller.update(pad({ battery: 0.12, charging: false }));
+        expect(env.lowBatteryNotifications).toEqual([0.12]);
+
+        // Immediate subsequent update should be throttled
+        controller.update(pad({ battery: 0.11, charging: false }));
+        expect(env.lowBatteryNotifications.length).toBe(1);
+
+        // Advance 16 minutes: next drop triggers notification again
+        env.advanceClock(16 * 60 * 1000);
+        controller.update(pad({ battery: 0.10, charging: false }));
+        expect(env.lowBatteryNotifications.length).toBe(2);
+    });
+
+    it('7e. On-screen keyboard shortcuts: X sends BACKSPACE, Y sends SPACE', () => {
+        const env = makeEnv({ route: '/search' });
+        env.setVirtualKeyboardOpen(true);
+        const controller = createController(env);
+
+        controller.update(pad({ buttons: { x: 1 } }));
+        expect(env.virtualKeypresses).toEqual(['BACKSPACE']);
+        controller.update(pad({ buttons: { x: 0 } }));
+
+        controller.update(pad({ buttons: { y: 1 } }));
+        expect(env.virtualKeypresses).toEqual(['BACKSPACE', 'SPACE']);
         controller.update(pad({ buttons: { y: 0 } }));
     });
 

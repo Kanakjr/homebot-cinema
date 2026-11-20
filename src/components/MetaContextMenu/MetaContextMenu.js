@@ -262,9 +262,25 @@ const MetaContextMenu = ({ position, onClose, item }) => {
         }
     }, [item, onClose]);
 
+    React.useEffect(() => {
+        if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-gamepad-mode') === 'true') {
+            const timer = setTimeout(() => {
+                const firstBtn = menuRef.current && menuRef.current.querySelector('button');
+                if (firstBtn && typeof firstBtn.focus === 'function') {
+                    firstBtn.focus();
+                }
+            }, 30);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
     return ReactDOM.createPortal(
         <div
+            data-context-menu-overlay="true"
             className={styles['overlay']}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
             onMouseDown={(e) => {
                 if (e.button !== 2) onClose();
             }}
@@ -275,6 +291,7 @@ const MetaContextMenu = ({ position, onClose, item }) => {
         >
             <div
                 ref={menuRef}
+                data-gamepad-modal="true"
                 className={styles['menu']}
                 style={style}
                 onMouseDown={(e) => e.stopPropagation()}
