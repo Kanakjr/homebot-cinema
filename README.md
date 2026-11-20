@@ -96,34 +96,45 @@ Click the sparkle button in the top bar and ask: *"something light under two hou
 
 ## Screenshots
 
-### Discover and Smart filters
+### Discover, Smart Filters & Universal Ratings
 
 | | |
 |:---:|:---:|
-| ![Smart filters: series on a streaming service rated 8 and up](docs/screenshots/smart-filters.webp) | ![Smart filters: the quick picks menu](docs/screenshots/quick-picks.webp) |
-| **Smart filters** with the hover info panel | **40 quick picks**: charts, services, genres, languages |
-| ![Discover: the addon catalogs with the info panel](docs/screenshots/discover.webp) | ![Search across all addons](docs/screenshots/search.webp) |
-| **Discover** your addon catalogs | **Search** across all your addons |
+| ![Smart filters: streaming service, rating, runtime and genres](docs/screenshots/smart-filters.webp) | ![Discover: catalog grid with universal ratings](docs/screenshots/discover.webp) |
+| **Smart filters**: browse by provider, rating, runtime & year | **Discover**: catalog grid with Rotten Tomatoes, Metacritic & IMDb |
+| ![Search across all configured addons](docs/screenshots/search.webp) | ![Smart filters quick picks menu](docs/screenshots/quick-picks.webp) |
+| **Search**: unified results across all catalog addons | **40 quick picks**: charts, streaming hubs, genres & languages |
 
-### Titles, downloads and quality
-
-| | |
-|:---:|:---:|
-| ![A title page with the server status, quality profile and Save to server](docs/screenshots/title-page.webp) | ![Downloads: storage, active downloads, monitored shows and recently completed](docs/screenshots/downloads.webp) |
-| **Title page**: server status, quality profile, *Save to server*, *Auto-download episodes* | **Downloads**: storage, active downloads, Sentinel and what just finished |
-| ![Quality profiles editor](docs/screenshots/quality-profiles.webp) | ![Admin overview: storage, library, downloads, Sentinel, streaming, people](docs/screenshots/admin-overview.webp) |
-| **Quality profiles**: resolutions and size limits per movie or episode | **Admin overview**: storage, library, downloads, Sentinel, people |
-
-### Library, calendar and player
+### Titles, Series Sentinel & Server Library
 
 | | |
 |:---:|:---:|
-| ![Your library, per profile](docs/screenshots/library.webp) | ![The calendar of upcoming episodes](docs/screenshots/calendar.webp) |
-| **Your library**, separate for every profile | **Calendar** of upcoming episodes |
+| ![Movie details with stream quality sorting, ratings and server status](docs/screenshots/title-page.webp) | ![Series details with Sentinel auto-download monitoring and episode picker](docs/screenshots/series-details.webp) |
+| **Movie details**: streams sorted by quality profile & server status | **Series details**: Sentinel episode monitoring & season picker |
+| ![Server library: on-server titles with watched badges](docs/screenshots/library.webp) | ![Release calendar with on-server episode indicators](docs/screenshots/calendar.webp) |
+| **Server library**: separate for every household profile | **Calendar**: upcoming episode releases with server markers |
 
-![The player with subtitles, speed, casting and audio controls](docs/screenshots/player.webp)
+### Playback, Apple MetalFX 4K AI Upscaling & Audio
 
-**The player**: deep buffer, subtitles from addons, playback speed, casting and audio controls.
+| | |
+|:---:|:---:|
+| ![Apple MetalFX 4K AI Upscaler HUD telemetry in macOS desktop player](docs/screenshots/player-metalfx.webp) | ![Audio and subtitle track selector with Atmos 7.1 and PGS SDH](docs/screenshots/player-audio-subtitles.webp) |
+| **MetalFX 4K AI Upscaler**: 1080p to 4K super-resolution on Apple Silicon GPU | **Audio & subtitles**: multi-track Dolby Atmos 7.1, TrueHD and PGS SDH |
+
+![The player with deep buffer, seekbar chapters and subtitles](docs/screenshots/player.webp)
+
+**The player**: deep HLS buffer (90–240s), chapter markers, skip intro/credits, and signed expiring links.
+
+### Server Management, Watch Stats & Household Profiles
+
+| | |
+|:---:|:---:|
+| ![Admin overview: storage, library, downloads and Sentinel](docs/screenshots/admin-overview.webp) | ![Admin Plugins manager with all 13 plugins](docs/screenshots/admin-plugins.webp) |
+| **Admin overview**: storage metrics, downloads, Sentinel status | **Admin Plugins manager**: toggle, configure and audit all plugins |
+| ![Watch stats: streaks, daily hours, device breakdown](docs/screenshots/watch-stats.webp) | ![Appearance settings: theme accent colours and AMOLED black](docs/screenshots/settings.webp) |
+| **Watch stats** (`#/stats`): Tautulli-style streaks and history | **Appearance settings**: accent palettes, AMOLED black & corner radius |
+| ![Who's watching household profile selector](docs/screenshots/profiles.webp) | ![AI Copilot drawer with conversational recommendations](docs/screenshots/copilot.webp) |
+| **Household profiles**: avatars, private history and optional PIN | **AI Copilot**: conversational recommendations & staged downloads |
 
 ## How it fits together
 
