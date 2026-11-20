@@ -136,220 +136,55 @@
         <div class="wrap">
             <p class="eyebrow center">Interface Tour</p>
             <h2 class="center">See HomeBot Cinema in action</h2>
-            <p class="sub center">Real captures from a running production instance across web, desktop, and mobile.</p>
+            <p class="sub center">Explore real captures across all 6 core subsystems. Select a category and choose any screen to inspect.</p>
 
-            <div class="tab-container">
-                <!-- Tab List -->
-                <div class="tab-list" role="tablist" aria-label="Screenshot Categories">
-                    <button class="tab-btn" role="tab" id="tab-home" aria-selected="true" aria-controls="panel-home" tabindex="0">Home & Profiles</button>
-                    <button class="tab-btn" role="tab" id="tab-catalog" aria-selected="false" aria-controls="panel-catalog" tabindex="-1">Catalog & Filters</button>
-                    <button class="tab-btn" role="tab" id="tab-details" aria-selected="false" aria-controls="panel-details" tabindex="-1">Details & Sentinel</button>
-                    <button class="tab-btn" role="tab" id="tab-playback" aria-selected="false" aria-controls="panel-playback" tabindex="-1">Playback & MetalFX</button>
-                    <button class="tab-btn" role="tab" id="tab-server" aria-selected="false" aria-controls="panel-server" tabindex="-1">Server & Insights</button>
-                    <button class="tab-btn" role="tab" id="tab-copilot" aria-selected="false" aria-controls="panel-copilot" tabindex="-1">AI Copilot</button>
+            <div class="showcase-container">
+                <!-- 1. Category Tabs at the Top -->
+                <div class="showcase-categories" role="tablist" aria-label="Screenshot Categories">
+                    <button class="cat-btn" role="tab" id="cat-home" aria-selected="true" data-cat="home" tabindex="0">🏠 Home & Profiles (2)</button>
+                    <button class="cat-btn" role="tab" id="cat-catalog" aria-selected="false" data-cat="catalog" tabindex="-1">🔍 Catalog & Filters (3)</button>
+                    <button class="cat-btn" role="tab" id="cat-details" aria-selected="false" data-cat="details" tabindex="-1">🎬 Details & Sentinel (3)</button>
+                    <button class="cat-btn" role="tab" id="cat-playback" aria-selected="false" data-cat="playback" tabindex="-1">⚡ Playback & MetalFX (3)</button>
+                    <button class="cat-btn" role="tab" id="cat-server" aria-selected="false" data-cat="server" tabindex="-1">⚙️ Server & Management (5)</button>
+                    <button class="cat-btn" role="tab" id="cat-copilot" aria-selected="false" data-cat="copilot" tabindex="-1">🤖 AI Copilot (2)</button>
                 </div>
 
-                <!-- Panel 1: Home & Profiles -->
-                <div class="tab-panel active" role="tabpanel" id="panel-home" aria-labelledby="tab-home" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-home" src="screenshots/home.webp" alt="Home dashboard hero carousel, continue watching, and upcoming row" loading="lazy" width="2200" height="1238">
-                        </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-home">Home Screen & Hero Carousel</h4>
-                                <p id="desc-home">Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Continue Watching</span>
-                                <span class="badge gold">Upcoming 14 Days</span>
-                                <span class="badge purple">Hero Carousel</span>
-                            </div>
+                <!-- 2. Sub-Screen Selector (PROMINENTLY DIRECTLY UNDER CATEGORIES, ABOVE THE IMAGE!) -->
+                <div class="showcase-subnav" id="showcase-subnav" role="tablist" aria-label="Screens in selected category">
+                    <!-- Dynamic screen buttons injected by JS -->
+                </div>
+
+                <!-- 3. Screen Overview Card (ELEVATED CLEARLY ABOVE THE SCREENSHOT) -->
+                <div class="showcase-header-card" id="showcase-content">
+                    <div class="showcase-header-main">
+                        <h3 id="sc-title">Home Dashboard & Hero Carousel</h3>
+                        <p id="sc-desc">Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.</p>
+                        <div class="badge-group" id="sc-badges">
+                            <span class="badge primary">Continue Watching</span>
+                            <span class="badge gold">Upcoming 14 Days</span>
+                            <span class="badge purple">Hero Carousel</span>
                         </div>
                     </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="home" data-src="screenshots/home.webp" data-title="Home Screen & Hero Carousel" data-desc="Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.">
-                            <span class="thumb-title">Home Dashboard</span>
-                            <span class="thumb-sub">Hero & Continue Watching</span>
-                        </button>
-                        <button class="thumb-btn" data-target="home" data-src="screenshots/profiles.webp" data-title="Who's Watching: Household Profiles" data-desc="Household profile selector supporting up to 8 members, custom avatars, kid-safe filters, and optional PIN security gates.">
-                            <span class="thumb-title">Household Profiles</span>
-                            <span class="thumb-sub">Avatars & Kids Mode</span>
-                        </button>
+                    <div class="showcase-controls">
+                        <button class="nav-arrow-btn" id="sc-prev" aria-label="Previous screenshot">‹</button>
+                        <span class="screen-counter" id="sc-counter">Screen 1 of 2</span>
+                        <button class="nav-arrow-btn" id="sc-next" aria-label="Next screenshot">›</button>
                     </div>
                 </div>
 
-                <!-- Panel 2: Catalog & Filters -->
-                <div class="tab-panel" role="tabpanel" id="panel-catalog" aria-labelledby="tab-catalog" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-catalog" src="screenshots/discover.webp" alt="Discover catalog grid with universal ratings" loading="lazy" width="2200" height="1238">
+                <!-- 4. Realistic macOS App Window Frame (NO TEXT UNDERNEATH!) -->
+                <div class="showcase-window">
+                    <div class="window-titlebar">
+                        <div class="window-dots">
+                            <span class="window-dot dot-red"></span>
+                            <span class="window-dot dot-yellow"></span>
+                            <span class="window-dot dot-green"></span>
                         </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-catalog">Discover Catalog with Universal Ratings</h4>
-                                <p id="desc-catalog">Catalog grid displaying Rotten Tomatoes, Metacritic, and IMDb scores directly on poster cards via the MDBList plugin.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Plugin: mdblist</span>
-                                <span class="badge gold">Rotten Tomatoes</span>
-                                <span class="badge purple">Metacritic</span>
-                            </div>
-                        </div>
+                        <div class="window-title" id="sc-window-title">homebot.local — Home Dashboard — Continue Watching & Upcoming</div>
+                        <div class="window-badge" id="sc-window-badge">Real Capture · 4K</div>
                     </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="catalog" data-src="screenshots/discover.webp" data-title="Discover Catalog with Universal Ratings" data-desc="Catalog grid displaying Rotten Tomatoes, Metacritic, and IMDb scores directly on poster cards via the MDBList plugin.">
-                            <span class="thumb-title">Discover Catalog</span>
-                            <span class="thumb-sub">Critic & Audience Ratings</span>
-                        </button>
-                        <button class="thumb-btn" data-target="catalog" data-src="screenshots/smart-filters.webp" data-title="Smart Filters & Streaming Providers" data-desc="Filter by rating slider, votes, runtime, release year, genres, and streaming service provider in your country via TMDB Discover.">
-                            <span class="thumb-title">Smart Filters</span>
-                            <span class="thumb-sub">Plugin: find</span>
-                        </button>
-                        <button class="thumb-btn" data-target="catalog" data-src="screenshots/search.webp" data-title="Unified Cross-Addon Search" data-desc="Instant search results across all configured addon catalogs, with universal rating badges and server library indicators.">
-                            <span class="thumb-title">Cross-Addon Search</span>
-                            <span class="thumb-sub">Universal Query</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel 3: Details & Sentinel -->
-                <div class="tab-panel" role="tabpanel" id="panel-details" aria-labelledby="tab-details" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-details" src="screenshots/title-page.webp" alt="Movie details page with stream quality profiles" loading="lazy" width="2200" height="1238">
-                        </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-details">Movie Details & Quality Sorting</h4>
-                                <p id="desc-details">Widened title details pane showing stream options ranked by your quality profile (4K UHD, HDR, 1080p), audio channels, and server storage status.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Quality Profiles</span>
-                                <span class="badge gold">Direct Play</span>
-                                <span class="badge green">Swarm Probe</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="details" data-src="screenshots/title-page.webp" data-title="Movie Details & Quality Sorting" data-desc="Widened title details pane showing stream options ranked by your quality profile (4K UHD, HDR, 1080p), audio channels, and server storage status.">
-                            <span class="thumb-title">Movie Details</span>
-                            <span class="thumb-sub">Stream Quality Profiles</span>
-                        </button>
-                        <button class="thumb-btn" data-target="details" data-src="screenshots/series-details.webp" data-title="Series Details & Sentinel Monitoring" data-desc="TV series page with Sentinel auto-download scope (new episodes only, seasons, all), season picker, and on-server indicators.">
-                            <span class="thumb-title">Series Details</span>
-                            <span class="thumb-sub">Sentinel Auto-Download</span>
-                        </button>
-                        <button class="thumb-btn" data-target="details" data-src="screenshots/library.webp" data-title="Server Library" data-desc="On-server movies and TV shows matching your local media disks, badged with watched/unwatched progress and play-from-server actions.">
-                            <span class="thumb-title">Server Library</span>
-                            <span class="thumb-sub">Local Media Roots</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel 4: Playback & MetalFX -->
-                <div class="tab-panel" role="tabpanel" id="panel-playback" aria-labelledby="tab-playback" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-playback" src="screenshots/player-metalfx.webp" alt="Player with Apple MetalFX 4K AI Upscaler HUD telemetry" loading="lazy" width="2200" height="1238">
-                        </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-playback">Apple MetalFX AI 4K Upscaler</h4>
-                                <p id="desc-playback">Real-time Apple MetalFX AI Spatial Super-Resolution HUD in the macOS desktop app: upscales 1080p to 4K on Apple Silicon GPU at 120 FPS with 0.4ms render latency.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Plugin: metalfx</span>
-                                <span class="badge gold">Apple Silicon Neural</span>
-                                <span class="badge purple">120 FPS 4K</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="playback" data-src="screenshots/player-metalfx.webp" data-title="Apple MetalFX AI 4K Upscaler" data-desc="Real-time Apple MetalFX AI Spatial Super-Resolution HUD in the macOS desktop app: upscales 1080p to 4K on Apple Silicon GPU at 120 FPS with 0.4ms render latency.">
-                            <span class="thumb-title">MetalFX 4K Upscaler</span>
-                            <span class="thumb-sub">HUD Telemetry</span>
-                        </button>
-                        <button class="thumb-btn" data-target="playback" data-src="screenshots/player-audio-subtitles.webp" data-title="Audio & Subtitle Track Selector" data-desc="Support for multi-track audio including Dolby Atmos 7.1 TrueHD and embedded PGS/SRT SDH subtitle tracks with custom sync offset.">
-                            <span class="thumb-title">Audio & Subtitles</span>
-                            <span class="thumb-sub">Dolby Atmos 7.1</span>
-                        </button>
-                        <button class="thumb-btn" data-target="playback" data-src="screenshots/player.webp" data-title="Video Player & Chapter Marks" data-desc="High-performance player with deep HLS buffer (90-240s), IntroDB chapter markers on the seek bar, and skip intro/credits buttons.">
-                            <span class="thumb-title">Video Player</span>
-                            <span class="thumb-sub">Chapter Markers & Skip</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel 5: Server & Insights -->
-                <div class="tab-panel" role="tabpanel" id="panel-server" aria-labelledby="tab-server" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-server" src="screenshots/admin-overview.webp" alt="Admin overview dashboard with storage and downloads" loading="lazy" width="2200" height="1238">
-                        </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-server">Admin Overview & Storage Health</h4>
-                                <p id="desc-server">Central administrative panel tracking disk storage, Sentinel monitored shows, active downloads, library maintenance scans, and streaming server status.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Admin Panel</span>
-                                <span class="badge gold">Storage Metrics</span>
-                                <span class="badge green">Sentinel Monitor</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="server" data-src="screenshots/admin-overview.webp" data-title="Admin Overview & Storage Health" data-desc="Central administrative panel tracking disk storage, Sentinel monitored shows, active downloads, library maintenance scans, and streaming server status.">
-                            <span class="thumb-title">Admin Dashboard</span>
-                            <span class="thumb-sub">Storage & Status</span>
-                        </button>
-                        <button class="thumb-btn" data-target="server" data-src="screenshots/admin-plugins.webp" data-title="Admin Plugins Manager" data-desc="Modular plugin manager showing all 13 plugins, enable/disable switches, configuration validation, and failure isolation telemetry.">
-                            <span class="thumb-title">Plugins Manager</span>
-                            <span class="thumb-sub">13 Active Plugins</span>
-                        </button>
-                        <button class="thumb-btn" data-target="server" data-src="screenshots/watch-stats.webp" data-title="Watch Stats & Habits (#/stats)" data-desc="Tautulli-style analytics: viewing streaks, hours watched per day, top devices, hourly viewing heatmaps, and full CSV history export.">
-                            <span class="thumb-title">Watch Stats</span>
-                            <span class="thumb-sub">Plugin: nowplaying</span>
-                        </button>
-                        <button class="thumb-btn" data-target="server" data-src="screenshots/calendar.webp" data-title="Release Calendar" data-desc="Monthly release schedule showing upcoming episodes of monitored TV shows, with badges indicating which are already downloaded.">
-                            <span class="thumb-title">Release Calendar</span>
-                            <span class="thumb-sub">Upcoming Schedule</span>
-                        </button>
-                        <button class="thumb-btn" data-target="server" data-src="screenshots/settings.webp" data-title="Appearance & Theme Settings" data-desc="Custom appearance settings per profile: 10 accent colours, true AMOLED pitch-black mode, and adjustable interface corner radius.">
-                            <span class="thumb-title">Theme Settings</span>
-                            <span class="thumb-sub">Plugin: themes</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel 6: AI Copilot -->
-                <div class="tab-panel" role="tabpanel" id="panel-copilot" aria-labelledby="tab-copilot" tabindex="0">
-                    <div class="showcase-display">
-                        <div class="showcase-viewport">
-                            <img id="img-copilot" src="screenshots/copilot.webp" alt="AI Copilot conversational drawer with staged action cards" loading="lazy" width="2200" height="1238">
-                        </div>
-                        <div class="showcase-meta">
-                            <div class="showcase-info">
-                                <h4 id="title-copilot">AI Copilot Chat Drawer</h4>
-                                <p id="desc-copilot">Conversational media copilot powered by Google Gemini. Ask for tailored recommendations, check what is on the server, and stage downloads that require your explicit confirmation.</p>
-                            </div>
-                            <div class="badge-group">
-                                <span class="badge primary">Plugin: ai</span>
-                                <span class="badge gold">Gemini 2.5 Flash</span>
-                                <span class="badge purple">Staged Actions</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="thumb-strip">
-                        <button class="thumb-btn active" data-target="copilot" data-src="screenshots/copilot.webp" data-title="AI Copilot Chat Drawer" data-desc="Conversational media copilot powered by Google Gemini. Ask for tailored recommendations, check what is on the server, and stage downloads that require your explicit confirmation.">
-                            <span class="thumb-title">Desktop Copilot Drawer</span>
-                            <span class="thumb-sub">Staged Action Cards</span>
-                        </button>
-                        <button class="thumb-btn" data-target="copilot" data-src="screenshots/copilot-mobile.webp" data-title="AI Copilot Mobile Layout" data-desc="Optimized mobile PWA interface with poster carousel cards and quick one-tap suggestion chips.">
-                            <span class="thumb-title">Mobile Copilot</span>
-                            <span class="thumb-sub">Compact PWA Card View</span>
-                        </button>
+                    <div class="window-viewport">
+                        <img id="sc-img" src="screenshots/home.webp" alt="Home dashboard hero carousel, continue watching, and upcoming row" width="2200" height="1238" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -950,86 +785,444 @@ cp docker-compose.example.yml docker-compose.yml</code></pre>
 <!-- Interactive Scripts for Tabs & Showcase -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Accessible Tab Switching
-    const tabList = document.querySelector('.tab-list');
-    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
-    const panels = Array.from(document.querySelectorAll('.tab-panel'));
+    // 1. Screenshot Showcase Data & Controller
+    const showcaseScreens = {
+        home: [
+            {
+                title: "Home Dashboard & Hero Carousel",
+                subTitle: "Home Dashboard",
+                icon: "🏠",
+                desc: "Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.",
+                badges: [
+                    { text: "Continue Watching", cls: "primary" },
+                    { text: "Upcoming 14 Days", cls: "gold" },
+                    { text: "Hero Carousel", cls: "purple" }
+                ],
+                src: "screenshots/home.webp",
+                alt: "Home dashboard hero carousel, continue watching, and upcoming row",
+                windowTitle: "Home Dashboard — Continue Watching & Upcoming",
+                windowBadge: "4K UHD · 2200 × 1238"
+            },
+            {
+                title: "Who's Watching: Household Profiles",
+                subTitle: "Household Profiles",
+                icon: "👥",
+                desc: "Household profile selector supporting up to 8 members, custom avatars, kid-safe filters, private watch history, and optional PIN security gates.",
+                badges: [
+                    { text: "Multi-Profile", cls: "primary" },
+                    { text: "Avatars", cls: "gold" },
+                    { text: "Kids Mode", cls: "green" },
+                    { text: "PIN Gate", cls: "purple" }
+                ],
+                src: "screenshots/profiles.webp",
+                alt: "Household profile selector with avatars and PIN security gate",
+                windowTitle: "Who's Watching? — Household Profiles",
+                windowBadge: "Multi-Profile"
+            }
+        ],
+        catalog: [
+            {
+                title: "Discover Catalog with Universal Ratings",
+                subTitle: "Discover Catalog",
+                icon: "🍿",
+                desc: "Catalog grid displaying Rotten Tomatoes Tomatometer & Audience Popcornmeter, Metacritic, and IMDb scores directly on poster cards via MDBList.",
+                badges: [
+                    { text: "Plugin: mdblist", cls: "primary" },
+                    { text: "Rotten Tomatoes", cls: "gold" },
+                    { text: "Metacritic", cls: "purple" },
+                    { text: "IMDb Ratings", cls: "green" }
+                ],
+                src: "screenshots/discover.webp",
+                alt: "Discover catalog grid with universal ratings",
+                windowTitle: "Discover Catalog — Universal Card Ratings",
+                windowBadge: "Universal Ratings"
+            },
+            {
+                title: "Smart Filters & Streaming Providers",
+                subTitle: "Smart Filters",
+                icon: "🔍",
+                desc: "Filter by IMDb/TMDB rating slider, votes, runtime, release year, genres, and streaming service provider in your country via TMDB Discover.",
+                badges: [
+                    { text: "Plugin: find", cls: "primary" },
+                    { text: "Streaming Providers", cls: "gold" },
+                    { text: "Rating Slider", cls: "purple" },
+                    { text: "40 Quick Picks", cls: "green" }
+                ],
+                src: "screenshots/smart-filters.webp",
+                alt: "Smart filters by streaming service, rating and runtime",
+                windowTitle: "Discover > Smart Filters — Streaming Providers & Ratings",
+                windowBadge: "TMDB Discover"
+            },
+            {
+                title: "Unified Cross-Addon Search",
+                subTitle: "Cross-Addon Search",
+                icon: "⚡",
+                desc: "Instant search results aggregated across all configured addon catalogs, with universal rating badges and server library indicators.",
+                badges: [
+                    { text: "Cross-Addon Search", cls: "primary" },
+                    { text: "Universal Ratings", cls: "gold" },
+                    { text: "Instant Results", cls: "purple" }
+                ],
+                src: "screenshots/search.webp",
+                alt: "Cross-addon search results with universal ratings",
+                windowTitle: "Search — All Catalogs & Addons",
+                windowBadge: "Unified Search"
+            }
+        ],
+        details: [
+            {
+                title: "Movie Details & Stream Quality Sorting",
+                subTitle: "Movie Details",
+                icon: "🎬",
+                desc: "Widened title details pane showing stream options ranked by your quality profile (4K UHD, HDR, 1080p), audio channels, and server storage status.",
+                badges: [
+                    { text: "Quality Profiles", cls: "primary" },
+                    { text: "Direct Play", cls: "gold" },
+                    { text: "Swarm Probe", cls: "green" },
+                    { text: "MDBList Scores", cls: "purple" }
+                ],
+                src: "screenshots/title-page.webp",
+                alt: "Movie details page with stream quality profiles",
+                windowTitle: "The Odyssey — Movie Details & Stream Quality",
+                windowBadge: "Quality Sorting"
+            },
+            {
+                title: "Series Details & Sentinel Monitoring",
+                subTitle: "Series & Sentinel",
+                icon: "⚡",
+                desc: "TV series page with Sentinel auto-download scope (new episodes only, seasons, all), season picker, and on-server indicators.",
+                badges: [
+                    { text: "Sentinel Auto-Download", cls: "primary" },
+                    { text: "Scope: New/Seasons/All", cls: "gold" },
+                    { text: "Episode Picker", cls: "purple" }
+                ],
+                src: "screenshots/series-details.webp",
+                alt: "Series details with Sentinel auto-download monitoring",
+                windowTitle: "Dexter: Resurrection — Series Details & Sentinel Monitor",
+                windowBadge: "Sentinel Monitor"
+            },
+            {
+                title: "Server Library: Local Disk Storage",
+                subTitle: "Server Library",
+                icon: "💾",
+                desc: "On-server movies and TV shows matching your local media disks, badged with watched/unwatched progress and play-from-server actions.",
+                badges: [
+                    { text: "Server Library", cls: "primary" },
+                    { text: "Local Disk Roots", cls: "gold" },
+                    { text: "Watched Progress", cls: "green" }
+                ],
+                src: "screenshots/library.webp",
+                alt: "Server library with watched indicators and on-server files",
+                windowTitle: "Server Library — Local Movies & TV Disks",
+                windowBadge: "Local Storage"
+            }
+        ],
+        playback: [
+            {
+                title: "Apple MetalFX AI 4K Upscaler (HUD Telemetry)",
+                subTitle: "MetalFX 4K AI Upscaler",
+                icon: "✨",
+                desc: "Real-time Apple MetalFX AI Spatial Super-Resolution HUD in the macOS desktop app: transforms 1080p streams into razor-sharp 4K Ultra HD on Apple Silicon GPU at 120 FPS with 0.4ms render latency.",
+                badges: [
+                    { text: "Plugin: metalfx", cls: "primary" },
+                    { text: "Apple Silicon Neural", cls: "gold" },
+                    { text: "120 FPS 4K", cls: "purple" },
+                    { text: "Zero Server Load", cls: "green" }
+                ],
+                src: "screenshots/player-metalfx.webp",
+                alt: "Player with Apple MetalFX 4K AI Upscaler HUD telemetry",
+                windowTitle: "macOS Desktop Player — Apple MetalFX 4K Super-Resolution HUD",
+                windowBadge: "MetalFX 4K HUD"
+            },
+            {
+                title: "Multi-Track Audio & Subtitle Selector",
+                subTitle: "Audio & Subtitles",
+                icon: "🔊",
+                desc: "Support for multi-track audio including Dolby Atmos 7.1 TrueHD and embedded PGS/SRT SDH subtitle tracks with custom synchronization offset.",
+                badges: [
+                    { text: "Dolby Atmos 7.1", cls: "primary" },
+                    { text: "TrueHD", cls: "gold" },
+                    { text: "PGS / SRT SDH", cls: "purple" },
+                    { text: "Track Sync Offset", cls: "green" }
+                ],
+                src: "screenshots/player-audio-subtitles.webp",
+                alt: "Player audio and subtitle stream selector menu",
+                windowTitle: "Player — Audio & Subtitle Track Selector",
+                windowBadge: "Dolby Atmos 7.1"
+            },
+            {
+                title: "Video Player with Chapter Markers & Auto-Skip",
+                subTitle: "Player & Chapters",
+                icon: "▶",
+                desc: "High-performance video player with deep HLS buffer (90-240s), IntroDB chapter markers on the seek bar, and automatic intro/credits skip buttons.",
+                badges: [
+                    { text: "Deep HLS Buffer", cls: "primary" },
+                    { text: "Seekbar Chapters", cls: "gold" },
+                    { text: "Plugin: skip", cls: "purple" },
+                    { text: "IntroDB Integration", cls: "green" }
+                ],
+                src: "screenshots/player.webp",
+                alt: "Video player with seekbar chapter marks and controls",
+                windowTitle: "Player — Playback Controls & Chapter Markers",
+                windowBadge: "Deep HLS Buffer"
+            }
+        ],
+        server: [
+            {
+                title: "Admin Overview & System Health",
+                subTitle: "Admin Dashboard",
+                icon: "📊",
+                desc: "Central administrative dashboard tracking disk storage capacity, Sentinel monitored series, active downloads, library maintenance scans, and streaming server status.",
+                badges: [
+                    { text: "Admin Dashboard", cls: "primary" },
+                    { text: "Storage Capacity", cls: "gold" },
+                    { text: "Sentinel Health", cls: "green" },
+                    { text: "Streaming Engine", cls: "purple" }
+                ],
+                src: "screenshots/admin-overview.webp",
+                alt: "Admin overview dashboard with storage and downloads",
+                windowTitle: "Admin > Overview — Storage, Downloads & Sentinel",
+                windowBadge: "Admin Overview"
+            },
+            {
+                title: "Admin Plugins Manager (13 Active)",
+                subTitle: "Plugins Manager",
+                icon: "🧩",
+                desc: "Modular plugin control panel displaying all 13 plugins, enable/disable toggles, configuration key validation, and failure isolation telemetry.",
+                badges: [
+                    { text: "13 Modular Plugins", cls: "primary" },
+                    { text: "Failure Isolation", cls: "gold" },
+                    { text: "Live REST Audit", cls: "green" },
+                    { text: "Config Validation", cls: "purple" }
+                ],
+                src: "screenshots/admin-plugins.webp",
+                alt: "Admin plugins manager with 13 active plugins",
+                windowTitle: "Admin > Plugins — Modular Architecture & Audit",
+                windowBadge: "13 Active Plugins"
+            },
+            {
+                title: "Tautulli-Style Watch Stats & Viewing Habits",
+                subTitle: "Watch Stats",
+                icon: "📈",
+                desc: "Server-side playback analytics at #/stats: viewing streaks, hours watched per day, top devices, hourly viewing heatmaps, and full CSV history export.",
+                badges: [
+                    { text: "Plugin: nowplaying", cls: "primary" },
+                    { text: "Route: #/stats", cls: "gold" },
+                    { text: "Streak Tracking", cls: "green" },
+                    { text: "CSV Export", cls: "purple" }
+                ],
+                src: "screenshots/watch-stats.webp",
+                alt: "Watch stats dashboard with streaks and daily hours",
+                windowTitle: "Watch Stats (#/stats) — Streaks, Hours & Devices",
+                windowBadge: "Watch Stats"
+            },
+            {
+                title: "Release Calendar with Library Indicators",
+                subTitle: "Release Calendar",
+                icon: "📅",
+                desc: "Monthly release schedule showing upcoming episodes of monitored TV shows, with badges indicating which episodes are already downloaded to your disk.",
+                badges: [
+                    { text: "Release Calendar", cls: "primary" },
+                    { text: "On-Server Badges", cls: "gold" },
+                    { text: "Monthly / Agenda", cls: "green" }
+                ],
+                src: "screenshots/calendar.webp",
+                alt: "Release calendar with on-server episode indicators",
+                windowTitle: "Calendar — Upcoming Episode Air Dates",
+                windowBadge: "Release Calendar"
+            },
+            {
+                title: "Appearance Settings & Accent Color Palette",
+                subTitle: "Theme Settings",
+                icon: "🎨",
+                desc: "Custom appearance settings per profile: 10 curated accent colors, true AMOLED pitch-black mode, and adjustable interface corner radius.",
+                badges: [
+                    { text: "Plugin: themes", cls: "primary" },
+                    { text: "10 Accent Colors", cls: "gold" },
+                    { text: "AMOLED Black", cls: "purple" },
+                    { text: "Corner Radius", cls: "green" }
+                ],
+                src: "screenshots/settings.webp",
+                alt: "Appearance settings with accent color palette",
+                windowTitle: "Settings > Appearance — 10 Accent Colors & AMOLED Black",
+                windowBadge: "Themes & Accents"
+            }
+        ],
+        copilot: [
+            {
+                title: "AI Copilot: Conversational Chat Drawer",
+                subTitle: "Desktop Copilot",
+                icon: "🤖",
+                desc: "Conversational media copilot powered by Google Gemini. Ask for tailored recommendations, check what is on the server, and stage downloads that require your explicit confirmation.",
+                badges: [
+                    { text: "Plugin: ai", cls: "primary" },
+                    { text: "Gemini 2.5 Flash", cls: "gold" },
+                    { text: "Staged Action Cards", cls: "purple" },
+                    { text: "Privacy Guard", cls: "green" }
+                ],
+                src: "screenshots/copilot.webp",
+                alt: "AI Copilot chat drawer with recommendation cards",
+                windowTitle: "AI Copilot — Conversational Recommendations & Staging",
+                windowBadge: "Gemini Copilot"
+            },
+            {
+                title: "AI Copilot: Mobile PWA Card Layout",
+                subTitle: "Mobile Copilot",
+                icon: "📱",
+                desc: "Optimized mobile PWA interface with poster recommendation cards and quick one-tap suggestion chips for phone screens.",
+                badges: [
+                    { text: "Mobile PWA", cls: "primary" },
+                    { text: "Gesture Controls", cls: "gold" },
+                    { text: "Compact View", cls: "green" }
+                ],
+                src: "screenshots/copilot-mobile.webp",
+                alt: "AI Copilot mobile layout with recommendation cards",
+                windowTitle: "AI Copilot Mobile — PWA Poster Cards",
+                windowBadge: "Mobile PWA"
+            }
+        ]
+    };
 
-    function selectTab(selectedTab) {
-        tabs.forEach(tab => {
-            const isSelected = tab === selectedTab;
-            tab.setAttribute('aria-selected', isSelected ? 'true' : 'false');
-            tab.setAttribute('tabindex', isSelected ? '0' : '-1');
-        });
+    let currentCategory = "home";
+    let currentScreenIndex = 0;
 
-        const targetPanelId = selectedTab.getAttribute('aria-controls');
-        panels.forEach(panel => {
-            if (panel.id === targetPanelId) {
-                panel.classList.add('active');
+    const catButtons = Array.from(document.querySelectorAll('.cat-btn'));
+    const subnavContainer = document.getElementById('showcase-subnav');
+    const titleEl = document.getElementById('sc-title');
+    const descEl = document.getElementById('sc-desc');
+    const badgesEl = document.getElementById('sc-badges');
+    const counterEl = document.getElementById('sc-counter');
+    const prevBtn = document.getElementById('sc-prev');
+    const nextBtn = document.getElementById('sc-next');
+    const windowTitleEl = document.getElementById('sc-window-title');
+    const windowBadgeEl = document.getElementById('sc-window-badge');
+    const imgEl = document.getElementById('sc-img');
+
+    function updateScreen(screenIndex) {
+        const screens = showcaseScreens[currentCategory];
+        if (!screens || !screens[screenIndex]) return;
+
+        currentScreenIndex = screenIndex;
+        const screen = screens[screenIndex];
+
+        // Update Text & Badges (Above screenshot!)
+        titleEl.textContent = screen.title;
+        descEl.textContent = screen.desc;
+
+        badgesEl.innerHTML = screen.badges.map(b => `<span class="badge ${b.cls}">${b.text}</span>`).join(' ');
+
+        // Update Counter
+        counterEl.textContent = `Screen ${screenIndex + 1} of ${screens.length}`;
+
+        // Update Window Frame Header
+        windowTitleEl.textContent = `homebot.local — ${screen.windowTitle}`;
+        windowBadgeEl.textContent = screen.windowBadge;
+
+        // Update Image with smooth fade
+        imgEl.style.opacity = '0.4';
+        imgEl.src = screen.src;
+        imgEl.alt = screen.alt;
+        setTimeout(() => {
+            imgEl.style.opacity = '1';
+        }, 60);
+
+        // Update Subnav Active State
+        const subButtons = subnavContainer.querySelectorAll('.subnav-btn');
+        subButtons.forEach((btn, idx) => {
+            if (idx === screenIndex) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
             } else {
-                panel.classList.remove('active');
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
             }
         });
     }
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            selectTab(tab);
+    function renderCategory(catKey, initialScreenIndex = 0) {
+        currentCategory = catKey;
+        const screens = showcaseScreens[catKey];
+        if (!screens) return;
+
+        // Update Category Tab States
+        catButtons.forEach(btn => {
+            const isCatActive = btn.dataset.cat === catKey;
+            btn.setAttribute('aria-selected', isCatActive ? 'true' : 'false');
+            btn.setAttribute('tabindex', isCatActive ? '0' : '-1');
+        });
+
+        // Render Subnav Buttons DIRECTLY UNDER Categories (ABOVE Screenshot!)
+        subnavContainer.innerHTML = '';
+        screens.forEach((screen, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `subnav-btn ${idx === initialScreenIndex ? 'active' : ''}`;
+            btn.setAttribute('role', 'tab');
+            btn.setAttribute('aria-selected', idx === initialScreenIndex ? 'true' : 'false');
+            btn.innerHTML = `<span>${screen.icon}</span> <span>${screen.subTitle}</span>`;
+            btn.addEventListener('click', () => {
+                updateScreen(idx);
+            });
+            subnavContainer.appendChild(btn);
+        });
+
+        updateScreen(initialScreenIndex);
+    }
+
+    // Category click listeners
+    catButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            renderCategory(btn.dataset.cat, 0);
         });
     });
 
-    if (tabList) {
-        tabList.addEventListener('keydown', (e) => {
+    // Arrow Prev/Next controls
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const screens = showcaseScreens[currentCategory];
+            const nextIdx = (currentScreenIndex - 1 + screens.length) % screens.length;
+            updateScreen(nextIdx);
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const screens = showcaseScreens[currentCategory];
+            const nextIdx = (currentScreenIndex + 1) % screens.length;
+            updateScreen(nextIdx);
+        });
+    }
+
+    // Keyboard Arrow navigation for categories
+    const categoriesBar = document.querySelector('.showcase-categories');
+    if (categoriesBar) {
+        categoriesBar.addEventListener('keydown', (e) => {
             const currentTab = document.activeElement;
-            const currentIndex = tabs.indexOf(currentTab);
+            const currentIndex = catButtons.indexOf(currentTab);
             if (currentIndex === -1) return;
 
             let nextIndex = null;
             if (e.key === 'ArrowRight') {
-                nextIndex = (currentIndex + 1) % tabs.length;
+                nextIndex = (currentIndex + 1) % catButtons.length;
             } else if (e.key === 'ArrowLeft') {
-                nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                nextIndex = (currentIndex - 1 + catButtons.length) % catButtons.length;
             } else if (e.key === 'Home') {
                 nextIndex = 0;
             } else if (e.key === 'End') {
-                nextIndex = tabs.length - 1;
+                nextIndex = catButtons.length - 1;
             }
 
             if (nextIndex !== null) {
                 e.preventDefault();
-                tabs[nextIndex].focus();
-                selectTab(tabs[nextIndex]);
+                catButtons[nextIndex].focus();
+                renderCategory(catButtons[nextIndex].dataset.cat, 0);
             }
         });
     }
 
-    // 2. Thumbnail Image Swapping in Showcase
-    const thumbButtons = document.querySelectorAll('.thumb-btn');
-    thumbButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const panel = btn.closest('.tab-panel');
-            if (!panel) return;
+    // Initial render
+    renderCategory('home', 0);
 
-            // Remove active from sibling buttons in this panel
-            panel.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const target = btn.dataset.target;
-            const src = btn.dataset.src;
-            const title = btn.dataset.title;
-            const desc = btn.dataset.desc;
-
-            const imgEl = document.getElementById(`img-${target}`);
-            const titleEl = document.getElementById(`title-${target}`);
-            const descEl = document.getElementById(`desc-${target}`);
-
-            if (imgEl && src) imgEl.src = src;
-            if (titleEl && title) titleEl.textContent = title;
-            if (descEl && desc) descEl.textContent = desc;
-        });
-    });
-
-    // 3. Plugin Category Filtering
+    // 2. Plugin Category Filtering
     const filterButtons = document.querySelectorAll('.filter-btn');
     const pluginCards = document.querySelectorAll('.plugin-card');
 
