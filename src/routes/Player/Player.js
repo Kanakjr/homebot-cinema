@@ -976,13 +976,16 @@ const Player = () => {
                 return;
             }
 
-            if (!keyboardKeys.includes('Space') && !keyboardKeys.includes('ArrowRight') && !keyboardKeys.includes('ArrowLeft')) return;
+            const isSeekKey = keyboardKeys.includes('ArrowRight') || keyboardKeys.includes('ArrowLeft') ||
+                keyboardKeys.includes('KeyL') || keyboardKeys.includes('KeyJ') ||
+                e.key === 'l' || e.key === 'L' || e.key === 'j' || e.key === 'J';
+            if (!keyboardKeys.includes('Space') && !isSeekKey) return;
             if (e.ctrlKey || e.metaKey || e.altKey) {
                 if (keyboardKeys.includes('Space')) finishPlaybackSpeedHold('keyboard');
                 return;
             }
 
-            if (keyboardKeys.includes('ArrowRight') || keyboardKeys.includes('ArrowLeft')) {
+            if (isSeekKey) {
                 releaseKeyboardSeek();
                 setImmersed(false);
                 setImmersedDebounced(true);

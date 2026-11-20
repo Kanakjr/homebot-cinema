@@ -210,13 +210,28 @@ describe('gamepadShim controller mapping', () => {
         expect(env.keys).toEqual([]);
 
         controller.update(pad({ buttons: { rt: 0.6 } }));
-        expect(env.keys).toEqual(['keydown:l']);
+        expect(env.keys).toEqual(['keydown:ArrowRight']);
 
         controller.update(pad({ buttons: { rt: 0.4 } }));
-        expect(env.keys).toEqual(['keydown:l']);
+        expect(env.keys).toEqual(['keydown:ArrowRight']);
 
         controller.update(pad({ buttons: { rt: 0.3 } }));
-        expect(env.keys).toEqual(['keydown:l', 'keyup:l']);
+        expect(env.keys).toEqual(['keydown:ArrowRight', 'keyup:ArrowRight']);
+    });
+
+    it('4b. Button A in player toggles playPause when no control focused, and selects when control is active', () => {
+        const envPlayer = makeEnv({ route: '/player/123' });
+        const cPlayer = createController(envPlayer);
+        cPlayer.update(pad({ buttons: { a: 1 } }));
+        expect(envPlayer.mediaKeys).toEqual(['play-pause']);
+        expect(envPlayer.keys).toEqual([]);
+
+        const envControl = makeEnv({ route: '/player/123' });
+        envControl.hasActiveControl = () => true;
+        const cControl = createController(envControl);
+        cControl.update(pad({ buttons: { a: 1 } }));
+        expect(envControl.mediaKeys).toEqual([]);
+        expect(envControl.keys).toEqual(['keydown:Enter']);
     });
 
     it('5. Player-only actions do nothing outside the player (route /)', () => {
@@ -391,10 +406,10 @@ describe('gamepadShim controller mapping', () => {
         env.setRoute('/player/x');
 
         controller.update(pad({ axes: [0, 0, -0.9, 0] }));
-        expect(env.keys).toEqual(['keydown:j']);
+        expect(env.keys).toEqual(['keydown:ArrowLeft']);
 
         controller.update(pad({ axes: [0, 0, 0, 0] }));
-        expect(env.keys).toEqual(['keydown:j', 'keyup:j']);
+        expect(env.keys).toEqual(['keydown:ArrowLeft', 'keyup:ArrowLeft']);
     });
 
     it('12. Logical pad (getGamepads): tv preset unpressed/zero axes, stremio preset pressed/pass-through, length 4, id kept', () => {

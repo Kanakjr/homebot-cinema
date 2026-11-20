@@ -82,8 +82,8 @@
         fullscreen: { label: 'Fullscreen', key: 'f' },
         playPause: { label: 'Play / pause', run: 'playPause' },
         nextEpisode: { label: 'Next episode', run: 'nextEpisode' },
-        seekBack: { label: 'Seek back', key: 'j', repeat: true, player: true },
-        seekForward: { label: 'Seek forward', key: 'l', repeat: true, player: true },
+        seekBack: { label: 'Seek back', key: 'left', repeat: true, player: true },
+        seekForward: { label: 'Seek forward', key: 'right', repeat: true, player: true },
         volumeUp: { label: 'Volume up', key: 'up', repeat: true, player: true },
         volumeDown: { label: 'Volume down', key: 'down', repeat: true, player: true },
         mute: { label: 'Mute', key: 'm', player: true },
@@ -257,6 +257,13 @@
             if (a.run) {
                 RUNS[a.run]();
                 return;
+            }
+            if (actionId === 'select' && inPlayer()) {
+                var hasCtrl = typeof env.hasActiveControl === 'function' ? env.hasActiveControl() : false;
+                if (!hasCtrl) {
+                    env.mediaKey('play-pause');
+                    return;
+                }
             }
             if (a.dir && !inPlayer() && typeof env.moveFocus === 'function') {
                 var handled = env.moveFocus(a.dir);
@@ -977,6 +984,17 @@
                         } catch (_) { void 0; }
                     }, 100);
                 }
+            },
+            hasActiveControl: function () {
+                var el = doc.activeElement;
+                if (!el || el === doc.body || el === doc.documentElement) return false;
+                if (el.classList && (el.classList.contains('player-container') || el.classList.contains('video-container'))) return false;
+                if (el.getAttribute && el.getAttribute('data-gamepad-focused') === 'true') return true;
+                var tag = el.tagName;
+                if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return true;
+                var role = el.getAttribute && el.getAttribute('role');
+                if (role === 'button' || role === 'menuitem' || role === 'tab' || role === 'checkbox') return true;
+                return false;
             },
             key: key,
             moveFocus: function (dir) {
