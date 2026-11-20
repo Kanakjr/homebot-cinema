@@ -240,7 +240,15 @@
                 }
             },
             home: function () { env.navigate('/'); },
-            search: function () { env.navigate('/search'); },
+            search: function () {
+                if (env.route() === '/search') {
+                    if (typeof env.showVirtualKeyboard === 'function') {
+                        env.showVirtualKeyboard();
+                    }
+                } else {
+                    env.navigate('/search');
+                }
+            },
             prevTab: function () {
                 var i = tabIndex(env.route());
                 if (i > 0) env.navigate(TABS[i - 1]);
@@ -362,6 +370,7 @@
                         var specA = KEYS.enter;
                         var unhandledA = env.key(specA, 'keydown', false);
                         if (unhandledA !== false) env.activate();
+                        env.key(specA, 'keyup', false);
                     }
                 }
                 aHoldTriggered = false;
@@ -838,13 +847,9 @@
                 'html[data-gamepad-mode="true"], html[data-gamepad-mode="true"] * {',
                 '    cursor: none !important;',
                 '}',
-                'html[data-gamepad-mode="true"] {',
+                'html[data-gamepad-mode="true"] .meta-item-container:not(:focus-within):not([data-gamepad-focused="true"]),',
+                'html[data-gamepad-mode="true"] [class*="card"]:not(:focus):not(:focus-within):not([data-gamepad-focused="true"]) {',
                 '    pointer-events: none !important;',
-                '}',
-                'html[data-gamepad-mode="true"] [data-gamepad-focused="true"],',
-                'html[data-gamepad-mode="true"] :focus,',
-                'html[data-gamepad-mode="true"] :focus-within {',
-                '    pointer-events: auto !important;',
                 '}',
                 'html[data-gamepad-mode="true"] .meta-item-container.hovered:not(:focus-within):not([data-gamepad-focused="true"]) .poster-container {',
                 '    box-shadow: none !important;',
@@ -854,6 +859,9 @@
                 '}',
                 'html[data-gamepad-mode="true"] [class*="card"]:not(:focus):not(:focus-within):not([data-gamepad-focused="true"]) {',
                 '    transform: none !important;',
+                '}',
+                '#cinema-quick-menu-overlay, #cinema-quick-menu-card, #cinema-gamepad-keyboard, .gamepad-kb-key, .quick-menu-item {',
+                '    pointer-events: auto !important;',
                 '}',
                 '/* HUD */',
                 '#cinema-controller-hud {',
@@ -982,6 +990,7 @@
         }
 
         var quickMenuEl = null;
+        var prevQuickMenuFocus = null;
         var QUICK_ITEMS = [
             { id: 'home', icon: '🏠', label: 'Home', desc: 'Main board & Continue Watching', run: function () { win.location.hash = '#/'; } },
             { id: 'library', icon: '📚', label: 'Library', desc: 'Saved movies and TV series', run: function () { win.location.hash = '#/library'; } },
@@ -1012,6 +1021,10 @@
             if (!quickMenuEl) return;
             quickMenuEl.classList.remove('visible');
             quickMenuEl.removeAttribute('data-gamepad-modal');
+            if (prevQuickMenuFocus && typeof prevQuickMenuFocus.focus === 'function') {
+                try { focusTarget(prevQuickMenuFocus, win); } catch (_) { void 0; }
+                prevQuickMenuFocus = null;
+            }
             win.setTimeout(function () {
                 if (quickMenuEl && !quickMenuEl.classList.contains('visible')) {
                     quickMenuEl.style.display = 'none';
@@ -1021,6 +1034,7 @@
 
         function openQuickMenu() {
             if (!doc || !doc.body) return;
+            prevQuickMenuFocus = doc.activeElement;
             if (!quickMenuEl) {
                 quickMenuEl = doc.createElement('div');
                 quickMenuEl.id = 'cinema-quick-menu-overlay';
@@ -1150,15 +1164,22 @@
         function hideGamepadKeyboard() {
             if (!kbEl) return;
             kbEl.classList.remove('visible');
+            var wasInKb = doc && kbEl && doc.activeElement && kbEl.contains(doc.activeElement);
             win.setTimeout(function () {
                 if (kbEl && !kbEl.classList.contains('visible')) {
                     kbEl.style.display = 'none';
                 }
-            }, 200);
+                if (wasInKb) {
+                    var scope = getScope(doc);
+                    var candidates = getCandidates(scope, win);
+                    var target = findInitialCandidate(candidates, win);
+                    if (target) focusTarget(target, win);
+                }
+            }, 50);
         }
 
         function getSearchInput() {
-            return doc.querySelector('[class*="search-input"] input, [class*="search-bar"] input, input[type="text"][placeholder*="Search" i], input[type="search"]');
+            return doc.querySelector('input.search-input, input[class*="search-input"], [class*="search-input"] input, [class*="search-bar"] input, input[type="search"], input[type="text"][placeholder*="Search" i], input[type="text"]');
         }
 
         function setReactInputValue(input, val) {
@@ -1396,6 +1417,7 @@
             },
             overlayOpen: function () {
                 if (isQuickMenuOpen()) return true;
+                if (isGamepadKeyboardOpen()) return true;
                 if (!doc || typeof doc.querySelector !== 'function') return false;
                 return !!doc.querySelector(
                     '.modals-container > *, [data-gamepad-modal], [class*="dropdown"][class*="open"], [class*="context-menu"], ' +
@@ -1410,6 +1432,9 @@
             },
             isVirtualKeyboardOpen: function () {
                 return isGamepadKeyboardOpen();
+            },
+            showVirtualKeyboard: function () {
+                showGamepadKeyboard();
             },
             virtualKeyPress: function (key) {
                 onVirtualKeyPress(key);

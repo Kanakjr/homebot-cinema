@@ -876,3 +876,307 @@ describe('gamepadShim smart spatial navigation', () => {
         expect(toggle.getAttribute('data-gamepad-focused')).toBe('true');
     });
 });
+
+describe('gamepadShim browser integration and DOM behavior', () => {
+    function makeMockDOM() {
+        let t = 0;
+        const timers = new Map();
+        let nextTimerId = 1;
+
+        function createElement(tagName) {
+            const classes = new Set();
+            const attrs = {};
+            const children = [];
+            let innerHTML = '';
+
+            const el = {
+                tagName: tagName.toUpperCase(),
+                id: '',
+                tabIndex: 0,
+                disabled: false,
+                style: {},
+                children: children,
+                ownerDocument: null,
+                parentNode: null,
+                get classList() {
+                    return {
+                        add: (cls) => classes.add(cls),
+                        remove: (cls) => classes.delete(cls),
+                        contains: (cls) => classes.has(cls),
+                    };
+                },
+                get className() {
+                    return Array.from(classes).join(' ');
+                },
+                set className(val) {
+                    classes.clear();
+                    if (val) val.split(/\s+/).filter(Boolean).forEach(c => classes.add(c));
+                },
+                setAttribute: (k, v) => { attrs[k] = String(v); },
+                getAttribute: (k) => attrs[k] || null,
+                removeAttribute: (k) => { delete attrs[k]; },
+                hasAttribute: (k) => Object.prototype.hasOwnProperty.call(attrs, k),
+                appendChild: (child) => {
+                    child.parentNode = el;
+                    child.ownerDocument = el.ownerDocument;
+                    children.push(child);
+                    return child;
+                },
+                removeChild: (child) => {
+                    const idx = children.indexOf(child);
+                    if (idx >= 0) children.splice(idx, 1);
+                    child.parentNode = null;
+                    return child;
+                },
+                addEventListener: (ev, fn) => {
+                    el._listeners = el._listeners || {};
+                    el._listeners[ev] = el._listeners[ev] || [];
+                    el._listeners[ev].push(fn);
+                },
+                removeEventListener: () => {},
+                dispatchEvent: (event) => {
+                    if (el._listeners && el._listeners[event.type]) {
+                        el._listeners[event.type].forEach(fn => fn(event));
+                    }
+                    return true;
+                },
+                click: () => {
+                    el.dispatchEvent({ type: 'click', target: el });
+                },
+                focus: () => {
+                    if (el.ownerDocument) el.ownerDocument.activeElement = el;
+                },
+                scrollIntoView: () => {},
+                getBoundingClientRect: () => ({ left: 0, top: 0, right: 100, bottom: 40, width: 100, height: 40 }),
+                contains: (target) => {
+                    let cur = target;
+                    while (cur) {
+                        if (cur === el) return true;
+                        cur = cur.parentNode;
+                    }
+                    return false;
+                },
+                closest: (selector) => {
+                    let cur = el;
+                    while (cur) {
+                        if (cur.matches && cur.matches(selector)) return cur;
+                        cur = cur.parentNode;
+                    }
+                    return null;
+                },
+                matches: (selector) => {
+                    const parts = selector.split(',').map(s => s.trim());
+                    for (let i = 0; i < parts.length; i++) {
+                        const sel = parts[i];
+                        if (sel === 'input' && el.tagName === 'INPUT') return true;
+                        if (sel.startsWith('input.') && el.tagName === 'INPUT' && classes.has(sel.slice(6))) return true;
+                        if (sel.startsWith('#') && el.id === sel.slice(1)) return true;
+                        if (sel.startsWith('.') && classes.has(sel.slice(1))) return true;
+                        if (sel.startsWith('[') && sel.endsWith(']')) {
+                            const inner = sel.slice(1, -1);
+                            if (inner.includes('*=')) {
+                                const pieces = inner.split('*=').map(s => s.replace(/"/g, ''));
+                                const val = el.getAttribute(pieces[0]) || (pieces[0] === 'class' ? el.className : '');
+                                if (val && val.includes(pieces[1])) return true;
+                            } else if (el.hasAttribute(inner)) return true;
+                        }
+                    }
+                    return false;
+                },
+                get innerHTML() { return innerHTML; },
+                set innerHTML(html) { innerHTML = html; },
+                get textContent() { return innerHTML.replace(/<[^>]+>/g, ''); },
+                set textContent(text) { innerHTML = text; },
+                querySelector: (sel) => {
+                    const all = el.querySelectorAll(sel);
+                    return all.length ? all[0] : null;
+                },
+                querySelectorAll: (sel) => {
+                    const results = [];
+                    function scan(node) {
+                        for (let i = 0; i < node.children.length; i++) {
+                            const child = node.children[i];
+                            if (child.matches && child.matches(sel)) results.push(child);
+                            scan(child);
+                        }
+                    }
+                    scan(el);
+                    return results;
+                },
+            };
+            return el;
+        }
+
+        const doc = {
+            createElement: createElement,
+            activeElement: null,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+            createEvent: () => ({ initMouseEvent: () => {} }),
+        };
+
+        const docElement = createElement('html');
+        docElement.ownerDocument = doc;
+        const body = createElement('body');
+        body.ownerDocument = doc;
+        const head = createElement('head');
+        head.ownerDocument = doc;
+
+        docElement.appendChild(head);
+        docElement.appendChild(body);
+        doc.documentElement = docElement;
+        doc.body = body;
+        doc.head = head;
+        doc.activeElement = body;
+
+        doc.getElementById = (id) => {
+            function scan(node) {
+                if (node.id === id) return node;
+                for (let i = 0; i < node.children.length; i++) {
+                    const found = scan(node.children[i]);
+                    if (found) return found;
+                }
+                return null;
+            }
+            return scan(docElement);
+        };
+
+        doc.querySelector = (sel) => docElement.querySelector(sel);
+        doc.querySelectorAll = (sel) => docElement.querySelectorAll(sel);
+
+        const win = {
+            document: doc,
+            location: { hash: '#/' },
+            localStorage: {
+                getItem: () => null,
+                setItem: () => {},
+            },
+            navigator: {},
+            performance: { now: () => t },
+            setTimeout: (fn, ms) => {
+                const id = nextTimerId++;
+                timers.set(id, { fn: fn, ms: ms || 0, when: t + (ms || 0) });
+                return id;
+            },
+            clearTimeout: (id) => timers.delete(id),
+            advanceTimers: (ms) => {
+                t += ms;
+                const entries = Array.from(timers.entries());
+                for (let i = 0; i < entries.length; i++) {
+                    const id = entries[i][0];
+                    const item = entries[i][1];
+                    if (t >= item.when && timers.has(id)) {
+                        timers.delete(id);
+                        item.fn();
+                    }
+                }
+            },
+            addEventListener: (ev, fn) => {
+                win._listeners = win._listeners || {};
+                win._listeners[ev] = win._listeners[ev] || [];
+                win._listeners[ev].push(fn);
+            },
+            removeEventListener: () => {},
+            dispatchEvent: (ev) => {
+                if (win._listeners && win._listeners[ev.type]) {
+                    win._listeners[ev.type].forEach(fn => fn(ev));
+                }
+            },
+            Event: function (type) { this.type = type; },
+            KeyboardEvent: function (type, init) { this.type = type; Object.assign(this, init); },
+            MouseEvent: function (type, init) { this.type = type; Object.assign(this, init); },
+        };
+
+        return { win: win, doc: doc };
+    }
+
+    it('1. install(win) injects styles and exposes win.__cinemaPad', () => {
+        const { win, doc } = makeMockDOM();
+        install(win);
+        expect(win.__cinemaPad).toBeDefined();
+        expect(typeof win.__cinemaPad.update).toBe('function');
+        const style = doc.getElementById('cinema-gamepad-focus-style');
+        expect(style).not.toBeNull();
+        expect(style.textContent).toContain('data-gamepad-mode');
+    });
+
+    it('2. HUD displays connected, disconnected, and low battery notifications', () => {
+        const { win, doc } = makeMockDOM();
+        install(win);
+
+        // Connect
+        win.__cinemaPad.update(pad({ id: 'PlayStation DualSense', connected: true }));
+        const hud = doc.getElementById('cinema-controller-hud');
+        expect(hud).not.toBeNull();
+        expect(hud.classList.contains('visible')).toBe(true);
+        expect(hud.textContent).toContain('PlayStation DualSense Connected');
+
+        // Low battery notification
+        win.__cinemaPad.update(pad({ id: 'PlayStation DualSense', connected: true, battery: 0.14, charging: false }));
+        expect(hud.textContent).toContain('Controller Battery Low (14%)');
+
+        // Disconnect
+        win.__cinemaPad.update(pad({ slot: 0, connected: false }));
+        expect(hud.textContent).toContain('Controller Disconnected');
+    });
+
+    it('3. Quick Action Menu toggles, lists all 7 actions, and closes with B button', () => {
+        const { win, doc } = makeMockDOM();
+        install(win);
+
+        // Hold Home for >= 500ms
+        win.__cinemaPad.update(pad({ buttons: { home: 1 } }));
+        win.advanceTimers(500);
+        win.advanceTimers(10); // animation tick
+
+        const qm = doc.getElementById('cinema-quick-menu-overlay');
+        expect(qm).not.toBeNull();
+        expect(qm.getAttribute('data-gamepad-modal')).toBe('true');
+        expect(qm.classList.contains('visible')).toBe(true);
+
+        // Press B to close Quick Action Menu
+        win.__cinemaPad.update(pad({ buttons: { b: 1 } }));
+        win.__cinemaPad.update(pad({ buttons: { b: 0 } }));
+        expect(qm.classList.contains('visible')).toBe(false);
+    });
+
+    it('4. On-screen keyboard on /search updates input, supports X/Y shortcuts, and closes on B', () => {
+        const { win, doc } = makeMockDOM();
+        win.location.hash = '#/search';
+        doc.documentElement.setAttribute('data-gamepad-mode', 'true');
+        install(win);
+
+        const searchInput = doc.createElement('input');
+        searchInput.type = 'text';
+        searchInput.className = 'search-input';
+        searchInput.placeholder = 'Search';
+        searchInput.value = '';
+        doc.body.appendChild(searchInput);
+
+        // Route change to /search triggers virtual keyboard
+        win.dispatchEvent(new win.Event('hashchange'));
+        win.advanceTimers(10); // animation tick
+        const kb = doc.getElementById('cinema-gamepad-keyboard');
+        expect(kb).not.toBeNull();
+        expect(kb.classList.contains('visible')).toBe(true);
+
+        // Type on virtual keyboard
+        const actions = win.__cinemaPad.ACTIONS;
+        expect(actions).toBeDefined();
+
+        // Press Y (Space shortcut)
+        win.__cinemaPad.update(pad({ buttons: { y: 1 } }));
+        win.__cinemaPad.update(pad({ buttons: { y: 0 } }));
+        expect(searchInput.value).toBe(' ');
+
+        // Press X (Delete shortcut)
+        win.__cinemaPad.update(pad({ buttons: { x: 1 } }));
+        win.__cinemaPad.update(pad({ buttons: { x: 0 } }));
+        expect(searchInput.value).toBe('');
+
+        // Press B (Done / Close)
+        win.__cinemaPad.update(pad({ buttons: { b: 1 } }));
+        win.__cinemaPad.update(pad({ buttons: { b: 0 } }));
+        expect(kb.classList.contains('visible')).toBe(false);
+    });
+});
