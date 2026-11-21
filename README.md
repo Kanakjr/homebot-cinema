@@ -13,7 +13,7 @@ smart discovery, and an AI copilot that only suggests: you press the button.
 [![Docker](https://img.shields.io/badge/docker-compose-2496ed)](docker-compose.example.yml)
 [![Built on Stremio Web](https://img.shields.io/badge/built%20on-Stremio%20Web-8a5bf5)](https://github.com/Stremio/stremio-web)
 
-**[Website](https://kanakjr.github.io/homebot-cinema/)** · [Demo video](https://youtu.be/aCRXjZhj_kQ) · [Plugins](docs/plugins.md) · [Docs](docs/)
+**[Website](https://kanakjr.github.io/homebot-cinema/)** · [Demo video](https://youtu.be/aCRXjZhj_kQ) · [The story](https://kanakjr.github.io/homebot-cinema/story.html) · [Plugins](docs/plugins.md) · [Docs](docs/)
 
 <img src="docs/screenshots/home.webp" alt="HomeBot Cinema home screen" width="100%">
 

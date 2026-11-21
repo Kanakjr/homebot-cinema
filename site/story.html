@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The story of HomeBot Cinema</title>
+    <meta name="description" content="How HomeBot Cinema, a fork of Stremio Web, grew from its first public release to every screen in the house in nine days: what was built, in what order, and why.">
+    <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#09090b">
+    <link rel="canonical" href="https://kanakjr.github.io/homebot-cinema/story.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="HomeBot Cinema">
+    <meta property="og:title" content="The story of HomeBot Cinema">
+    <meta property="og:description" content="From first release to every screen in the house in nine days: what was built, in what order, and why.">
+    <meta property="og:url" content="https://kanakjr.github.io/homebot-cinema/story.html">
+    <meta property="og:image" content="https://kanakjr.github.io/homebot-cinema/og.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="brand/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+    <link rel="preload" href="fonts/PlusJakartaSans.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="logo" href="./" aria-label="HomeBot Cinema, home">
+            <img src="brand/icon.svg" alt="" width="28" height="28">
+            <span>HomeBot <b>Cinema</b></span>
+        </a>
+        <nav class="nav" id="site-nav" aria-label="Main">
+            <a href="./#features">Features</a>
+            <a href="./#plugins">Plugins</a>
+            <a href="./#apps">Apps</a>
+            <a href="story.html" aria-current="page">Story</a>
+            <a href="https://github.com/Kanakjr/homebot-cinema/tree/main/docs">Docs</a>
+        </nav>
+        <div class="header-actions">
+            <a class="icon-link" href="https://github.com/Kanakjr/homebot-cinema" aria-label="HomeBot Cinema on GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+            </a>
+            <a class="btn btn-primary btn-sm" href="./#start">Get started</a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+                <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main id="main">
+    <section class="story-hero">
+        <div class="container narrow">
+            <p class="eyebrow">The story</p>
+            <h1>From first release to every screen in nine days.</h1>
+            <p class="lead">HomeBot Cinema is a fork of Stremio Web that grew into a media hub for a whole household. Its public history starts on November 13. This is what was built from there, in what order, and why, told from the commit history.</p>
+        </div>
+        <div class="container">
+            <div class="stats" aria-label="The project in numbers">
+                <div><strong>9</strong><span>days in public</span></div>
+                <div><strong>84</strong><span>commits</span></div>
+                <div><strong>13</strong><span>plugins</span></div>
+                <div><strong>3</strong><span>apps</span></div>
+                <div><strong>69</strong><span>test files</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container story">
+        <nav class="toc" aria-label="Chapters">
+            <p>Chapters</p>
+            <ol>
+                <li><a href="#why">Why a fork</a></li>
+                <li><a href="#day-one">Day one</a></li>
+                <li><a href="#plugins">A small core</a></li>
+                <li><a href="#mac">A real Mac app</a></li>
+                <li><a href="#streaming">Streaming-service feel</a></li>
+                <li><a href="#polish">The UI review</a></li>
+                <li><a href="#couch">Couch mode</a></li>
+                <li><a href="#screens">Every screen</a></li>
+                <li><a href="#rules">What stayed true</a></li>
+                <li><a href="#next">What's next</a></li>
+            </ol>
+        </nav>
+
+        <article class="prose">
+
+            <section class="chapter" id="why">
+                <div class="chapter-meta"><span class="num">00</span><span>Before the first commit</span></div>
+                <h2>Why a fork</h2>
+                <p>Stremio Web is a very good player with a huge addon ecosystem. But it is built for <strong>one person with one cloud account</strong>. A household that shares one home server needs different things:</p>
+                <ul>
+                    <li>Everyone with their own watch history and Continue watching, without sharing a login.</li>
+                    <li>A library of the files that are already on the server's disk.</li>
+                    <li>New episodes that turn up on their own, without anyone hunting for them.</li>
+                    <li>Nobody's viewing habits leaving the house.</li>
+                </ul>
+                <p>So the plan was simple: keep Stremio's player and its stremio-core engine, and build a household around them. A Node and Express backend next to the React UI, one SQLite file for everything, and Cloudflare Access in front so only invited people can sign in.</p>
+            </section>
+
+            <section class="chapter" id="day-one">
+                <div class="chapter-meta"><span class="num">01</span><time datetime="2026-11-13">November 13</time></div>
+                <h2>Day one: a household around a player</h2>
+                <p>The first public release landed with fresh history; earlier private work was left out on purpose. It already had the bones of everything that followed:</p>
+                <ul>
+                    <li><strong>Profiles</strong> with an optional PIN and a kids mode, each with its own library, history and settings.</li>
+                    <li><strong>Downloads</strong> to the server's own disk through Transmission, with quality profiles and a swarm check that says whether a release is alive.</li>
+                    <li><strong>Sentinel</strong>, which follows a show and fetches new episodes, a few seasons, or all of it.</li>
+                    <li><strong>Smart filters</strong> from TMDB, a Home hero banner, the server library, signed stream links and an admin panel.</li>
+                    <li>An <strong>AI copilot</strong> with one hard rule: it can only <em>stage</em> a download. A person presses Confirm.</li>
+                </ul>
+                <p class="pullquote">The stream source is an operator setting. Nothing is built in, and the repository ships no sources at all.</p>
+                <p>That decision shaped the project from the start: HomeBot Cinema is a manager for your own server, not a source of content. The same evening the README got real screenshots and the first demo video.</p>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/76e9d468">76e9d46 initial public release</a></div>
+            </section>
+
+            <section class="chapter" id="plugins">
+                <div class="chapter-meta"><span class="num">02</span><time datetime="2026-11-15">November 15–16</time></div>
+                <h2>Keep the core small</h2>
+                <p>With features piling up, the risk was a fork nobody could keep in sync. The answer was a plugin architecture. Each optional feature now lives in <code>plugins/&lt;id&gt;/</code> with a manifest, its own guide for contributors, server code, UI and tests. The loader isolates failures, and the UI offers named slots where plugins plug in.</p>
+                <p>The copilot, Smart filters, themes, Telegram alerts and Google Drive moved out of the core into plugins. The rules became tests rather than good intentions:</p>
+                <ul>
+                    <li>A <strong>boundary test</strong>: the core never imports a plugin, and plugins never import each other.</li>
+                    <li>A <strong>content guard</strong>: no sources, scraper URLs or release names anywhere in the repository.</li>
+                    <li>A <strong>fetch guard</strong>: the app never calls Stremio's own account API.</li>
+                    <li>A list of every upstream file we touch, checked by <code>pnpm check:upstream</code>, so merging new Stremio Web releases stays possible.</li>
+                </ul>
+                <p>Streaming-server settings became admin-only, and the project got its first website.</p>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/fc32a321">fc32a32 plugin architecture</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/5f5aaadb">5f5aaad admin-only streaming settings</a></div>
+            </section>
+
+            <section class="chapter" id="mac">
+                <div class="chapter-meta"><span class="num">03</span><time datetime="2026-11-16">November 16–17</time></div>
+                <h2>A real Mac app</h2>
+                <p>Browsers can't play everything. HEVC, Dolby audio and embedded subtitles meant the server had to transcode, which is slow and wasteful. The macOS app solves that with <strong>Tauri 2 and libmpv</strong>: the same web interface in a native window, with mpv drawing the video underneath and playing the file exactly as it is stored.</p>
+                <p>A first-run screen asks for the server's address, so one download fits every install. Home mode uses the local network address when you are at home. CI builds a versioned DMG and attaches it to a GitHub Release on every tag.</p>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/e7c9b124">e7c9b12 macOS app</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/2c844ed6">2c844ed DMG and releases</a></div>
+            </section>
+
+            <section class="chapter" id="streaming">
+                <div class="chapter-meta"><span class="num">04</span><time datetime="2026-11-17">November 17</time></div>
+                <h2>Watching like a streaming service</h2>
+                <p>The busiest day. The goal: make watching at home feel as smooth as the big streaming apps.</p>
+                <ul>
+                    <li><strong>Skip intro, recap and credits</strong>, using chapter markers in your files first and the community IntroDB second, with marks on the seek bar and Up next as soon as the credits roll.</li>
+                    <li><strong>Continue watching that knows what's next</strong>: it reads the furthest episode you watched and offers the one after it. An Upcoming row lists episodes airing in the next two weeks.</li>
+                    <li><strong>Now playing and watch stats</strong>: who is watching what, and a Tautulli-style history kept on your own server.</li>
+                    <li><strong>Movie collections</strong>, <strong>More like this</strong>, a Direct filter for links that start at once, and <strong>acoustic subtitle auto-sync</strong> that lines subtitles up with the voices.</li>
+                    <li><strong>4K AI upscaling</strong> in the Mac app with Apple's MetalFX spatial scaler, with live GPU stats.</li>
+                </ul>
+                <p>It was also the day the project got its own look. Stremio's default artwork was replaced with original images, including a captain mascot made through a small art pipeline, and each install can swap in its own avatars and art privately.</p>
+                <figure>
+                    <a class="frame" href="screenshots/watch-stats.webp"><img src="screenshots/watch-stats.webp" alt="Watch stats: hours watched per day, streaks and a weekday by hour grid" width="2200" height="1237" loading="lazy"></a>
+                    <figcaption>Watch stats, kept on your own server.</figcaption>
+                </figure>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/6855ca8d">6855ca8 skip intro</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/eaec03fa">eaec03f up next, upcoming</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/344a35a2">344a35a watch stats</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/ea92e29a">ea92e29 MetalFX</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/0db93b75">0db93b7 subtitle sync</a></div>
+            </section>
+
+            <section class="chapter" id="polish">
+                <div class="chapter-meta"><span class="num">05</span><time datetime="2026-11-17">November 17–19</time></div>
+                <h2>The UI review</h2>
+                <p>Features are only half of it. A structured review went through the whole interface in seven phases:</p>
+                <ul>
+                    <li>Fixes for the profile picker in WebKit, Escape that closes menus before it leaves the player, and clear loading and empty states.</li>
+                    <li>One accent colour system, with text contrast checked by tests against the 4.5:1 guideline.</li>
+                    <li>Native macOS menus with keyboard shortcuts and an overlay title bar.</li>
+                    <li><strong>Play-first title pages and one-click playback</strong>: Play resumes, picks the next episode, or finds the best release for you.</li>
+                    <li>A right-click menu, a player overhaul with one Audio and subtitles panel, Search with top results, Home rows you can hide and reorder, and a Calendar with month and agenda views.</li>
+                </ul>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/f9a3c421">f9a3c42 phase 1</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/f7bce712">f7bce71 visual system</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/770dfe28">770dfe2 one-click play</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/df16b39e">df16b39 player overhaul</a></div>
+            </section>
+
+            <section class="chapter" id="couch">
+                <div class="chapter-meta"><span class="num">06</span><time datetime="2026-11-19">November 19–20</time></div>
+                <h2>Couch mode</h2>
+                <p>A media app on a Mac mini under the TV should work from the sofa. The Mac app now reads <strong>Xbox, PlayStation and other game controllers</strong> natively through Apple's GameController framework, sixty times a second.</p>
+                <p>The D-pad moves from poster to poster and row to row like a console, the mouse cursor hides while you use the pad, and the triggers scrub through a film. A controller HUD, a quick menu and an on-screen keyboard for search finished the job. Settings › Controllers lets you remap every button.</p>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/4bc326fb">4bc326f controllers</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/dedbf659">dedbf65 spatial navigation</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/68913ea1">68913ea HUD and keyboard</a></div>
+            </section>
+
+            <section class="chapter" id="screens">
+                <div class="chapter-meta"><span class="num">07</span><time datetime="2026-11-20">November 20–21</time></div>
+                <h2>Every screen in the house</h2>
+                <ul>
+                    <li><strong>Ratings everywhere</strong>: Rotten Tomatoes, Metacritic, IMDb and Letterboxd on posters and title pages, through MDBList.</li>
+                    <li>An <strong>Android app</strong> built with Kotlin, Jetpack Compose and Media3, for phones, tablets and Android TV.</li>
+                    <li><strong>Remote and cast</strong>: pick something on your phone, send it to the Mac in the living room, and control it from the couch. It runs through your own server, with no Chromecast needed.</li>
+                    <li>A <strong>mobile layout</strong> for small screens, and <strong>macOS Now Playing</strong>: media keys, AirPods and Control Center drive the player.</li>
+                </ul>
+                <p>The website got fresh screenshots, and then the redesign you are reading now.</p>
+                <div class="commits"><a href="https://github.com/Kanakjr/homebot-cinema/commit/c9f43333">c9f4333 ratings</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/7d8de5ab">7d8de5a Android and remote</a><a href="https://github.com/Kanakjr/homebot-cinema/commit/b18cf50a">b18cf50 Now Playing</a></div>
+            </section>
+
+            <section class="chapter" id="rules">
+                <div class="chapter-meta"><span class="num">08</span><span>Throughout</span></div>
+                <h2>What stayed true</h2>
+                <p>Moving this fast only works with a few rules that never bend. These held from the first commit to the last:</p>
+                <ul>
+                    <li><strong>The AI suggests; people decide.</strong> The copilot stages, a person confirms, and kids profiles can't stage at all.</li>
+                    <li><strong>No sources in the repository.</strong> A test fails the build if one sneaks in.</li>
+                    <li><strong>Fail closed.</strong> No valid sign-in, no access. The developer login only works in development mode.</li>
+                    <li><strong>Small core, optional plugins.</strong> If it isn't needed by every household, it's a plugin.</li>
+                    <li><strong>Every backend change ships with a test.</strong> There are 69 test files today.</li>
+                </ul>
+                <p>Much of the work ran in parallel branches with AI coding agents as pair programmers. <code>AGENTS.md</code>, at the root and in every plugin, is the map they read first, and the guardrail tests keep everyone, human or not, inside the lines.</p>
+            </section>
+
+            <section class="chapter" id="next">
+                <div class="chapter-meta"><span class="num">09</span><span>Next</span></div>
+                <h2>What's next</h2>
+                <ul>
+                    <li>Signing and notarizing the Mac app, and bundling libmpv so Homebrew isn't needed.</li>
+                    <li>Windows and Linux desktop apps on the same design.</li>
+                    <li>A real merge with upstream Stremio Web, now that the tooling to track our changes is in place.</li>
+                    <li>Skip times for anime, and fewer outside services over time.</li>
+                </ul>
+                <p>Want to follow along or help? The code, the issues and the guides are all <a href="https://github.com/Kanakjr/homebot-cinema">on GitHub</a>.</p>
+            </section>
+        </article>
+    </div>
+
+    <section class="final">
+        <div class="container narrow">
+            <img src="brand/icon.svg" alt="" width="64" height="64">
+            <h2>Run it at home.</h2>
+            <p>Five commands and a Docker host.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="./#start">Get started</a>
+                <a class="btn btn-ghost" href="./#demo">Watch the demo</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a class="logo" href="./"><img src="brand/icon.svg" alt="" width="28" height="28"><span>HomeBot <b>Cinema</b></span></a>
+                <p>A private, self-hosted media hub for the whole household.</p>
+            </div>
+            <div>
+                <h4>Project</h4>
+                <ul>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema">GitHub</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/releases">Releases</a></li>
+                    <li><a href="story.html">Story</a></li>
+                    <li><a href="./#demo">Demo video</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Docs</h4>
+                <ul>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema#readme">README</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md">Plugin guide</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/native-apps.md">Native apps</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/third-party-services.md">Outside services</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/CONTRIBUTING.md">Contributing</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/issues">Issues</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/security">Security</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/AGENTS.md">AGENTS.md</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="legal">
+            <p>Built on <a href="https://github.com/Stremio/stremio-web">Stremio Web</a> by Smart Code OOD. HomeBot Cinema is independent and not affiliated with or endorsed by Stremio.</p>
+            <p>This product uses the TMDB API but is not endorsed or certified by TMDB. Posters and artwork belong to their owners.</p>
+            <p>Released under the GNU General Public License v2.0. HomeBot Cinema does not host or provide any media.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>
