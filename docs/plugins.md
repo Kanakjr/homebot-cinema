@@ -17,6 +17,7 @@ a plugin off removes its routes, its UI and its background work. Core never impo
 | `remote` | Push-to-play casting and real-time remote control between devices (e.g. Android phone to Mac Mini) | on | nothing |
 | `mdblist` | Rotten Tomatoes (Tomatometer & Audience), Metacritic, IMDb and Letterboxd ratings on movie and series pages | on | `MDBLIST_API_KEY` |
 | `getapp` | Signed-in download page (`/api/getapp/`) for the installers in `data/plugin-data/getapp/` (`.dmg`, `.apk`, optional `screenshot.png`), with setup steps per platform | off | nothing |
+| `livesubs` | AI subtitles generated live by Whisper for torrents and library files: transcribes ahead of the playhead, draws the lines in the player, More menu switch (prototype) | off | `LIVESUBS_WHISPER_URL` (a whisper.cpp server) |
 | `ai` | AI copilot drawer (sparkle button): recommendations, server questions, staged downloads | off | `GEMINI_API_KEY` |
 | `telegram` | Household alerts (for example Sentinel queued an episode) to a Telegram chat | off | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
 | `gdrive` | Mounted cloud folders as extra library roots, plus a plan for moving watched files there | off | `LIBRARY_EXTRA_MOVIES_DIRS` / `LIBRARY_EXTRA_TV_DIRS` |
@@ -100,7 +101,7 @@ nothing. Each contribution renders inside an error boundary: a crashing plugin h
 | `appOverlays` | `{ id, Component }` | Always mounted (drawers, toasters) |
 | `navButtons` | `{ id, order, Component({ className, iconClassName }) }` | Top bar, left of the profile menu |
 | `discoverActions` | `{ id, Component({ className }) }` | Discover header |
-| `playerOverlays` | `{ id, Component(props) }`: `title`, `showName`, `type`, `metaId`, `videoId`, `poster`, `stream`, `streamUrl`, `timeMs`, `durationMs` (ms), `paused`, `live`, `controlsHidden`, `menusOpen`, `hasNextVideo`, `seekTo(ms)`, `playNext()`, `reportCreditsStart(ms \| null)`, `reportMarks([{ start, end, label }] \| null)` | Player, above the control bar, below popups and menus |
+| `playerOverlays` | `{ id, Component(props) }`: `title`, `showName`, `type`, `metaId`, `videoId`, `poster`, `stream`, `streamUrl`, `subtitlesOn` (a real subtitle track is shown), `timeMs`, `durationMs` (ms), `paused`, `live`, `controlsHidden`, `menusOpen`, `hasNextVideo`, `seekTo(ms)`, `playNext()`, `reportCreditsStart(ms \| null)`, `reportMarks([{ start, end, label }] \| null)` | Player, above the control bar, below popups and menus |
 | `playerControls` | `{ id, Component({ stream }) }` | Player bottom-right control bar, with playback buttons |
 | `playerMenuItems` | `{ id, Component({ stream, Option, closeMenu }) }`: render `<Option icon label onClick />` rows | Player "More" menu, after the built-in options |
 | `settingsSections` | `{ id, label, Component }` (forwardRef to a Settings `Section`) | Settings, after General, with a menu entry |

@@ -200,6 +200,7 @@ you switch on or off, so you run only what you want:
 | `controllers` | Settings > Controllers for game controllers in the macOS desktop app: presets, remapping, battery notices | on |
 | `remote` | Push-to-play casting and real-time remote control between household devices (e.g. phone to Mac Mini) | on |
 | `mdblist` | Rotten Tomatoes, Metacritic, IMDb and Letterboxd ratings on title pages and poster cards | on |
+| `livesubs` | AI subtitles while you watch (local Whisper, prototype) | off |
 | `ai` | The AI copilot (Gemini) | off |
 | `telegram` | Alerts to a Telegram chat | off |
 | `gdrive` | Google Drive (rclone) folders as extra library roots | off |

@@ -1224,6 +1224,7 @@ const Player = () => {
                 stream={player.selected?.stream ?? null}
                 videoId={urlParams.videoId ?? null}
                 streamUrl={player.selected?.stream?.url ?? null}
+                subtitlesOn={(video.state.selectedSubtitlesTrackId ?? null) !== null || (selectedExtraSubtitleTrackId ?? null) !== null}
                 timeMs={video.state.time}
                 durationMs={video.state.duration}
                 paused={video.state.paused}
