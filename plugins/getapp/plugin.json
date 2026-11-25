@@ -1,0 +1,13 @@
+{
+    "id": "getapp",
+    "name": "Get the app",
+    "description": "A signed-in download page (/api/getapp/) for the household's app installers, with setup steps for each platform.",
+    "version": "0.1.0",
+    "defaultEnabled": false,
+    "env": [
+        {
+            "name": "GETAPP_TITLE",
+            "description": "Page heading (default \"Get the app\")."
+        }
+    ]
+}
