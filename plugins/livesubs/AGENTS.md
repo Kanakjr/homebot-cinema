@@ -11,8 +11,9 @@ Whisper transcribes the audio of the stream ahead of the viewer and the player o
 - `server/whisper.js`: client for whisper.cpp `whisper-server` (`POST /inference`, verbose_json).
 - Sources: torrents (`infoHash` + `fileIdx`, read through the streaming server) and library files (`lf_<id>`, must pass
   `isInsideRoots`). Plain URL streams are refused on purpose (the server would fetch any address a client names).
-- UI: `ui/LiveSubsOverlay.js` (playerOverlays: open, poll every 2 s = heartbeat, draw the cue), `ui/MenuItem.js`
-  (More menu: On / Off), shared switch in `ui/store.js` (localStorage).
+- UI: "AI · live" row in the player's subtitles menu (slot `subtitleSources`, `ui/index.js`; offered for torrents and
+  server files, never on by default, OFF or a real track turns it off) and `ui/LiveSubsOverlay.js` (playerOverlays: runs
+  only while `subtitleSource === 'livesubs'`; open, poll every 2 s = heartbeat, draw the cue).
 - Whisper runs natively on the host for the GPU: `whisper-server -m ggml-large-v3-turbo.bin --vad -vm ggml-silero-*.bin
   --host 127.0.0.1 --port 18765`; the container reaches it at `http://host.docker.internal:18765`. `large-v3-turbo`
   ignores Whisper's translate task, so the UI offers no "Translate to English" yet (the server still accepts

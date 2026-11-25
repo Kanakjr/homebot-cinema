@@ -34,3 +34,27 @@ describe('livesubs UI logic', () => {
         expect(L.isSeek(10, 0, 3, 1000, true)).toBe(true);
     });
 });
+
+describe('livesubs subtitles-menu source', () => {
+    const host = require('../../../src/plugins/host');
+    const ui = require('../ui');
+    const { availableSources } = require('../../../src/routes/Player/usePluginSubtitleSources');
+
+    test('exports only known slots: a subtitle source and an overlay, no always-on switch', () => {
+        expect(Object.keys(ui).sort()).toEqual(['playerOverlays', 'subtitleSources']);
+        Object.keys(ui).forEach((k) => expect(host.SLOTS).toContain(k));
+    });
+
+    test('offered for torrents and server files, not for plain web links', () => {
+        const list = host.slot('subtitleSources', { livesubs: ui }, ['livesubs']);
+        expect(availableSources(list, { infoHash: 'a'.repeat(40), fileIdx: 0 }).map((s) => s.label)).toEqual(['AI · live']);
+        expect(availableSources(list, { url: '/api/downloads/stream/lf_4' }).length).toBe(1);
+        expect(availableSources(list, { url: 'https://cdn.example/movie.mp4' })).toEqual([]);
+        expect(availableSources(list, null)).toEqual([]);
+    });
+
+    test('a source whose check throws is left out, not the whole menu', () => {
+        const list = [{ id: 'bad', label: 'Bad', available: () => { throw new Error('x'); } }, { id: 'ok', label: 'OK' }];
+        expect(availableSources(list, {}).map((s) => s.id)).toEqual(['ok']);
+    });
+});

@@ -23,7 +23,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/MetaDetails/StreamsList/StreamsList.js` | 277 | Quality-profile sort, swarm health, Save button (fork identity); Direct filter; "1 addon is still loading" (singular). |
 | `README.md` | 253 | Project README. |
 | `src/routes/MetaDetails/StreamsList/Stream/Stream.js` | 140 | Release details, swarm badge. |
-| `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays (incl. `subtitlesOn` for AI subtitles), Up Next at the credits start and seek-bar marks a plugin reports (skip intro); Escape closes an open menu/drawer before leaving the player; one Audio & subtitles panel (`AudioSubtitlesMenu`). |
+| `src/routes/Player/Player.js` | 181 | Server library playback, HUD notices, external player links; slot playerOverlays (incl. `subtitlesOn`, `subtitleSource`), plugin subtitle sources (`usePluginSubtitleSources`), Up Next at the credits start and seek-bar marks a plugin reports (skip intro); Escape closes an open menu/drawer before leaving the player; one Audio & subtitles panel (`AudioSubtitlesMenu`). |
 | `src/routes/Player/Error/Error.js` | 115 | Copy stream URL / open in external player. |
 | `.github/ISSUE_TEMPLATE/bug_report.yml` | 97 | Fork issue template. |
 | `src/index.html` | 95 | Boot screen and meta tags (branding); `referrer` meta (strict-origin-when-cross-origin). |
@@ -85,7 +85,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/ControlBar/ControlBar.js` | 11 | Small control changes; passes seek-bar marks to SeekBar; slot playerControls; one Audio & subtitles button. |
 | `src/routes/Player/useSubtitles.ts` | 367 | Dynamic acoustic subtitle matcher: probes audio voice envelope, runs batch FFT correlation matrix, auto-selects & retimes best add-on subtitle; fixed toggleSubtitles hotkey 'c'. |
 | `src/routes/Player/useSubtitles.d.ts` | 13 | Types for autoSyncInfo and onTriggerAutoSync in SubtitlesMenuProps and UseSubtitlesResult. |
-| `src/routes/Player/SubtitlesMenu/SubtitlesMenu.js` | 25 | Header auto-sync trigger button for external subtitles and matched badge binding. |
+| `src/routes/Player/SubtitlesMenu/SubtitlesMenu.js` | 25 | Header auto-sync trigger button for external subtitles and matched badge binding; plugin subtitle sources (slot subtitleSources) as rows under OFF. |
 | `src/routes/Player/SubtitlesMenu/styles.less` | 30 | Header auto-sync button styling and width adjustments. |
 | `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.tsx` | 4 | Displays matched badge for auto-synced subtitle variant. |
 | `src/routes/Player/SubtitlesMenu/SubtitleVariant/SubtitleVariant.less` | 13 | Styling for matched badge pill on variant item. |

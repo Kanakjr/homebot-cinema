@@ -8,6 +8,8 @@
 //   playerOverlays   { id, Component(player props) }                 -> over the video, above the control bar (src/routes/Player/Player.js)
 //   playerControls   { id, Component({ stream }) }                    -> player control bar, bottom right (src/routes/Player/ControlBar/ControlBar.js)
 //   playerMenuItems  { id, Component({ stream, Option, closeMenu }) } -> player "More" menu, after the built-in options (OptionsMenu.js)
+//   subtitleSources  { id, label, description, available(stream) }  -> player subtitles menu, rows under OFF; the chosen id
+//                    reaches playerOverlays as `subtitleSource` (src/routes/Player/usePluginSubtitleSources.js)
 //   settingsSections { id, label, Component (forwardRef) }           -> Settings, after General (Settings.tsx + Menu.tsx)
 //   adminTabs        { id, label, order, Component({ onError }) }      -> Admin, after Overview (src/routes/Admin/Admin.js)
 //   metaDetailsSections { id, Component({ type, id, videoId, meta }) } -> title page, under the description (MetaDetails.js)
@@ -17,7 +19,7 @@
 
 const registry = require('./registry');
 
-const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'playerOverlays', 'playerControls', 'playerMenuItems', 'settingsSections', 'adminTabs', 'metaDetailsSections', 'accents', 'serverLibraryTiles'];
+const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'playerOverlays', 'playerControls', 'playerMenuItems', 'subtitleSources', 'settingsSections', 'adminTabs', 'metaDetailsSections', 'accents', 'serverLibraryTiles'];
 
 let active = new Set();
 let loaded = false;

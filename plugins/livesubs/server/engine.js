@@ -234,6 +234,16 @@ function createEngine({
         return transcribers.get(key) || null;
     }
 
+    /** A viewer switched AI subtitles off or left: stop reading now and keep the text. Another viewer of the same
+     * source restarts reading with its next poll. */
+    function release(key) {
+        const t = transcribers.get(key);
+        if (!t) return false;
+        t.stopReader();
+        if (store) store.save(key, { cues: t.cues, ranges: t.ranges, language: t.detected });
+        return true;
+    }
+
     function sweep() {
         for (const [key, t] of transcribers) {
             const idle = now() - t.lastSeen;
@@ -252,7 +262,7 @@ function createEngine({
         for (const t of transcribers.values()) t.stopReader();
     }
 
-    return { open, get, sweep, close, transcribers };
+    return { open, get, release, sweep, close, transcribers };
 }
 
 const round = (x) => Math.round(x * 10) / 10;

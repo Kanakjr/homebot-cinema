@@ -44,6 +44,7 @@ const { default: useMediaSession } = require('./useMediaSession');
 const { default: ShortcutsModal } = require('./ShortcutsModal');
 const formatTime = require('./ControlBar/SeekBar/formatTime');
 const { PluginSlot } = require('stremio/plugins'); // HomeBot: slot playerOverlays (skip intro, ...)
+const { usePluginSubtitleSources } = require('./usePluginSubtitleSources'); // HomeBot: slot subtitleSources (AI subtitles)
 
 const GAMEPAD_HANDLER_ID = 'player';
 
@@ -220,6 +221,21 @@ const Player = () => {
         closeSubtitlesMenu,
         toggleSubtitlesMenu,
     });
+
+    // HomeBot: plugin subtitle sources (AI subtitles), chosen in the subtitles menu, never on by default
+    const subtitlesOn = (video.state.selectedSubtitlesTrackId ?? null) !== null || (selectedExtraSubtitleTrackId ?? null) !== null;
+    const pluginSubtitles = usePluginSubtitleSources({
+        stream: player.selected?.stream ?? null,
+        subtitlesOn,
+        onSubtitlesTrackSelected: subtitlesMenuProps.onSubtitlesTrackSelected,
+        onExtraSubtitlesTrackSelected: subtitlesMenuProps.onExtraSubtitlesTrackSelected,
+    });
+    const subtitlesMenuPropsWithSources = React.useMemo(() => ({
+        ...subtitlesMenuProps,
+        subtitleSources: pluginSubtitles.sources,
+        selectedSubtitleSource: pluginSubtitles.selected,
+        onSubtitleSourceSelected: pluginSubtitles.select,
+    }), [subtitlesMenuProps, pluginSubtitles.sources, pluginSubtitles.selected, pluginSubtitles.select]);
 
     const playingOnExternalDevice = React.useRef(false);
     const { castToDevice, stopBeforeLocalPlay, isCasting } = useCastDevice(castStreamingUrl, streamingServer.casting, video, playingOnExternalDevice);
@@ -1224,7 +1240,8 @@ const Player = () => {
                 stream={player.selected?.stream ?? null}
                 videoId={urlParams.videoId ?? null}
                 streamUrl={player.selected?.stream?.url ?? null}
-                subtitlesOn={(video.state.selectedSubtitlesTrackId ?? null) !== null || (selectedExtraSubtitleTrackId ?? null) !== null}
+                subtitlesOn={subtitlesOn}
+                subtitleSource={pluginSubtitles.selected}
                 timeMs={video.state.time}
                 durationMs={video.state.duration}
                 paused={video.state.paused}
@@ -1288,7 +1305,7 @@ const Player = () => {
                     audioTracks={video.state.audioTracks}
                     selectedAudioTrackId={video.state.selectedAudioTrackId}
                     onAudioTrackSelected={onAudioTrackSelected}
-                    subtitlesMenuProps={subtitlesMenuProps}
+                    subtitlesMenuProps={subtitlesMenuPropsWithSources}
                 />
             </Transition>
             <Transition when={speedMenuOpen} name={'fade'}>

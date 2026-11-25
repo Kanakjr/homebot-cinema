@@ -3,6 +3,7 @@
 //   POST /api/livesubs/open { infoHash, fileIdx } | { file: 'lf_12' }, position (s), language?, translate?
 //        -> { id, status }            starts (or joins) transcription from the viewer's position
 //   GET  /api/livesubs/:id?pos=&from=&to=  -> { cues: [{ start, end, text }], status }   also the playhead heartbeat
+//   POST /api/livesubs/:id/close           -> stop reading now (AI subtitles switched off or player closed)
 //   GET  /api/livesubs/:id/vtt             -> everything transcribed so far, as WebVTT
 //   GET  /api/livesubs/health              -> { whisper: true|false }
 // Audio is read through the streaming server (torrents) or from the library file; Whisper runs on a whisper.cpp server
@@ -116,6 +117,14 @@ function register(ctx, { engine: injectedEngine, fetchImpl } = {}) {
         const id = crypto.createHash('sha1').update(key).digest('hex').slice(0, 16);
         ids.set(id, key);
         res.json({ id, status: t.status() });
+    });
+
+    // the viewer switched AI subtitles off (or left the player): stop reading the stream now
+    ctx.app.post('/api/livesubs/:id/close', (req, res) => {
+        res.set('Cache-Control', 'private, no-store');
+        const key = ids.get(req.params.id);
+        if (!key || !engine.release(key)) return res.status(404).json({ error: 'not_found' });
+        res.json({ ok: true });
     });
 
     ctx.app.get('/api/livesubs/:id/vtt', (req, res) => {

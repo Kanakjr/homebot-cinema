@@ -1,30 +1,32 @@
 // Copyright (C) 2017-2026 HomeBot Cinema
-// Plugin "livesubs": the player overlay (slot playerOverlays). When AI subtitles are on, it asks the server to transcribe
-// from the current position, polls for cues (the poll is also the playhead heartbeat) and draws the line on screen.
+// Plugin "livesubs": the player overlay (slot playerOverlays). While "AI · live" is the chosen subtitle source (picked in
+// the subtitles menu, slot subtitleSources) it asks the server to transcribe from the current position, polls for cues
+// (the poll is also the playhead heartbeat) and draws the line on screen.
 
 const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { api } = require('stremio/common/serverApi');
 const L = require('./logic');
-const store = require('./store');
 const styles = require('./LiveSubsOverlay.less');
 
 const POLL_MS = 2000;
 const KEEP_SEC = 600; // cues kept around the playhead
+const SOURCE_ID = 'livesubs';
 
-const LiveSubsOverlay = ({ stream, streamUrl, subtitlesOn, timeMs, durationMs, paused, live, controlsHidden }) => {
-    const mode = store.useMode();
+const LiveSubsOverlay = ({ stream, streamUrl, subtitleSource, subtitlesOn, timeMs, durationMs, paused, live, controlsHidden }) => {
     const src = L.sourceOf(stream, streamUrl);
     const key = L.sourceKey(src);
-    // a real subtitle track always wins: while one is shown we neither draw nor transcribe (no two lines in one place)
-    const ready = mode !== 'off' && !!src && !live && !subtitlesOn && Number.isFinite(durationMs) && durationMs > 0;
+    // only when the viewer chose it; a real subtitle track always wins (no two lines in one place)
+    const ready = subtitleSource === SOURCE_ID && !!src && !live && !subtitlesOn && Number.isFinite(durationMs) && durationMs > 0;
 
     const [session, setSession] = React.useState(null);
     const [cues, setCues] = React.useState([]);
     const [status, setStatus] = React.useState(null);
     const timeRef = React.useRef(0);
     timeRef.current = (Number(timeMs) || 0) / 1000;
+    // bumped when the server no longer knows our session (it restarted, e.g. a deploy): open a new one
+    const [epoch, setEpoch] = React.useState(0);
 
     React.useEffect(() => {
         setSession(null);
@@ -36,7 +38,7 @@ const LiveSubsOverlay = ({ stream, streamUrl, subtitlesOn, timeMs, durationMs, p
             .then((r) => { if (alive) { setSession(r.id); setStatus(r.status); } })
             .catch((e) => { if (alive) setStatus({ state: 'error', error: e.message }); });
         return () => { alive = false; };
-    }, [ready, key, mode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [ready, key, epoch]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const inFlight = React.useRef(false);
     const poll = React.useCallback(() => {
@@ -48,7 +50,10 @@ const LiveSubsOverlay = ({ stream, streamUrl, subtitlesOn, timeMs, durationMs, p
                 setStatus(r.status);
                 setCues((held) => L.mergeWindow(held, r.cues || []).filter((c) => Math.abs(c.start - timeRef.current) < KEEP_SEC));
             })
-            .catch((e) => setStatus({ state: 'error', error: e.message }))
+            .catch((e) => {
+                if (e.status === 404) setEpoch((n) => n + 1);
+                else setStatus({ state: 'error', error: e.message });
+            })
             .finally(() => { inFlight.current = false; });
     }, [session]);
 
@@ -56,7 +61,11 @@ const LiveSubsOverlay = ({ stream, streamUrl, subtitlesOn, timeMs, durationMs, p
         if (!session) return undefined;
         poll();
         const iv = setInterval(poll, POLL_MS);
-        return () => clearInterval(iv);
+        return () => {
+            clearInterval(iv);
+            // switched off, another stream, or the player closed: the server stops reading at once
+            api('POST', `/api/livesubs/${session}/close`).catch(() => { /* it stops by itself after 90 s */ });
+        };
     }, [session, poll]);
 
     // a seek: tell the server straight away so it starts transcribing at the new position
@@ -96,6 +105,7 @@ const LiveSubsOverlay = ({ stream, streamUrl, subtitlesOn, timeMs, durationMs, p
 LiveSubsOverlay.propTypes = {
     stream: PropTypes.object,
     streamUrl: PropTypes.string,
+    subtitleSource: PropTypes.string,
     subtitlesOn: PropTypes.bool,
     timeMs: PropTypes.number,
     durationMs: PropTypes.number,

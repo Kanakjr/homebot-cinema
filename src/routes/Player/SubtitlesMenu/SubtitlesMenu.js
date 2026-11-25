@@ -87,6 +87,10 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
         event.nativeEvent.subtitlesMenuClosePrevented = true;
     }, []);
     const subtitlesLanguageOnClick = React.useCallback((event) => {
+        // HomeBot: OFF or a real language also turns off a plugin subtitle source (AI subtitles)
+        if (typeof props.onSubtitleSourceSelected === 'function') {
+            props.onSubtitleSourceSelected(null);
+        }
         const tracks = allSubtitles.filter(({ lang }) => lang === event.currentTarget.dataset.lang);
         const track = sortByValues(tracks, ORIGIN_PRIORITIES).shift();
 
@@ -106,7 +110,16 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
                 props.onExtraSubtitlesTrackSelected(track);
             }
         }
-    }, [allSubtitles, props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected]);
+    }, [allSubtitles, props.onSubtitlesTrackSelected, props.onExtraSubtitlesTrackSelected, props.onSubtitleSourceSelected]);
+    // HomeBot: plugin subtitle sources (slot subtitleSources) are rows under OFF; the chosen one replaces any track
+    const selectedSource = React.useMemo(() => (
+        (props.subtitleSources || []).find((s) => s.id === props.selectedSubtitleSource) || null
+    ), [props.subtitleSources, props.selectedSubtitleSource]);
+    const subtitleSourceOnClick = React.useCallback((event) => {
+        if (typeof props.onSubtitleSourceSelected === 'function') {
+            props.onSubtitleSourceSelected(event.currentTarget.dataset.source);
+        }
+    }, [props.onSubtitleSourceSelected]);
     const subtitlesTrackOnSelect = React.useCallback((track) => {
         if (track.embedded) {
             if (typeof props.onSubtitlesTrackSelected === 'function') {
@@ -163,15 +176,26 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
             <div className={styles['languages-container']}>
                 <div className={styles['languages-header']}>{ t('PLAYER_SUBTITLES_LANGUAGES') }</div>
                 <div className={styles['languages-list']}>
-                    <Button title={t('OFF')} className={classnames(styles['language-option'], { 'selected': selectedSubtitlesLanguage === null })} onClick={subtitlesLanguageOnClick}>
+                    <Button title={t('OFF')} className={classnames(styles['language-option'], { 'selected': selectedSubtitlesLanguage === null && !selectedSource })} onClick={subtitlesLanguageOnClick}>
                         <div className={styles['language-label']}>{ t('OFF') }</div>
                         {
-                            selectedSubtitlesLanguage === null ?
+                            selectedSubtitlesLanguage === null && !selectedSource ?
                                 <div className={styles['icon']} />
                                 :
                                 null
                         }
                     </Button>
+                    {(props.subtitleSources || []).map((source) => (
+                        <Button key={`source-${source.id}`} title={source.description || source.label} className={classnames(styles['language-option'], { 'selected': props.selectedSubtitleSource === source.id })} data-source={source.id} onClick={subtitleSourceOnClick}>
+                            <div className={styles['language-label']}>{ source.label }</div>
+                            {
+                                props.selectedSubtitleSource === source.id ?
+                                    <div className={styles['icon']} />
+                                    :
+                                    null
+                            }
+                        </Button>
+                    ))}
                     {subtitlesLanguages.map((lang, index) => (
                         <Button key={index} title={languages.label(lang)} className={classnames(styles['language-option'], { 'selected': selectedSubtitlesLanguage === lang })} data-lang={lang} onClick={subtitlesLanguageOnClick}>
                             <div className={styles['language-label']}>
@@ -219,7 +243,7 @@ const SubtitlesMenu = React.memo(React.forwardRef((props, ref) => {
                         :
                         <div className={styles['no-variants-container']}>
                             <div className={styles['no-variants-label']}>
-                                { t('PLAYER_SUBTITLES_DISABLED') }
+                                { selectedSource ? (selectedSource.description || selectedSource.label) : t('PLAYER_SUBTITLES_DISABLED') }
                             </div>
                         </div>
                 }
@@ -306,6 +330,13 @@ SubtitlesMenu.propTypes = {
     extraSubtitlesDelay: PropTypes.number,
     extraSubtitlesSize: PropTypes.number,
     assSubtitlesStylingActive: PropTypes.bool,
+    subtitleSources: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        label: PropTypes.string.isRequired,
+        description: PropTypes.string
+    })),
+    selectedSubtitleSource: PropTypes.string,
+    onSubtitleSourceSelected: PropTypes.func,
     onSubtitlesTrackSelected: PropTypes.func,
     onExtraSubtitlesTrackSelected: PropTypes.func,
     onSubtitlesOffsetChanged: PropTypes.func,

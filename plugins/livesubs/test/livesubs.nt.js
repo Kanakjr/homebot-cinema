@@ -11,7 +11,7 @@ const C = require('../server/cues');
 const { createEngine, ffmpegArgs } = require('../server/engine');
 
 const pcm = (sec) => Buffer.alloc(Math.round(sec * C.BYTES_PER_SEC));
-const tick = () => new Promise((r) => setTimeout(r, 15));
+const tick = () => new Promise((r) => setTimeout(r, 60)); // generous: the engine hops through setImmediate and fake Whisper promises
 const QUIET = { warn: () => undefined };
 
 function fakeSpawn() {
@@ -269,4 +269,36 @@ test('a real "Thank you." survives when Whisper is sure someone spoke; speaker d
         { start: 4, end: 5, text: ' - Uh-huh.', no_speech_prob: 0.01 },
     ]);
     assert.deepEqual(cues.map((c) => c.text), ['Thank you.', 'Uh-huh.']);
+});
+
+test('engine: release stops reading at once and keeps the text; the next poll restarts it', async () => {
+    const sp = fakeSpawn();
+    const saved = [];
+    const engine = createEngine({ whisper: fakeWhisper(), spawn: sp.spawn, log: QUIET, store: { load: () => null, save: (k, v) => saved.push([k, v.cues.length]) } });
+    const t = engine.open({ key: 'k', input: 'http://ss/abc/0', position: 0 });
+    sp.procs[0].stdout.write(pcm(9));
+    await tick();
+    assert.equal(engine.release('k'), true);
+    assert.equal(sp.procs[0].killed, true);
+    assert.deepEqual(saved, [['k', 1]]);
+    t.touch(12);
+    assert.equal(sp.procs.length, 2, 'another viewer still watching restarts reading');
+    assert.equal(engine.release('nope'), false);
+    engine.close();
+});
+
+test('POST /api/livesubs/:id/close releases the source; unknown ids are 404', async () => {
+    const app = express();
+    app.use(express.json());
+    const released = [];
+    const fakeT = { cues: [], touch: () => undefined, status: () => ({ state: 'working' }) };
+    const engine = { open: () => fakeT, get: () => fakeT, release: (k) => { released.push(k); return true; } };
+    const { ctx } = fakeCtx({ id: 'livesubs', app, db: openDb(':memory:', ':memory:'), env: { LIVESUBS_WHISPER_URL: 'http://w', STREMIO_SERVER_HOST: 'ss' } });
+    register(ctx, { engine });
+    await withServer(app, async (base) => {
+        const { id } = await (await fetch(`${base}/api/livesubs/open`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ infoHash: 'c'.repeat(40), fileIdx: 1 }) })).json();
+        assert.equal((await fetch(`${base}/api/livesubs/${id}/close`, { method: 'POST' })).status, 200);
+        assert.equal(released.length, 1);
+        assert.equal((await fetch(`${base}/api/livesubs/0000000000000000/close`, { method: 'POST' })).status, 404);
+    });
 });
