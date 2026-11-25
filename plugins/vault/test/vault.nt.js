@@ -315,7 +315,7 @@ test('routes: wrong passcodes lock out for 15 minutes; changing the passcode nee
     }
 });
 
-test('routes: admin only; delete removes the video and its cover image', async () => {
+test('routes: admin only; delete removes the video, never a same-name image', async () => {
     const member = await boot({ admin: false });
     try {
         assert.equal((await member.call('GET', '/api/vault/status')).status, 403);
@@ -330,7 +330,7 @@ test('routes: admin only; delete removes the video and its cover image', async (
         assert.equal((await t.call('DELETE', `/api/vault/files/${beach.id}`)).status, 401);
         assert.equal((await t.call('DELETE', `/api/vault/files/${beach.id}`, { token })).status, 200);
         assert.ok(!fs.existsSync(path.join(t.dir, 'Trips', '2024', 'beach.mp4')));
-        assert.ok(!fs.existsSync(path.join(t.dir, 'Trips', '2024', 'beach.jpg')), 'cover image too');
+        assert.ok(fs.existsSync(path.join(t.dir, 'Trips', '2024', 'beach.jpg')), 'a same-name image is never deleted (it can be a photo of its own)');
         assert.ok(fs.existsSync(path.join(t.dir, 'Trips', 'hike.mov')), 'nothing else');
         assert.equal((await t.call('GET', '/api/vault/browse?q=beach', { token })).json.files.length, 0);
         assert.equal((await t.call('DELETE', `/api/vault/files/${beach.id}`, { token })).status, 404);

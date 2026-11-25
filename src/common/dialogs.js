@@ -62,7 +62,8 @@ const Dialog = ({ kind, title, message, label, initial, placeholder, confirmLabe
 
     return (
         <div className={styles['overlay']} onMouseDown={(e) => { if (e.target === e.currentTarget) finish(false); }}>
-            <div ref={boxRef} className={styles['dialog']} role={'alertdialog'} aria-modal={'true'} aria-labelledby={'cinema-dialog-title'}>
+            {/* data-gamepad-modal: the Mac app's controller navigation keeps focus inside (gamepad_shim.js getScope) */}
+            <div ref={boxRef} className={styles['dialog']} role={'alertdialog'} aria-modal={'true'} aria-labelledby={'cinema-dialog-title'} data-gamepad-modal={''}>
                 <div id={'cinema-dialog-title'} className={styles['title']}>{title}</div>
                 {message ? <div className={styles['message']}>{message}</div> : null}
                 {isPrompt ? (

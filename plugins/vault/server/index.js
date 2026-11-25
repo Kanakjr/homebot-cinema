@@ -14,6 +14,7 @@ const { registerRoutes } = require('./routes');
 const { under } = require('./media');
 
 const SCAN_EVERY_MS = 6 * 3600 * 1000;
+const THUMBS_DIR = '.cinema-thumbs';
 
 const real = (p) => {
     try { return fs.realpathSync(p); } catch (_) { return path.resolve(p); }
@@ -46,16 +47,22 @@ function register(ctx, { now = () => Date.now(), run, timers = true } = {}) {
     const data = ctx.dataDir();
     const store = createStore({ raw: ctx.db.raw, root, now });
     const sessions = createSessions({ secret: loadSecret(data), now, idleMs: autolockMin * 60 * 1000 });
-    const thumbs = createThumbs({ dir: path.join(data, 'thumbs'), store, ...(run ? { run } : {}), log: ctx.log });
+    // thumbnails live on the locked drive (hidden, skipped by the scan), never in data/: backups of data/ may go to the cloud
+    const thumbs = createThumbs({ dir: path.join(root, THUMBS_DIR), store, ...(run ? { run } : {}), log: ctx.log });
 
     let lastScan = 0;
     const rescan = ({ ifOlderThanMs = 0 } = {}) => {
         if (ifOlderThanMs && now() - lastScan < ifOlderThanMs) return;
         lastScan = now();
         setImmediate(() => {
+            const t0 = Date.now();
             const st = store.scan();
             if (st.error) ctx.log.warn(`scan failed: ${st.error}`);
-            else if (st.online) thumbs.fill();
+            else if (!st.online) ctx.log.info('scan skipped: folder not connected or no .cinema-root marker');
+            else {
+                ctx.log.info(`scan: ${st.files} videos in ${Date.now() - t0} ms (+${st.added} / -${st.removed})`); // counts only, never names
+                thumbs.fill();
+            }
         });
     };
 

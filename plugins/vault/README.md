@@ -13,6 +13,10 @@ What it never does:
 It hides the files **in the app**. They are not encrypted on disk: anyone who can open the folder on the server itself
 can see them.
 
+Where its data lives: thumbnails in a hidden `.cinema-thumbs` folder inside the locked folder itself (so they never sit in
+`data/`), and the index (file names, sizes, resume points) and the hashed passcode in `data/cinema.db`. If you back up
+`data/` to the cloud, file names go with it; exclude `data/plugin-data/vault/` too (it holds the signing key).
+
 ## Set it up
 1. Pick a folder **outside** your movie/TV folders and outside `MEDIA_ROOTS`, and put an empty marker file in it, so an
    unplugged drive is never mistaken for "everything deleted":

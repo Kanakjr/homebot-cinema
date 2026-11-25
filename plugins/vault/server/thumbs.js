@@ -1,23 +1,29 @@
 'use strict';
 // Thumbnails for the Locked folder, made on this server only (nothing is looked up online): the same-name cover image
-// when a video has one, else one frame grabbed with ffmpeg. ffprobe also gives the duration. Files: <dataDir>/thumbs/<id>.jpg.
+// when a video has one, else one frame grabbed with ffmpeg. ffprobe also gives the duration. Files: <dir>/<id>.jpg, where
+// dir is a hidden folder on the locked drive itself (VAULT_DIR/.cinema-thumbs), so private frames never sit in data/
+// (which backups may copy to the cloud). The folder is only created while the drive is connected.
 // A request for a missing thumbnail jumps the queue; the rest are made in the background, two at a time.
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { execFile } = require('child_process');
 const { resolveInside, sidecarImage } = require('./media');
 
 const SCALE = 'scale=480:-2';
 
-function execFileP(cmd, args, { timeout = 30000 } = {}) {
+function execFileP(cmd, args, { timeout = 30000, nice = 0 } = {}) {
     return new Promise((resolve, reject) => {
-        execFile(cmd, args, { timeout, maxBuffer: 1024 * 1024 }, (err, stdout) => (err ? reject(err) : resolve(String(stdout || ''))));
+        const child = execFile(cmd, args, { timeout, maxBuffer: 1024 * 1024 }, (err, stdout) => (err ? reject(err) : resolve(String(stdout || ''))));
+        // thumbnails must not slow down playback or the streaming server's transcodes
+        if (nice && child && child.pid) {
+            try { os.setPriority(child.pid, nice); } catch (_) { /* not allowed here: run at normal priority */ }
+        }
     });
 }
 
 function createThumbs({ dir, store, run = execFileP, concurrency = 2, waitMs = 20000, log = console }) {
-    fs.mkdirSync(dir, { recursive: true });
     const fileOf = (id) => path.join(dir, `${Number(id)}.jpg`);
     const jobs = new Map(); // id -> promise (made or failed)
     const urgent = [];
@@ -27,7 +33,7 @@ function createThumbs({ dir, store, run = execFileP, concurrency = 2, waitMs = 2
 
     async function probeDuration(src) {
         try {
-            const out = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', src], { timeout: 20000 });
+            const out = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', src], { timeout: 20000, nice: 10 });
             const s = Number(String(out).trim());
             return Number.isFinite(s) && s > 0 ? Math.round(s * 1000) : null;
         } catch (_) {
@@ -39,13 +45,15 @@ function createThumbs({ dir, store, run = execFileP, concurrency = 2, waitMs = 2
         const src = resolveInside(store.root, row.rel_path);
         if (!src) throw new Error('missing');
         const durationMs = await probeDuration(src);
+        if (!store.online()) throw new Error('drive not connected');
+        fs.mkdirSync(dir, { recursive: true });
         const out = fileOf(row.id);
         const tmp = `${out}.tmp.jpg`;
         const side = sidecarImage(src);
-        const grab = (at) => run('ffmpeg', ['-y', '-v', 'error', '-ss', at.toFixed(2), '-i', src, '-frames:v', '1', '-vf', SCALE, '-q:v', '5', tmp], { timeout: 30000 });
+        const grab = (at) => run('ffmpeg', ['-y', '-v', 'error', '-ss', at.toFixed(2), '-i', src, '-frames:v', '1', '-vf', SCALE, '-q:v', '5', tmp], { timeout: 30000, nice: 10 });
         try {
             if (side) {
-                await run('ffmpeg', ['-y', '-v', 'error', '-i', side, '-frames:v', '1', '-vf', SCALE, '-q:v', '5', tmp], { timeout: 20000 });
+                await run('ffmpeg', ['-y', '-v', 'error', '-i', side, '-frames:v', '1', '-vf', SCALE, '-q:v', '5', tmp], { timeout: 20000, nice: 10 });
             } else {
                 // 10% in (at most a minute) skips black intros; very short or odd files fall back to the first frame
                 const at = durationMs ? Math.min((durationMs / 1000) * 0.1, 60) : 1;
@@ -109,7 +117,7 @@ function createThumbs({ dir, store, run = execFileP, concurrency = 2, waitMs = 2
         const out = fileOf(id);
         if (fs.existsSync(out)) return out;
         const row = store.get(id);
-        if (!row || row.thumb_state < 0) return null;
+        if (!row || row.thumb_state < 0 || !store.online()) return null;
         const s = start(id);
         if (s.task) {
             urgent.push(s.task);

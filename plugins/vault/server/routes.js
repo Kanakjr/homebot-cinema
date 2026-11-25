@@ -9,7 +9,8 @@ const path = require('path');
 const S = require('./secrets');
 const { VIDEO, extOf, webPlayable, resolveInside, sendFile } = require('./media');
 
-const SIDECAR_EXT = ['jpg', 'jpeg', 'png', 'webp', 'json', 'info.json', 'nfo', 'srt', 'vtt', 'description'];
+// text files a downloader leaves next to a video. Never images: a same-name .jpg can be a photo of its own (Live Photos).
+const SIDECAR_EXT = ['json', 'info.json', 'nfo', 'srt', 'vtt', 'description'];
 
 function registerRoutes({ app, auth, store, sessions, thumbs, audit, now = () => Date.now(), autolockMin, rescan }) {
     const noStore = (_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); };
@@ -172,7 +173,7 @@ function registerRoutes({ app, auth, store, sessions, thumbs, audit, now = () =>
             } catch (_) {
                 return bad(res, 500, 'delete_failed');
             }
-            // the same-name cover image / info file some downloaders leave next to a video
+            // the same-name info / subtitle files some downloaders leave next to a video (never an image)
             const base = file.slice(0, file.length - path.extname(file).length);
             for (const ext of SIDECAR_EXT) {
                 const side = `${base}.${ext}`;

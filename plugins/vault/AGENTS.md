@@ -22,11 +22,13 @@ owner profile** only. It is a folder + thumbnail gallery with its **own index**,
 - `store.js`: tables `vault_config`, `vault_files` (rel_path, folder, name, size, mtime, duration_ms, thumb_state 0/1/-1),
   `vault_progress`. Scan = walk `VAULT_DIR` (videos only, ≥ 50 KB, no hidden/`._` files). Online needs the `.cinema-root`
   marker; offline or an unlistable sub-folder never drops rows.
-- `thumbs.js`: same-name cover image, else a frame 10% in (max 60 s), `scale=480:-2`; on-demand requests jump the queue;
-  background fill, 2 at a time; failures are remembered (`thumb_state = -1`).
+- `thumbs.js`: same-name cover image, else a frame 10% in (max 60 s), `scale=480:-2`, at low CPU priority; on-demand
+  requests jump the queue; background fill, 2 at a time; failures are remembered (`thumb_state = -1`). Stored on the locked
+  drive itself in `VAULT_DIR/.cinema-thumbs/` (hidden, so the scan skips it; created only while the drive is online), never
+  in `data/`, which backups may copy to the cloud. File names do live in `cinema.db` (`vault_files`).
 - `routes.js`: `status`, `setup`, `unlock`, `lock`, `browse?folder=&q=&sort=`, `thumb/:id?vt=`, `link/:id`,
   `stream/:id?g=` (login + grant only: mpv in the Mac app carries just `CF_Authorization`), `progress/:id` (grant auth,
-  so the player works after a reload), `DELETE files/:id` (also removes same-name sidecars), `rescan`.
+  so the player works after a reload), `DELETE files/:id` (also removes same-name text sidecars: .json/.info.json/.nfo/.srt/.vtt/.description; never images, which can be photos of their own), `rescan`.
 - `scripts/reset-passcode.js`: host-only reset (`docker exec homebot-cinema node plugins/vault/scripts/reset-passcode.js`).
 
 ## UI (`ui/`)
