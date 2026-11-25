@@ -7,11 +7,14 @@ const ReactDOM = require('react-dom/client');
 const pm = require('./profileManager');
 
 // Returns { me, profile } once a profile is active. Rejects only if the server is unreachable.
+// /api/me is fetched again once the profile is known: admin depends on the active profile (see profileManager cookies).
 async function ensureProfile() {
+    pm.syncProfileCookie();
     const [me, profiles] = await Promise.all([pm.fetchMe(), pm.fetchProfiles()]);
 
     const resumed = await pm.resolveStoredProfile(profiles);
-    if (resumed) return { me, profile: resumed };
+    if (resumed) return { me: await pm.fetchMe().catch(() => me), profile: resumed };
+    pm.clearActive();
 
     const ProfilePicker = require('stremio/components/ProfilePicker');
     const host = document.getElementById('app');
@@ -22,7 +25,7 @@ async function ensureProfile() {
             onDone: ({ profile, token, remember }) => {
                 pm.storeActive({ id: profile.id, token }, remember);
                 root.unmount();
-                resolve({ me, profile });
+                pm.fetchMe().catch(() => ({ ...me, isAdmin: false })).then((fresh) => resolve({ me: fresh, profile }));
             }
         }));
     });

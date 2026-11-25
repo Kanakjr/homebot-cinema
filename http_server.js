@@ -236,8 +236,8 @@ app.get('/api/me', (req, res) => {
         email: req.login.email, isAdmin: req.login.isAdmin,
         // where "Sign out" goes: the Cloudflare Access logout of this deployment (the app's own /cdn-cgi path when no team is configured)
         signOutUrl: auth.config.team ? `https://${auth.config.team}/cdn-cgi/access/logout` : '/cdn-cgi/access/logout',
-        // optional link to a companion dashboard (DASHBOARD_URL, https only); the menu entry is hidden without it
-        dashboardUrl: /^https:\/\/[^\s]+$/.test(process.env.DASHBOARD_URL || '') ? process.env.DASHBOARD_URL : null,
+        // optional link to a companion dashboard (DASHBOARD_URL, https only, admin only); the menu entry is hidden without it
+        dashboardUrl: req.login.isAdmin && /^https:\/\/[^\s]+$/.test(process.env.DASHBOARD_URL || '') ? process.env.DASHBOARD_URL : null,
     });
 });
 app.get('/api/sso_user', (req, res) => {
@@ -252,6 +252,8 @@ const profileApi = require('./server/profile_routes').registerProfileRoutes(app,
     ownerName: process.env.OWNER_PROFILE_NAME || '',
     adminEmails: auth.config.admins
 });
+// With OWNER_PROFILE_NAME set, admin needs the admin login AND the unlocked owner profile (other profiles stay non-admin).
+if (profileApi.adminProfileGate) auth.setAdminProfileGate(profileApi.adminProfileGate);
 
 // 2. Universal Addons endpoint (controlled from backend)
 app.get('/api/addons', (_req, res) => {

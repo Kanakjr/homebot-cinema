@@ -18,6 +18,23 @@ function readStored() {
     return null;
 }
 
+// The active profile also travels as cookies, so every request (plain fetches, plugin UIs, the streaming-server settings
+// POST) tells the server which profile is in use: admin needs the admin login AND the unlocked owner profile.
+function writeCookie(name, value) {
+    try {
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        const life = value ? '' : '; Max-Age=0';
+        document.cookie = `${name}=${encodeURIComponent(value || '')}; Path=/; SameSite=Strict${secure}${life}`;
+    } catch (_) {
+        // cookies unavailable: the server treats the request as having no active profile
+    }
+}
+
+function syncProfileCookie(stored = readStored()) {
+    writeCookie('cinema_pid', stored && stored.id ? String(stored.id) : '');
+    writeCookie('cinema_ptok', stored && stored.token ? stored.token : '');
+}
+
 function storeActive({ id, token }, remember) {
     clearActive();
     try {
@@ -25,9 +42,11 @@ function storeActive({ id, token }, remember) {
     } catch (_) {
         // storage unavailable: the picker will simply show again next time
     }
+    syncProfileCookie({ id, token });
 }
 
 function clearActive() {
+    syncProfileCookie(null);
     for (const store of [window.localStorage, window.sessionStorage]) {
         try {
             store.removeItem(STORE_KEY);
@@ -111,6 +130,7 @@ const dashboardUrl = () => (window.ssoLinks && window.ssoLinks.dashboardUrl) || 
 
 module.exports = {
     readStored,
+    syncProfileCookie,
     storeActive,
     clearActive,
     profileHeaders,

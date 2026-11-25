@@ -84,16 +84,25 @@ function createAuth({ db, env = process.env, jwks } = {}) {
         } catch (e) {
             console.error('[Auth] touchLogin failed:', e.message);
         }
-        req.login = { email, isAdmin: isAdminEmail(email) };
+        // Admin needs an admin email AND (when an admin-profile gate is set) the unlocked owner profile.
+        let isAdmin = isAdminEmail(email);
+        if (isAdmin && profileGate) {
+            try { isAdmin = !!profileGate(req, email); } catch (e) { isAdmin = false; }
+        }
+        req.login = { email, isAdmin };
         next();
     }
+
+    // gate(req, email) -> bool, installed by the profile routes (OWNER_PROFILE_NAME). Unset: admin by email only.
+    let profileGate = null;
+    const setAdminProfileGate = (gate) => { profileGate = gate; };
 
     function requireAdmin(req, res, next) {
         if (!req.login || !req.login.isAdmin) return res.status(403).json({ error: 'admin_only' });
         next();
     }
 
-    return { requireLogin, requireAdmin, verifiedEmail, isAdminEmail, config: cfg };
+    return { requireLogin, requireAdmin, verifiedEmail, isAdminEmail, setAdminProfileGate, config: cfg };
 }
 
-module.exports = { createAuth, loadConfig };
+module.exports = { createAuth, loadConfig, cookieValue };

@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const P = require('./profiles');
 const { importUsers } = require('./migrate_users');
+const { cookieValue } = require('./auth');
 
 const NAME_MAX = 24;
 const AVATAR_MAX_BYTES = 400 * 1024;
@@ -60,6 +61,30 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
         if (p.pin_hash && !tokenOk(req, p)) return bad(res, 423, 'profile_locked');
         req.profile = p;
         next();
+    }
+
+    // ---- admin profile gate ----
+    // The owner profile: the oldest profile named OWNER_PROFILE_NAME (a newer profile renamed to it never counts).
+    const ownerKey = String(ownerName || '').trim().toLowerCase();
+    const ownerProfile = () => (ownerKey
+        ? raw.prepare('SELECT * FROM profiles WHERE lower(trim(name)) = ? ORDER BY id LIMIT 1').get(ownerKey)
+        : null);
+    // The active profile of a request: X-Profile-Id/-Token headers, else the cinema_pid/cinema_ptok cookies the UI sets
+    // (plain fetches, plugin UIs and the streaming-server settings POST carry no headers).
+    const activeRef = (req) => {
+        const h = req.headers || {};
+        if (h['x-profile-id']) return { id: String(h['x-profile-id']), token: h['x-profile-token'] || '' };
+        let token = cookieValue(h.cookie, 'cinema_ptok');
+        try { token = decodeURIComponent(token); } catch (_) { token = ''; }
+        return { id: cookieValue(h.cookie, 'cinema_pid'), token };
+    };
+    // Admin login + this request is on the unlocked owner profile. No OWNER_PROFILE_NAME: null (no gate, admin by email).
+    function adminProfileGate(req, email) {
+        const owner = ownerProfile();
+        if (!owner) return false;
+        const ref = activeRef(req);
+        if (String(ref.id) !== String(owner.id)) return false;
+        return !owner.pin_hash || tokens.verify(ref.token, owner.id, email);
     }
 
     // ---- profiles ----
@@ -223,7 +248,7 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
         res.json(P.toPublic(getProfile(req.profile.id)));
     });
 
-    return { requireProfile, getProfile };
+    return { requireProfile, getProfile, adminProfileGate: ownerKey ? adminProfileGate : null };
 }
 
 module.exports = { registerProfileRoutes };
