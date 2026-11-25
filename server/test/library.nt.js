@@ -303,3 +303,133 @@ test('an unreadable sub-folder mid-scan makes the scan untrusted and prunes noth
         fs.chmodSync(bad, 0o755);
     }
 });
+
+// ---------- library folders added in Admin > Library ----------
+function folderFixture() {
+    const base = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'fold-')));
+    const M = path.join(base, 'Movies');
+    const T = path.join(base, 'TV');
+    const D = path.join(base, 'downloads');
+    touch(path.join(M, 'Local.Film.2024.1080p.mkv'));
+    touch(path.join(M, 'Anime', 'Frieren', 'Frieren - S01E01.mkv')); // to become a series folder inside /Movies
+    touch(path.join(T, 'Show - S01E01.mkv'));
+    touch(path.join(D, 'Extra', 'Extra.Film.2021.720p.mp4'));
+    touch(path.join(D, 'Extra', 'notes.txt'));
+    touch(path.join(base, 'Outside', 'Secret.Film.2020.mkv'));
+    const db = openDb(base, ':memory:');
+    const lib = new Library({ db, roots: { movie: M, series: T }, fetchJson: async () => ({ metas: [] }), minBytes: 1 });
+    return { base, M, T, D, lib, db, allowed: [M, T, D] };
+}
+const typesOf = (lib) => Object.fromEntries(lib.list().items.map((i) => [i.title, i.type]));
+
+test('addFolder: only an existing directory inside MEDIA_ROOTS that is not already a root', () => {
+    const { base, M, D, lib, allowed } = folderFixture();
+    const code = (fn) => { try { fn(); return 'ok'; } catch (e) { return `${e.status} ${e.message}`; } };
+    assert.equal(code(() => lib.addFolder({ path: path.join(D, 'Extra'), type: 'show' }, allowed)), '400 invalid_type');
+    assert.equal(code(() => lib.addFolder({ path: 'downloads/Extra', type: 'movie' }, allowed)), '400 path_not_absolute');
+    assert.equal(code(() => lib.addFolder({ path: path.join(D, 'Nope'), type: 'movie' }, allowed)), '404 path_not_found');
+    assert.equal(code(() => lib.addFolder({ path: path.join(D, 'Extra', 'notes.txt'), type: 'movie' }, allowed)), '400 not_a_directory');
+    assert.equal(code(() => lib.addFolder({ path: path.join(base, 'Outside'), type: 'movie' }, allowed)), '403 path_outside_media_roots');
+    assert.equal(code(() => lib.addFolder({ path: path.join(D, 'Extra', '..', '..', 'Outside'), type: 'movie' }, allowed)), '403 path_outside_media_roots');
+    assert.equal(code(() => lib.addFolder({ path: M, type: 'movie' }, allowed)), '409 already_a_library_folder');
+    const row = lib.addFolder({ path: path.join(D, 'Extra') + '/', type: 'movie', label: '  Extras  ' }, allowed);
+    assert.equal(row.path, path.join(D, 'Extra'), 'stored without the trailing slash');
+    assert.equal(row.label, 'Extras');
+    assert.equal(code(() => lib.addFolder({ path: path.join(D, 'Extra'), type: 'series' }, allowed)), '409 already_a_library_folder');
+});
+
+test('an added folder is scanned like /Movies; a folder inside /Movies is walked once, with its own type', async () => {
+    const { M, D, lib, allowed } = folderFixture();
+    await lib.scan();
+    assert.equal(typesOf(lib).Frieren, 'movie', 'before: the anime inside /Movies is read as a movie');
+    lib.addFolder({ path: path.join(D, 'Extra'), type: 'movie' }, allowed);
+    lib.addFolder({ path: path.join(M, 'Anime'), type: 'series' }, allowed);
+    await lib.scan();
+    const types = typesOf(lib);
+    assert.equal(types['Extra Film'], 'movie');
+    assert.equal(types.Frieren, 'series');
+    assert.equal(lib.list().items.filter((i) => i.title === 'Frieren').length, 1, 'never also listed as a movie of /Movies');
+    assert.equal(lib.raw.prepare('SELECT COUNT(*) n FROM media_files').get().n, 4);
+    assert.equal(lib.scanTrusted(), true);
+    assert.ok(lib.allowedRoots().includes(path.join(D, 'Extra')));
+});
+
+test('scan({ folder }) prunes only that folder', async () => {
+    const { M, D, lib, allowed } = folderFixture();
+    const extra = path.join(D, 'Extra');
+    lib.addFolder({ path: extra, type: 'movie' }, allowed);
+    await lib.scan();
+    fs.rmSync(path.join(extra, 'Extra.Film.2021.720p.mp4'));
+    fs.rmSync(path.join(M, 'Local.Film.2024.1080p.mkv'));
+    touch(path.join(extra, 'New.Film.2025.mkv'));
+    const st = await lib.scan({ folder: extra });
+    assert.equal(st.files, 1);
+    const titles = names(lib);
+    assert.ok(titles.includes('New Film') && !titles.includes('Extra Film'), 'the folder itself is up to date');
+    assert.ok(titles.includes('Local Film'), 'a file gone from another root is left for the next full scan');
+    await assert.rejects(lib.scan({ folder: path.join(D, 'Nope') }), (e) => e.status === 404);
+});
+
+test('scanning /Movies alone keeps the rows of a folder nested inside it', async () => {
+    const { M, lib, allowed } = folderFixture();
+    lib.addFolder({ path: path.join(M, 'Anime'), type: 'series' }, allowed);
+    await lib.scan();
+    await lib.scan({ folder: M });
+    assert.equal(typesOf(lib).Frieren, 'series');
+});
+
+test('an added folder that disappears is "away": its rows stay and the scan is not trusted', async () => {
+    const { D, lib, allowed } = folderFixture();
+    const extra = path.join(D, 'Extra');
+    lib.addFolder({ path: extra, type: 'movie' }, allowed);
+    await lib.scan();
+    fs.rmSync(extra, { recursive: true });
+    await lib.scan();
+    assert.deepEqual(lib.status.offlineRoots, [extra]);
+    assert.ok(names(lib).includes('Extra Film'));
+    assert.equal(lib.scanTrusted(), false);
+    assert.equal(lib.folderStats().find((f) => f.path === extra).online, false);
+});
+
+test('removeFolder forgets its files (disk untouched); one inside /Movies goes back to /Movies on the next scan', async () => {
+    const { M, D, lib, allowed } = folderFixture();
+    const extra = lib.addFolder({ path: path.join(D, 'Extra'), type: 'movie' }, allowed);
+    const anime = lib.addFolder({ path: path.join(M, 'Anime'), type: 'series' }, allowed);
+    await lib.scan();
+    const r1 = lib.removeFolder(extra.id);
+    assert.equal(r1.needsRescan, false);
+    assert.ok(!names(lib).includes('Extra Film'));
+    assert.ok(fs.existsSync(path.join(D, 'Extra', 'Extra.Film.2021.720p.mp4')), 'nothing deleted on disk');
+    const r2 = lib.removeFolder(anime.id);
+    assert.equal(r2.needsRescan, true);
+    await lib.scan();
+    assert.equal(typesOf(lib).Frieren, 'movie');
+    assert.equal(lib.removeFolder(9999), null);
+});
+
+test('folderStats counts each file under its deepest root', async () => {
+    const { M, lib, allowed } = folderFixture();
+    lib.addFolder({ path: path.join(M, 'Anime'), type: 'series' }, allowed);
+    await lib.scan();
+    const byPath = Object.fromEntries(lib.folderStats().map((f) => [f.path, f]));
+    assert.equal(byPath[M].files, 1);
+    assert.equal(byPath[M].kind, 'base');
+    assert.equal(byPath[path.join(M, 'Anime')].files, 1);
+    assert.equal(byPath[path.join(M, 'Anime')].kind, 'folder');
+    assert.ok(byPath[path.join(M, 'Anime')].id > 0);
+    assert.equal(byPath[path.join(M, 'Anime')].scan.files, 1);
+});
+
+test('browse lists sub-folders inside MEDIA_ROOTS only', () => {
+    const { base, D, lib, allowed } = folderFixture();
+    const top = lib.browse('', allowed);
+    assert.deepEqual(top.dirs.map((d) => d.path), allowed);
+    assert.equal(top.dirs[0].isRoot, true, '/Movies is already a library root');
+    const inD = lib.browse(D, allowed);
+    assert.deepEqual(inD.dirs.map((d) => d.name), ['Extra']);
+    assert.equal(inD.parent, null, 'a media root has no parent to go up to');
+    assert.equal(lib.browse(path.join(D, 'Extra'), allowed).parent, D);
+    assert.throws(() => lib.browse(path.join(base, 'Outside'), allowed), (e) => e.status === 403);
+    assert.throws(() => lib.browse(path.join(D, '..'), allowed), (e) => e.status === 403);
+    assert.throws(() => lib.browse('relative', allowed), (e) => e.status === 400);
+});

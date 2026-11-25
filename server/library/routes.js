@@ -18,10 +18,48 @@ function registerLibraryRoutes(app, { library, requireAdmin, db, onFileDeleted =
 
     app.get('/api/library/scan/status', (_req, res) => res.json(library.status));
     app.get('/api/library/episodes', (_req, res) => res.json({ episodes: library.episodeIds() }));
+    // body { path } scans only that library root; no body scans everything
     app.post('/api/library/scan', requireAdmin, (req, res) => {
+        const folder = req.body && typeof req.body.path === 'string' ? req.body.path : '';
+        if (folder) {
+            if (!library.allowedRoots().includes(folder)) return res.status(404).json({ error: 'unknown_folder' });
+            if (library.scanning) return res.status(409).json({ error: 'scan_running' });
+            db.audit(req.login.email, null, 'library.scan_folder', { path: folder });
+            library.scan({ folder }).catch((e) => console.error('[Library API] folder scan failed:', e.message));
+            return res.status(202).json({ running: true, path: folder });
+        }
         db.audit(req.login.email, null, 'library.scan', null);
         library.scan(); // background; poll /scan/status
         res.status(202).json({ ...library.status, running: true });
+    });
+
+    // ---- library folders (Admin > Library): extra folders to scan, inside MEDIA_ROOTS ----
+    app.get('/api/library/folders', requireAdmin, (_req, res) => {
+        res.json({ folders: library.folderStats(), scanning: library.scanning });
+    });
+    app.post('/api/library/folders', requireAdmin, (req, res) => {
+        try {
+            const b = req.body || {};
+            const row = library.addFolder({ path: b.path, type: b.type, label: b.label });
+            db.audit(req.login.email, null, 'library.folder_add', { path: row.path, type: row.type });
+            if (!library.scanning) library.scan({ folder: row.path }).catch((e) => console.error('[Library API] folder scan failed:', e.message));
+            res.status(201).json(row);
+        } catch (e) { fail(res, e); }
+    });
+    app.delete('/api/library/folders/:id(\\d+)', requireAdmin, (req, res) => {
+        try {
+            const removed = library.removeFolder(num(req.params.id));
+            if (!removed) return res.status(404).json({ error: 'not_found' });
+            db.audit(req.login.email, null, 'library.folder_remove', { path: removed.path });
+            // a parent root still covers it: a full scan files its videos under the parent
+            if (removed.needsRescan && !library.scanning) library.scan();
+            res.json({ success: true, needsRescan: removed.needsRescan });
+        } catch (e) { fail(res, e); }
+    });
+    app.get('/api/library/browse', requireAdmin, (req, res) => {
+        try {
+            res.json(library.browse(typeof req.query.path === 'string' ? req.query.path : ''));
+        } catch (e) { fail(res, e); }
     });
 
     app.get('/api/library/by-imdb/:imdbId', (req, res) => {

@@ -11,6 +11,7 @@ const PageHeader = require('stremio/components/PageHeader');
 const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const { useQualityProfiles } = require('stremio/common/qualityProfile');
 const useServerEvents = require('stremio/common/useServerEvents');
+const { confirmDialog } = require('stremio/common/dialogs');
 const prettyTitle = require('./prettyTitle');
 const styles = require('./Downloads.less');
 
@@ -66,7 +67,7 @@ const Downloads = () => {
     useServerEvents(['downloads', 'library', 'sentinel'], load, { fallbackMs: POLL_MS });
 
     const act = async (id, action) => {
-        if (action === 'delete' && !window.confirm('Cancel this download and remove its files?')) return;
+        if (action === 'delete' && !await confirmDialog({ title: 'Cancel this download?', message: 'Its files are removed from the server.', confirmLabel: 'Cancel download', cancelLabel: 'Keep it', danger: true })) return;
         try {
             await api('POST', '/api/downloads/action', { id, action, deleteLocalData: action === 'delete' });
             load();
@@ -94,7 +95,7 @@ const Downloads = () => {
         }
     };
     const redownload = async (m) => {
-        if (!window.confirm(`Download the ${m.skippedCount} removed episode(s) of ${m.title} again?`)) return;
+        if (!await confirmDialog({ title: `Download ${m.title} again?`, message: `The ${m.skippedCount} removed episode(s) are fetched again.`, confirmLabel: 'Download again' })) return;
         try {
             await api('POST', '/api/sentinel/redownload', { imdbId: m.imdbId });
             load();
@@ -103,7 +104,7 @@ const Downloads = () => {
         }
     };
     const stopMonitoring = async (imdbId) => {
-        if (!window.confirm('Stop auto-downloading new episodes of this show?')) return;
+        if (!await confirmDialog({ title: 'Stop auto-downloading this show?', message: 'New episodes are no longer fetched. Nothing on disk is deleted.', confirmLabel: 'Stop', danger: true })) return;
         try {
             await api('POST', '/api/sentinel/monitor', { imdbId, monitored: false });
             load();

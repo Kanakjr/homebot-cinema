@@ -3,7 +3,9 @@
 //   parseName('Silo (2023) - S01E03 - Machines (1080p ATVP WEB-DL x265 t3nzin).mp4')
 //     -> { title: 'Silo', year: 2023, season: 1, episode: 3, resolution: '1080p', source: 'WEB-DL', codec: 'x265' }
 
-const VIDEO_EXT = /\.(mkv|mp4|m4v|avi|mov|webm|ts)$/i;
+const VIDEO_EXT = /\.(mkv|mp4|m4v|avi|mov|webm|ts|mpg|mpeg)$/i;
+// A web address some sites put in front of the real name: "www.example.group - Title (2026) ..." or "[www.example.com] Title".
+const WEB_PREFIX_RE = /^\s*\[?\s*www\.[a-z0-9-]+(?:\.[a-z0-9-]+)+\s*\]?\s*[-–—_:|]*\s*/i;
 const isVideoFile = (name) => VIDEO_EXT.test(name);
 
 const RES_RE = /\b(2160p|4k|uhd|1080p|1080i|720p|576p|480p)\b/i;
@@ -31,6 +33,7 @@ function normTitle(t) {
 
 function parseName(raw) {
     let s = String(raw || '').replace(VIDEO_EXT, '');
+    s = s.replace(WEB_PREFIX_RE, ''); // leading web address ("www.example.group - ")
     s = s.replace(/\[[^\]]*\]\s*$/g, ' '); // trailing [EZTVx.to] / [MW] groups
     s = normalizeSeparators(s);
 

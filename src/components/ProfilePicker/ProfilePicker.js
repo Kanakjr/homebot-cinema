@@ -5,6 +5,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const classNames = require('classnames');
 const pm = require('stremio/common/profileManager');
+const { confirmDialog } = require('stremio/common/dialogs');
 const { BrandLockup } = require('stremio/components/BrandMark');
 const { getAccents, DEFAULT_ACCENT } = require('stremio/common/theme');
 const styles = require('./styles');
@@ -217,8 +218,8 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                 {error ? <div className={styles['form-error']}>{error}</div> : null}
                 <div className={styles['modal-actions']}>
                     {!isNew && isAdmin ?
-                        <button type="button" className={styles['danger']} disabled={busy} onClick={() => {
-                            if (window.confirm(`Delete profile "${profile.name}" and its library?`)) {
+                        <button type="button" className={styles['danger']} disabled={busy} onClick={async () => {
+                            if (await confirmDialog({ title: `Delete profile "${profile.name}"?`, message: 'Its library, history and settings are deleted. This cannot be undone.', confirmLabel: 'Delete profile', danger: true })) {
                                 run(async () => {
                                     await pm.deleteProfile(profile.id);
                                     onDeleted(profile);

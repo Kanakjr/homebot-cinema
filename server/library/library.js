@@ -6,10 +6,14 @@
 const fs = require('fs');
 const path = require('path');
 const { parseMediaPath, normTitle, isVideoFile } = require('./parse');
-const { isInsideRoots } = require('../media_paths');
+const { isInsideRoots, mediaRoots } = require('../media_paths');
 
 const MIN_VIDEO_BYTES = 30 * 1024 * 1024; // ignore samples / trailers
 const MATCH_RETRY_MS = 24 * 3600 * 1000;
+const MAX_FOLDERS = 50;
+const MAX_BROWSE = 500;
+const fail = (message, status) => Object.assign(new Error(message), { status });
+const under = (p, root) => p === root || p.startsWith(root + path.sep);
 const CINEMETA = 'https://v3-cinemeta.strem.io';
 const art = (kind, imdb) => `https://images.metahub.space/${kind}/medium/${imdb}/img`;
 
@@ -33,6 +37,41 @@ class Library {
         this.now = now;
         this.scanning = false;
         this.status = { running: false, startedAt: null, finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null, offlineRoots: [], walkErrors: 0 };
+        this.folderScans = new Map(); // root path -> { running, startedAt, finishedAt, files, error, offline } of its last scan
+    }
+
+    // ---------- roots ----------
+    // Library folders added in Admin > Library (table library_folders). "Warm" roots: walked like /Movies and /TV.
+    folderRows() {
+        try {
+            return this.raw.prepare('SELECT id, path, type, label, added_at FROM library_folders ORDER BY path').all();
+        } catch (_) {
+            return []; // a database without the table
+        }
+    }
+
+    get warmRoots() {
+        const base = new Set(Object.values(this.roots));
+        const out = { movie: [], series: [] };
+        for (const r of this.folderRows()) {
+            if ((r.type === 'movie' || r.type === 'series') && path.isAbsolute(r.path) && !base.has(r.path) && !out[r.type].includes(r.path)) out[r.type].push(r.path);
+        }
+        return out;
+    }
+
+    /** Every root, once: { path, type, kind } with kind 'base' (env), 'folder' (added in Admin) or 'cold' (plugin mount). */
+    rootList() {
+        const list = Object.entries(this.roots).map(([type, p]) => ({ path: p, type, kind: 'base' }));
+        const warm = this.warmRoots;
+        const cold = this.coldRoots;
+        for (const type of ['movie', 'series']) for (const p of warm[type]) list.push({ path: p, type, kind: 'folder' });
+        for (const type of ['movie', 'series']) for (const p of cold[type]) list.push({ path: p, type, kind: 'cold' });
+        const seen = new Set();
+        return list.filter((r) => !seen.has(r.path) && seen.add(r.path));
+    }
+
+    rootOnline(r) {
+        return r.kind === 'cold' ? this.coldRootOnline(r.path) : fs.existsSync(r.path);
     }
 
     get coldRoots() {
@@ -67,15 +106,118 @@ class Library {
     // the library" can be trusted to mean "it was deleted" (not "the drive is unplugged" / "the scan failed").
     scanTrusted() {
         const s = this.status;
-        return !!s.finishedAt && !s.running && !s.error && s.files > 0 && !s.walkErrors && Object.values(this.roots).every((r) => fs.existsSync(r)) && this.offlineColdRoots().length === 0;
+        return !!s.finishedAt && !s.running && !s.error && s.files > 0 && !s.walkErrors
+            && this.rootList().filter((r) => r.kind !== 'cold').every((r) => fs.existsSync(r.path)) && this.offlineColdRoots().length === 0;
     }
 
     allowedRoots() {
-        return [...Object.values(this.roots), ...this.coldRootList()];
+        return this.rootList().map((r) => r.path);
+    }
+
+    // ---------- library folders (Admin > Library) ----------
+    /** Adds a folder to scan. It must exist, be a directory inside MEDIA_ROOTS, and not already be a library root. */
+    addFolder({ path: input, type, label } = {}, allowed = mediaRoots()) {
+        if (type !== 'movie' && type !== 'series') throw fail('invalid_type', 400);
+        const raw = typeof input === 'string' ? input.trim() : '';
+        if (!raw || !path.isAbsolute(raw)) throw fail('path_not_absolute', 400);
+        const p = path.resolve(raw);
+        let st;
+        try {
+            st = fs.statSync(p);
+        } catch (_) {
+            throw fail('path_not_found', 404);
+        }
+        if (!st.isDirectory()) throw fail('not_a_directory', 400);
+        if (!isInsideRoots(p, allowed)) throw fail('path_outside_media_roots', 403);
+        if (this.rootList().some((r) => r.path === p)) throw fail('already_a_library_folder', 409);
+        if (this.folderRows().length >= MAX_FOLDERS) throw fail('too_many_folders', 400);
+        const name = typeof label === 'string' && label.trim() ? label.trim().slice(0, 60) : null;
+        return this.raw.prepare('INSERT INTO library_folders (path, type, label, added_at) VALUES (?, ?, ?, ?) RETURNING id, path, type, label, added_at')
+            .get(p, type, name, new Date(this.now()).toISOString());
+    }
+
+    /**
+     * Stops scanning a folder and forgets its files (nothing on disk is touched). When a parent root still covers the folder
+     * its files stay and the next full scan files them under the parent (needsRescan).
+     */
+    removeFolder(id) {
+        const row = this.raw.prepare('SELECT id, path, type, label FROM library_folders WHERE id = ?').get(id);
+        if (!row) return null;
+        this.raw.prepare('DELETE FROM library_folders WHERE id = ?').run(id);
+        this.folderScans.delete(row.path);
+        const others = this.allowedRoots();
+        const covered = others.some((o) => under(row.path, o));
+        if (!covered) {
+            const nested = others.filter((o) => under(o, row.path));
+            const del = this.raw.prepare('DELETE FROM media_files WHERE id = ?');
+            this.raw.exec('BEGIN');
+            try {
+                for (const f of this.raw.prepare('SELECT id, path FROM media_files').all()) {
+                    if (under(f.path, row.path) && !nested.some((n) => under(f.path, n))) del.run(f.id);
+                }
+                this.raw.exec('DELETE FROM media_items WHERE id NOT IN (SELECT DISTINCT media_item_id FROM media_files)');
+                this.raw.exec('COMMIT');
+            } catch (e) {
+                this.raw.exec('ROLLBACK');
+                throw e;
+            }
+        }
+        return { ...row, needsRescan: covered };
+    }
+
+    /** Every root with its file count and size (each file counted under its deepest root) and its last scan. */
+    folderStats() {
+        const roots = this.rootList();
+        const ids = new Map(this.folderRows().map((r) => [r.path, r]));
+        const totals = new Map(roots.map((r) => [r.path, { files: 0, bytes: 0 }]));
+        const deepestFirst = [...roots].sort((a, b) => b.path.length - a.path.length);
+        for (const f of this.raw.prepare('SELECT path, size FROM media_files').all()) {
+            const r = deepestFirst.find((x) => under(f.path, x.path));
+            if (r) {
+                const t = totals.get(r.path);
+                t.files += 1;
+                t.bytes += f.size || 0;
+            }
+        }
+        return roots.map((r) => {
+            const row = ids.get(r.path);
+            return {
+                path: r.path, type: r.type, kind: r.kind, id: row ? row.id : null, label: row ? row.label : null,
+                online: this.rootOnline(r), ...totals.get(r.path), scan: this.folderScans.get(r.path) || null,
+            };
+        });
+    }
+
+    /** Sub-folders of `dir` for the folder picker, confined to MEDIA_ROOTS. No `dir`: the media roots themselves. */
+    browse(dir, allowed = mediaRoots()) {
+        const roots = new Set(this.allowedRoots());
+        if (!dir) {
+            return { path: null, parent: null, dirs: allowed.filter((r) => fs.existsSync(r)).map((r) => ({ name: r, path: r, isRoot: roots.has(r) })) };
+        }
+        if (typeof dir !== 'string' || !path.isAbsolute(dir)) throw fail('path_not_absolute', 400);
+        const p = path.resolve(dir);
+        if (!isInsideRoots(p, allowed)) throw fail('path_outside_media_roots', 403);
+        let entries;
+        try {
+            entries = fs.readdirSync(p, { withFileTypes: true });
+        } catch (_) {
+            throw fail('cannot_list', 404);
+        }
+        const dirs = entries
+            .filter((e) => e.isDirectory() && !e.name.startsWith('.'))
+            .map((e) => e.name)
+            .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
+            .slice(0, MAX_BROWSE)
+            .map((name) => ({ name, path: path.join(p, name), isRoot: roots.has(path.join(p, name)) }));
+        const parent = path.dirname(p);
+        const real = fs.realpathSync(p);
+        const atTop = allowed.includes(p) || allowed.includes(real);
+        return { path: p, parent: atTop || !isInsideRoots(parent, allowed) ? null : parent, dirs, isRoot: roots.has(p) };
     }
 
     // ---------- scanning ----------
-    walk(root, type, errors = []) {
+    // skip: directories that are library roots of their own (a folder added inside /Movies is walked on its own, never twice)
+    walk(root, type, errors = [], skip = new Set()) {
         const found = [];
         const stack = [''];
         while (stack.length) {
@@ -91,7 +233,10 @@ class Library {
             for (const e of entries) {
                 if (e.name.startsWith('.')) continue;
                 const childRel = rel ? `${rel}/${e.name}` : e.name;
-                if (e.isDirectory()) { stack.push(childRel); continue; }
+                if (e.isDirectory()) {
+                    if (!skip.has(path.join(root, childRel))) stack.push(childRel);
+                    continue;
+                }
                 if (!e.isFile() || !isVideoFile(e.name)) continue;
                 // the background remux writes foo.mp4 next to foo.mkv: that is the same episode
                 if (/\.mp4$/i.test(e.name) && (names.has(e.name.replace(/\.mp4$/i, '.mkv').toLowerCase()) || names.has(e.name.replace(/\.mp4$/i, '.avi').toLowerCase()))) continue;
@@ -109,26 +254,35 @@ class Library {
         return found;
     }
 
-    async scan() {
-        if (this.scanning) return this.status;
+    /** Full scan of every root, or with { folder } only that root (its rows alone may be pruned). */
+    async scan({ folder } = {}) {
+        if (this.scanning) return folder ? (this.folderScans.get(folder) || this.status) : this.status;
+        if (folder) return this.scanFolder(folder);
         this.scanning = true;
-        this.status = { running: true, startedAt: new Date(this.now()).toISOString(), finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null, offlineRoots: [], walkErrors: 0 };
+        const startedAt = new Date(this.now()).toISOString();
+        this.status = { running: true, startedAt, finishedAt: null, files: 0, items: 0, matched: 0, unmatched: 0, error: null, offlineRoots: [], walkErrors: 0 };
+        const roots = this.rootList();
+        const perRoot = new Map();
         try {
             const files = [];
             const errors = [];
-            for (const [type, root] of Object.entries(this.roots)) files.push(...this.walk(root, type, errors));
             const offline = [];
-            for (const type of ['movie', 'series']) {
-                for (const root of this.coldRoots[type]) {
-                    if (this.coldRootOnline(root)) files.push(...this.walk(root, type, errors));
-                    else offline.push(root);
+            const all = roots.map((r) => r.path);
+            for (const r of roots) {
+                // an unmounted cold root or a missing added folder is "away", not "empty": its rows are kept
+                if (r.kind !== 'base' && !this.rootOnline(r)) {
+                    offline.push(r.path);
+                    continue;
                 }
+                const found = this.walk(r.path, r.type, errors, new Set(all.filter((p) => p !== r.path)));
+                perRoot.set(r.path, found.length);
+                files.push(...found);
             }
             this.status.offlineRoots = offline;
             this.status.walkErrors = errors.length;
             this.status.files = files.length;
-            // rows under an offline cold root (or a folder we could not list) are kept, never judged as deleted
-            this.persist(files, offline, errors.length > 0);
+            // rows under an offline root (or a folder we could not list) are kept, never judged as deleted
+            this.persist(files, { keepUnder: offline, skipPrune: errors.length > 0 });
             await this.matchPending();
             const c = this.raw.prepare('SELECT COUNT(*) n, SUM(matched > 0) m FROM media_items').get();
             this.status.items = c.n;
@@ -140,12 +294,48 @@ class Library {
         } finally {
             this.status.running = false;
             this.status.finishedAt = new Date(this.now()).toISOString();
+            for (const r of roots) {
+                this.folderScans.set(r.path, {
+                    running: false, startedAt, finishedAt: this.status.finishedAt, files: perRoot.get(r.path) || 0,
+                    offline: this.status.offlineRoots.includes(r.path), error: this.status.error,
+                });
+            }
             this.scanning = false;
         }
         return this.status;
     }
 
-    persist(files, keepUnder = [], skipPrune = false) {
+    /** Scans one root. Only rows under that root (and not under a root nested inside it) can be pruned. */
+    async scanFolder(folder) {
+        const root = this.rootList().find((r) => r.path === folder);
+        if (!root) throw fail('unknown_folder', 404);
+        this.scanning = true;
+        const st = { running: true, startedAt: new Date(this.now()).toISOString(), finishedAt: null, files: 0, offline: false, error: null };
+        this.folderScans.set(root.path, st);
+        try {
+            if (!this.rootOnline(root)) {
+                st.offline = true;
+                return st;
+            }
+            const others = this.allowedRoots().filter((p) => p !== root.path);
+            const errors = [];
+            const files = this.walk(root.path, root.type, errors, new Set(others));
+            st.files = files.length;
+            this.persist(files, { pruneUnder: [root.path], keepUnder: others.filter((p) => under(p, root.path)), skipPrune: errors.length > 0 });
+            await this.matchPending();
+        } catch (e) {
+            st.error = e.message;
+            console.error('[Library] folder scan failed:', e.message);
+        } finally {
+            st.running = false;
+            st.finishedAt = new Date(this.now()).toISOString();
+            this.scanning = false;
+        }
+        return st;
+    }
+
+    // keepUnder: rows under these roots are never pruned. pruneUnder (optional): only rows under these roots may be pruned.
+    persist(files, { keepUnder = [], skipPrune = false, pruneUnder = null } = {}) {
         const raw = this.raw;
         const nowIso = new Date(this.now()).toISOString();
         const findItem = raw.prepare('SELECT id, year, matched FROM media_items WHERE type = ? AND norm = ?');
@@ -172,8 +362,9 @@ class Library {
             // drop rows for files that disappeared, then items left without files
             const all = raw.prepare('SELECT id, path FROM media_files').all();
             const del = raw.prepare('DELETE FROM media_files WHERE id = ?');
-            const kept = (p) => keepUnder.some((r) => p === r || p.startsWith(r + path.sep));
-            if (!skipPrune) for (const r of all) if (!seen.has(r.path) && !kept(r.path)) del.run(r.id);
+            const kept = (p) => keepUnder.some((r) => under(p, r));
+            const inScope = (p) => !pruneUnder || pruneUnder.some((r) => under(p, r));
+            if (!skipPrune) for (const r of all) if (!seen.has(r.path) && !kept(r.path) && inScope(r.path)) del.run(r.id);
             raw.exec('DELETE FROM media_items WHERE id NOT IN (SELECT DISTINCT media_item_id FROM media_files)');
             raw.exec('COMMIT');
         } catch (e) {

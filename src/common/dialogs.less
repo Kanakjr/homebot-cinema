@@ -1,0 +1,108 @@
+// Copyright (C) 2017-2026 HomeBot Cinema
+// In-app confirm/prompt dialogs (dialogs.js). Above every app overlay, including the profile picker (z-index 110).
+
+@surface: #0e0e10;
+@surface-2: #18181b;
+@border: rgba(255, 255, 255, 0.12);
+@text: #fff;
+@muted: rgba(255, 255, 255, 0.65);
+@danger: #ff6b6b;
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    width: min(28rem, 100%);
+    padding: 1.5rem;
+    border-radius: 1.2rem;
+    border: 1px solid @border;
+    background: @surface;
+    color: @text;
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.6);
+}
+
+.title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.message {
+    color: @muted;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.label {
+    color: @muted;
+    font-size: 0.85rem;
+}
+
+.input {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.7rem;
+    border: 1px solid @border;
+    background: @surface-2;
+    color: @text;
+    font: inherit;
+    outline: none;
+
+    &:focus {
+        border-color: var(--primary-accent-color, #F27A24);
+    }
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 0.3rem;
+}
+
+.secondary, .primary, .danger {
+    padding: 0.65rem 1.3rem;
+    border-radius: 0.8rem;
+    border: 1px solid @border;
+    background: @surface-2;
+    color: @text;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+
+    &:focus-visible, &:focus {
+        box-shadow: 0 0 0 0.18rem var(--primary-accent-color, #F27A24);
+    }
+}
+
+.primary {
+    background: @text;
+    color: #000;
+    border-color: @text;
+}
+
+.danger {
+    background: @danger;
+    color: #000;
+    border-color: @danger;
+}

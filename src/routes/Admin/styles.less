@@ -192,3 +192,27 @@
 }
 
 .page .tag { white-space: nowrap; }
+
+// Admin > Library: folders the library scans, and the folder picker
+.page {
+    .folder-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        > .tmain:first-child { grid-column: 1; }
+        > .tmeta { grid-column: 1; grid-row: 2; }
+        > .row-actions { grid-column: 2; grid-row: 1 / 3; }
+    }
+    .folder-path { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 0.88rem; }
+    .folder-picker { display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.8rem; padding: 1rem 1.2rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 1rem; background: #0e0e10; }
+    .picker-head { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+    .picker-path { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, monospace; font-size: 0.88rem; color: rgba(255, 255, 255, 0.75); }
+    .dir-list { display: flex; flex-direction: column; gap: 0.3rem; max-height: 18rem; overflow-y: auto; }
+    .dir {
+        display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+        padding: 0.55rem 0.8rem; border: 1px solid transparent; border-radius: 0.7rem;
+        background: #18181b; color: #fff; font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer;
+        &:hover, &:focus { border-color: rgba(255, 255, 255, 0.4); outline: none; }
+    }
+    .dir-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .picker-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem; }
+    .type-choice { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: rgba(255, 255, 255, 0.75); .input { width: auto; } }
+}

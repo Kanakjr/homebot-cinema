@@ -7,6 +7,7 @@ const { useNavigate } = require('react-router');
 const classnames = require('classnames');
 const { useCore } = require('stremio/core');
 const { api, playServerFile, openInVlc, streamUrl, formatBytes, isAdmin } = require('stremio/common/serverApi');
+const { confirmDialog, promptDialog } = require('stremio/common/dialogs');
 const styles = require('./styles');
 
 const FileRow = ({ file, label, onPlay, onVlc, onDelete, admin }) => (
@@ -66,10 +67,16 @@ const ServerTitle = ({ id }) => {
             setError(e.message);
         }
     };
-    const delFile = (file) => window.confirm(`Delete "${file.name}" from the server? This cannot be undone.`) && guard(() => api('DELETE', `/api/library/files/${file.id}`));
-    const delSeason = (s) => window.confirm(`Delete all of season ${s} of ${item.title} from the server?`) && guard(() => api('DELETE', `/api/library/${item.id}/season/${s}`));
+    const delFile = async (file) => {
+        if (!await confirmDialog({ title: `Delete "${file.name}" from the server?`, message: 'This cannot be undone.', confirmLabel: 'Delete', danger: true })) return;
+        guard(() => api('DELETE', `/api/library/files/${file.id}`));
+    };
+    const delSeason = async (s) => {
+        if (!await confirmDialog({ title: `Delete season ${s} of ${item.title}?`, message: 'Every file of this season is removed from the server. This cannot be undone.', confirmLabel: 'Delete season', danger: true })) return;
+        guard(() => api('DELETE', `/api/library/${item.id}/season/${s}`));
+    };
     const delItem = async () => {
-        if (!window.confirm(`Delete ALL of "${item.title}" (${formatBytes(item.totalSize)}) from the server? This cannot be undone.`)) return;
+        if (!await confirmDialog({ title: `Delete all of "${item.title}"?`, message: `${formatBytes(item.totalSize)} is removed from the server. This cannot be undone.`, confirmLabel: 'Delete all', danger: true })) return;
         try {
             await api('DELETE', `/api/library/${item.id}`);
             navigate('/server');
@@ -77,9 +84,9 @@ const ServerTitle = ({ id }) => {
             setError(e.message);
         }
     };
-    const identify = () => {
-        const imdb = window.prompt('IMDb id for this title (e.g. tt1375666):', item.imdbId || '');
-        if (imdb) guard(() => api('POST', `/api/library/${item.id}/identify`, { imdbId: imdb.trim() }));
+    const identify = async () => {
+        const imdb = await promptDialog({ title: `Identify "${item.title}"`, label: 'IMDb id', placeholder: 'tt1375666', initial: item.imdbId || '', confirmLabel: 'Identify' });
+        if (imdb && imdb.trim()) guard(() => api('POST', `/api/library/${item.id}/identify`, { imdbId: imdb.trim() }));
     };
 
     const isSeries = item.type === 'series';

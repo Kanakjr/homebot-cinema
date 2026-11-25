@@ -146,6 +146,16 @@ const MIGRATIONS = [
         PRIMARY KEY (kind, tmdb_id)
     );
     `,
+    // v5 — extra library folders added in Admin > Library (scanned like /Movies and /TV; must sit inside MEDIA_ROOTS)
+    `
+    CREATE TABLE library_folders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        path TEXT NOT NULL UNIQUE,
+        type TEXT NOT NULL CHECK (type IN ('movie', 'series')),
+        label TEXT,
+        added_at TEXT NOT NULL
+    );
+    `,
 ];
 
 function openDb(dataPath, filename = 'cinema.db') {

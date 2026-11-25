@@ -52,6 +52,8 @@ export default [
             'no-redeclare': 'off',
             'eol-last': 'error',
             'eqeqeq': 'error',
+            // the macOS app's web view answers alert/confirm/prompt with "cancel" at once: use stremio/common/dialogs
+            'no-alert': 'error',
             'no-console': ['error', {
                 allow: [
                     'warn',

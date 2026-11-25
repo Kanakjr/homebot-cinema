@@ -8,7 +8,9 @@ const { MainNavBars } = require('stremio/components');
 const PageHeader = require('stremio/components/PageHeader');
 const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const useServerEvents = require('stremio/common/useServerEvents');
+const { confirmDialog, promptDialog } = require('stremio/common/dialogs');
 const QualityProfiles = require('./QualityProfiles');
+const LibraryFolders = require('./LibraryFolders');
 const Plugins = require('./Plugins');
 const { slot, renderPlugin } = require('stremio/plugins');
 const styles = require('./styles');
@@ -130,8 +132,8 @@ const People = ({ onError }) => {
                         <div className={styles['tmain']}>{p.name}{p.isKid ? <span className={styles['tag']}>Kids</span> : null}{p.hasPin ? <span className={styles['tag']}>PIN</span> : null}</div>
                         <span />
                         <span className={styles['row-actions']}>
-                            <button type="button" className={styles['btn-sm']} onClick={() => {
-                                const name = window.prompt('Profile name', p.name);
+                            <button type="button" className={styles['btn-sm']} onClick={async () => {
+                                const name = await promptDialog({ title: 'Rename profile', label: 'Profile name', initial: p.name, confirmLabel: 'Save' });
                                 if (name && name.trim() && name.trim() !== p.name) run(() => api('PATCH', `/api/profiles/${p.id}`, { name: name.trim() }));
                             }}>Edit</button>
                             {/* destructive actions sit behind a menu, with a confirm step, instead of being the only visible choice */}
@@ -140,7 +142,11 @@ const People = ({ onError }) => {
                                 <div className={styles['more-menu']}>
                                     <button type="button" onClick={() => run(() => api('PATCH', `/api/profiles/${p.id}`, { isKid: !p.isKid }))}>{p.isKid ? 'Remove kids mode' : 'Make a kids profile'}</button>
                                     {p.hasPin ? <button type="button" onClick={() => run(() => api('POST', `/api/profiles/${p.id}/pin/remove`, {}))}>Reset PIN</button> : null}
-                                    <button type="button" className={styles['danger-item']} onClick={() => window.confirm(`Delete profile "${p.name}" and its library? This cannot be undone.`) && run(() => api('DELETE', `/api/profiles/${p.id}`))}>Delete profile…</button>
+                                    <button type="button" className={styles['danger-item']} onClick={async () => {
+                                        if (await confirmDialog({ title: `Delete profile "${p.name}"?`, message: 'Its library, history and settings are deleted. This cannot be undone.', confirmLabel: 'Delete profile', danger: true })) {
+                                            run(() => api('DELETE', `/api/profiles/${p.id}`));
+                                        }
+                                    }}>Delete profile…</button>
                                 </div>
                             </details>
                         </span>
@@ -152,7 +158,7 @@ const People = ({ onError }) => {
 };
 People.propTypes = { onError: PropTypes.func.isRequired };
 
-const LibraryTab = ({ o, onScan }) => (
+const LibraryTab = ({ o, onScan, onError }) => (
     <>
         <h2 className={styles['section']}>Library scanner</h2>
         <div className={styles['panel']}>
@@ -166,9 +172,10 @@ const LibraryTab = ({ o, onScan }) => (
             </div>
         </div>
         <div className={styles['hint']}>The scanner runs every 30 minutes. It groups files by their parsed names and never moves or renames anything on disk. Unmatched titles can be fixed with “Identify” on the title’s page.</div>
+        <LibraryFolders onError={onError} />
     </>
 );
-LibraryTab.propTypes = { o: PropTypes.object.isRequired, onScan: PropTypes.func.isRequired };
+LibraryTab.propTypes = { o: PropTypes.object.isRequired, onScan: PropTypes.func.isRequired, onError: PropTypes.func.isRequired };
 
 const Activity = ({ onError }) => {
     const [rows, setRows] = React.useState([]);
@@ -236,7 +243,7 @@ const Admin = () => {
                             {tab === 'overview' && o ? <Overview o={o} /> : null}
                             {tab === 'people' ? <People onError={setError} /> : null}
                             {tab === 'quality' ? <QualityProfiles onError={setError} /> : null}
-                            {tab === 'library' && o ? <LibraryTab o={o} onScan={scan} /> : null}
+                            {tab === 'library' && o ? <LibraryTab o={o} onScan={scan} onError={setError} /> : null}
                             {tab === 'activity' ? <Activity onError={setError} /> : null}
                             {tab === 'plugins' ? <Plugins onError={setError} /> : null}
                             {activePlugin ? renderPlugin(activePlugin, 'adminTabs', { onError: setError }) : null}

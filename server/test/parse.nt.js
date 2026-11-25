@@ -74,3 +74,17 @@ test('normTitle and isVideoFile', () => {
     assert.equal(normTitle('Ready or Not - Here I Come'), 'ready or not here i come');
     assert.ok(isVideoFile('a.MKV') && isVideoFile('a.mp4') && !isVideoFile('a.torrent') && !isVideoFile('a.nfo'));
 });
+
+test('parseName drops a leading web address, so the real title is matched', () => {
+    const a = parseName('www.example.group - Jailer 2 (2026) Hindi TRUE WEB-DL - 1080p - AVC - (DD+5.1 - 640Kbps & AAC) - 2.9GB - ESub.mkv');
+    assert.deepEqual(pick(a, 'title', 'year', 'resolution'), { title: 'Jailer 2', year: 2026, resolution: '1080p' });
+    assert.equal(parseName('[ www.example.com ] - The Northman (2022) 1080p.mkv').title, 'The Northman');
+    assert.equal(parseName('www.example.org_Silo.S01E02.720p.mkv').title, 'Silo');
+    // a dotted title that is not a web address stays as it is
+    assert.equal(parseName('Mr.Robot.S01E01.720p.mkv').title, 'Mr Robot');
+    assert.equal(parseName('Dr. STONE - S04E34.mkv').title, 'Dr. STONE');
+});
+
+test('isVideoFile accepts MPEG files', () => {
+    assert.ok(isVideoFile('clip.mpeg') && isVideoFile('clip.MPG'));
+});

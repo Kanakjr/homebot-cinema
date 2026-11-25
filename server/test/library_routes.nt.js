@@ -38,7 +38,7 @@ async function boot() {
         });
         return { status: res.status, json: await res.json().catch(() => null) };
     };
-    return { call, file, cleaned, close: () => server.close() };
+    return { call, file, cleaned, base, library, close: () => server.close() };
 }
 
 test('list / detail / by-imdb are available to any login', async () => {
@@ -82,4 +82,47 @@ test('admin can identify and delete; download cleanup hook is called with the pa
     assert.equal((await t.call('GET', '/api/library')).json.items.length, 0);
     assert.equal((await t.call('DELETE', `/api/library/${id}`, { admin: true })).status, 404);
     t.close();
+});
+
+test('library folders: admin only; add, list, scan one, browse, remove', async () => {
+    const t = await boot();
+    const extra = path.join(t.base, 'downloads', 'Extra');
+    fs.mkdirSync(extra, { recursive: true });
+    fs.writeFileSync(path.join(extra, 'Extra.Film.2021.mkv'), 'x');
+    fs.mkdirSync(path.join(t.base, 'Outside'));
+    const saved = process.env.MEDIA_ROOTS;
+    process.env.MEDIA_ROOTS = [path.join(t.base, 'Movies'), path.join(t.base, 'TV'), path.join(t.base, 'downloads')].join(':');
+    try {
+        assert.equal((await t.call('GET', '/api/library/folders')).status, 403);
+        assert.equal((await t.call('POST', '/api/library/folders', { body: { path: extra, type: 'movie' } })).status, 403);
+        assert.equal((await t.call('GET', '/api/library/browse')).status, 403);
+
+        const added = await t.call('POST', '/api/library/folders', { admin: true, body: { path: extra, type: 'movie', label: 'Extras' } });
+        assert.equal(added.status, 201);
+        assert.equal(added.json.path, extra);
+        assert.equal((await t.call('POST', '/api/library/folders', { admin: true, body: { path: path.join(t.base, 'Outside'), type: 'movie' } })).status, 403);
+        await new Promise((r) => setTimeout(r, 50)); // the background scan of the new folder
+        const list = await t.call('GET', '/api/library/folders', { admin: true });
+        const row = list.json.folders.find((f) => f.path === extra);
+        assert.equal(row.kind, 'folder');
+        assert.equal(row.files, 1);
+        assert.ok((await t.call('GET', '/api/library')).json.items.some((i) => i.title === 'Extra Film'));
+
+        assert.equal((await t.call('POST', '/api/library/scan', { admin: true, body: { path: path.join(t.base, 'Nope') } })).status, 404);
+        assert.equal((await t.call('POST', '/api/library/scan', { admin: true, body: { path: extra } })).status, 202);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const top = await t.call('GET', '/api/library/browse', { admin: true });
+        assert.equal(top.status, 200);
+        assert.equal((await t.call('GET', `/api/library/browse?path=${encodeURIComponent(path.join(t.base, 'downloads'))}`, { admin: true })).json.dirs[0].isRoot, true);
+        assert.equal((await t.call('GET', `/api/library/browse?path=${encodeURIComponent(path.join(t.base, 'Outside'))}`, { admin: true })).status, 403);
+
+        assert.equal((await t.call('DELETE', `/api/library/folders/${added.json.id}`, { admin: true })).status, 200);
+        assert.equal((await t.call('DELETE', `/api/library/folders/${added.json.id}`, { admin: true })).status, 404);
+        assert.ok(!(await t.call('GET', '/api/library')).json.items.some((i) => i.title === 'Extra Film'));
+        assert.ok(fs.existsSync(path.join(extra, 'Extra.Film.2021.mkv')), 'removing a folder never touches the disk');
+    } finally {
+        if (saved === undefined) delete process.env.MEDIA_ROOTS; else process.env.MEDIA_ROOTS = saved;
+        t.close();
+    }
 });

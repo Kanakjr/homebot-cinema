@@ -5,6 +5,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { api } = require('stremio/common/serverApi');
+const { confirmDialog } = require('stremio/common/dialogs');
 const { load: reloadProfiles } = require('stremio/common/qualityProfile');
 const styles = require('./styles');
 
@@ -114,15 +115,21 @@ const QualityProfiles = ({ onError }) => {
         const created = await api('POST', '/api/grabber/profiles', { ...toBody(form), name: `${form.name} (copy)` });
         await load(created.id);
     }, 'Duplicated');
-    const remove = () => window.confirm(`Delete “${current.name}”?`) && run(async () => {
-        await api('DELETE', `/api/grabber/profiles/${sel}`);
-        setSel(null);
-        await load();
-    });
-    const reset = () => window.confirm(`Restore “${current.name}” to its original settings?`) && run(async () => {
-        await api('POST', `/api/grabber/profiles/${sel}/reset`);
-        await load(sel);
-    }, 'Reset to defaults');
+    const remove = async () => {
+        if (!await confirmDialog({ title: `Delete “${current.name}”?`, message: 'Shows that use it fall back to the default profile.', confirmLabel: 'Delete', danger: true })) return;
+        run(async () => {
+            await api('DELETE', `/api/grabber/profiles/${sel}`);
+            setSel(null);
+            await load();
+        });
+    };
+    const reset = async () => {
+        if (!await confirmDialog({ title: `Restore “${current.name}”?`, message: 'It goes back to its original settings.', confirmLabel: 'Restore' })) return;
+        run(async () => {
+            await api('POST', `/api/grabber/profiles/${sel}/reset`);
+            await load(sel);
+        }, 'Reset to defaults');
+    };
     const makeDefault = () => run(async () => {
         await api('PUT', '/api/grabber/default', { profileId: sel });
         await load(sel);
