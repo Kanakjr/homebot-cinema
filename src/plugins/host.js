@@ -12,11 +12,12 @@
 //   adminTabs        { id, label, order, Component({ onError }) }      -> Admin, after Overview (src/routes/Admin/Admin.js)
 //   metaDetailsSections { id, Component({ type, id, videoId, meta }) } -> title page, under the description (MetaDetails.js)
 //   accents          { key, label, color, secondary }                -> accent palette (src/common/theme.js)
+//   serverLibraryTiles { id, Component({ admin }) }                  -> Server library, after the title grid (ServerLibrary.js)
 // Adding a slot = one entry here + one call site in core; list it in docs/plugins.md.
 
 const registry = require('./registry');
 
-const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'playerOverlays', 'playerControls', 'playerMenuItems', 'settingsSections', 'adminTabs', 'metaDetailsSections', 'accents'];
+const SLOTS = ['routes', 'appOverlays', 'navButtons', 'discoverActions', 'playerOverlays', 'playerControls', 'playerMenuItems', 'settingsSections', 'adminTabs', 'metaDetailsSections', 'accents', 'serverLibraryTiles'];
 
 let active = new Set();
 let loaded = false;

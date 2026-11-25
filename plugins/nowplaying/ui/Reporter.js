@@ -6,6 +6,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const { api } = require('stremio/common/serverApi');
 const pm = require('stremio/common/profileManager');
+const { isPrivatePlayback } = require('stremio/common/privatePlayback');
 const R = require('./report');
 
 const BEAT_MS = 15000;
@@ -38,6 +39,7 @@ const Reporter = (props) => {
     const beat = React.useCallback(() => {
         const p = latest.current;
         if (p.live || !Number.isFinite(p.durationMs) || p.durationMs <= 0) return;
+        if (isPrivatePlayback(p)) return; // Locked folder: never in Now playing or watch stats
         send('/api/nowplaying', R.heartbeat({ ...p, name: p.showName, session: session.current, lastHlsAt: lastHls.current, nowMs: Date.now() }));
     }, []);
 

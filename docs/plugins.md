@@ -21,6 +21,7 @@ a plugin off removes its routes, its UI and its background work. Core never impo
 | `ai` | AI copilot drawer (sparkle button): recommendations, server questions, staged downloads | off | `GEMINI_API_KEY` |
 | `telegram` | Household alerts (for example Sentinel queued an episode) to a Telegram chat | off | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` |
 | `gdrive` | Mounted cloud folders as extra library roots, plus a plan for moving watched files there | off | `LIBRARY_EXTRA_MOVIES_DIRS` / `LIBRARY_EXTRA_TV_DIRS` |
+| `vault` | **Locked folder**: a private folder of videos behind its own passcode, for the admin on the owner profile (tile in Server library, thumbnails, private resume; never in history, search, stats or Now playing) | off | `VAULT_DIR` (outside `MEDIA_ROOTS`) |
 
 ## Switching plugins on and off
 
@@ -108,6 +109,7 @@ nothing. Each contribution renders inside an error boundary: a crashing plugin h
 | `adminTabs` | `{ id, label, order, Component({ onError }) }` | Admin, tabs after Overview |
 | `metaDetailsSections` | `{ id, Component({ type, id, videoId, meta }) }` | Title page, under the description |
 | `accents` | `{ key, label, color, secondary }` | Accent palette (profile editor, Appearance) |
+| `serverLibraryTiles` | `{ id, Component({ admin }) }` | Server library, after the title grid (e.g. the Locked folder tile) |
 
 Import core UI through the `stremio/...` alias (`stremio/components`, `stremio/common/serverApi`, ...). Never import another
 plugin's files.

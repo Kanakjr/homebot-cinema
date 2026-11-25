@@ -7,6 +7,8 @@ Search, Library, Calendar and Settings (playback not exercised), plus a search o
 
 - **Nothing about accounts, profiles, library or watch history leaves your server.** There is no Stremio login: sign-in is
   Cloudflare Access, sync lives in our SQLite.
+- **The Locked folder (`vault` plugin) makes no outside calls at all**: titles come from file names, thumbnails and
+  lengths from ffmpeg on the server, and its playback never reaches the subtitle or metadata addons (no title id).
 - **No calls to Stremio's own API.** The core's worker `fetch` is guarded (`src/worker/fetchGuard.js`): announcements are
   answered locally, every other call to `api.strem.io`, `likes.stremio.com` or `link.stremio.com` is refused.
 - **Only your origin is sent**, never a path or query, to outside hosts such as image CDNs and YouTube (`Referrer-Policy: strict-origin-when-cross-origin`). YouTube trailers need it: with `same-origin` the desktop app (WebKit) gets embed error 153.

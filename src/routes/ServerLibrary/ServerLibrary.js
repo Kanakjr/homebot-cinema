@@ -9,6 +9,7 @@ const PageHeader = require('stremio/components/PageHeader');
 const { api, formatBytes, isAdmin } = require('stremio/common/serverApi');
 const useServerEvents = require('stremio/common/useServerEvents');
 const { markSeen } = require('stremio/common/newOnServer');
+const { PluginSlot } = require('stremio/plugins');
 const styles = require('./styles');
 
 const TABS = [
@@ -151,6 +152,8 @@ const ServerLibrary = () => {
             <div className={styles['grid']}>
                 {data ? data.items.map((item) => <Card key={item.id} item={item} admin={admin} />) : null}
             </div>
+            {/* plugin tiles (slot serverLibraryTiles), e.g. the Locked folder */}
+            <PluginSlot name="serverLibraryTiles" admin={admin} />
         </div>
     );
 };

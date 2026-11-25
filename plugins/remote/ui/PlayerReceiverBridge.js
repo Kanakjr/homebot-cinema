@@ -7,6 +7,7 @@ const React = require('react');
 const PropTypes = require('prop-types');
 const { api } = require('stremio/common/serverApi');
 const pm = require('stremio/common/profileManager');
+const { isPrivatePlayback } = require('stremio/common/privatePlayback');
 const {
     getState,
     registerPlayerBridge,
@@ -61,18 +62,20 @@ const PlayerReceiverBridge = (props) => {
         const video = typeof document !== 'undefined' ? document.querySelector('video') : null;
         const volume = video ? Math.round(video.volume * 100) : 100;
         const muted = video ? video.muted : false;
+        // Locked folder: remotes can still pause and seek, but never learn what is playing
+        const hidden = isPrivatePlayback(p);
 
         const body = {
             targetId: s.deviceId,
             state: p.paused ? 'paused' : 'playing',
             nowPlaying: {
-                title: p.title || '',
-                showName: p.showName || '',
-                type: p.type || null,
-                metaId: p.metaId || null,
-                videoId: p.videoId || null,
-                poster: p.poster || '',
-                streamUrl: p.streamUrl || '',
+                title: hidden ? 'Locked folder' : (p.title || ''),
+                showName: hidden ? '' : (p.showName || ''),
+                type: hidden ? null : (p.type || null),
+                metaId: hidden ? null : (p.metaId || null),
+                videoId: hidden ? null : (p.videoId || null),
+                poster: hidden ? '' : (p.poster || ''),
+                streamUrl: hidden ? '' : (p.streamUrl || ''),
                 timeMs: Number.isFinite(p.timeMs) ? Math.round(p.timeMs) : 0,
                 durationMs: Number.isFinite(p.durationMs) ? Math.round(p.durationMs) : 0,
                 paused: !!p.paused,

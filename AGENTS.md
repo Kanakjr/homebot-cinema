@@ -37,10 +37,10 @@ Read this file instead of exploring; open only the files named here.
 | `server/downloads_manager.js`, `transmission.js` | Download records, Transmission RPC, ffmpeg remux |
 | `server/events.js`, `snapshots.js` | SSE hints (`/api/events`); daily DB snapshot (keeps 7) |
 | `server/proxy_rewrite.js`, `streamlinks.js` | Host rewriting for proxied URLs, HEVC→H.264 for HLS; signed stream links (`.../video.mp4/?exp&sig`, trailing slash on purpose) |
-| `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `similar`, `metalfx`, `controllers`, `remote`, `mdblist`, `telegram`, `gdrive`, `livesubs` |
+| `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `similar`, `metalfx`, `controllers`, `remote`, `mdblist`, `telegram`, `gdrive`, `livesubs`, `getapp`, `vault` (Locked folder) |
 | `src/plugins/` | UI plugin host: registry, `slot()`, `<PluginSlot>` |
 | `src/worker/` | Core worker entry with the Stremio API fetch guard |
-| `src/common/` | `ssoManager.js` (per-profile storage; complete `DEFAULT_SETTINGS` or the core crashes), `profileManager.js`, `profileGate.js`, `serverApi.js`, `theme.js`, `useServerEvents.js`, `newOnServer.js` |
+| `src/common/` | `ssoManager.js` (per-profile storage; complete `DEFAULT_SETTINGS` or the core crashes), `profileManager.js`, `profileGate.js`, `serverApi.js`, `theme.js`, `useServerEvents.js`, `newOnServer.js`, `dialogs.js` (in-app confirm/prompt), `privatePlayback.js` |
 | `src/routes/` | Our routes: `ServerLibrary`, `Downloads`, `Admin` (incl. Plugins tab); upstream routes with small edits |
 | `scripts/` | `new-plugin.js`, `upstream-check.js`, `graft-upstream-history.sh`, `build-site.sh`, `brand/` (icons, avatars) |
 | `site/` | GitHub Pages website (`.github/workflows/pages.yml`) |
@@ -55,6 +55,10 @@ Read this file instead of exploring; open only the files named here.
 - Direct play: `GET /api/downloads/stream/:id?direct=1` serves the file as stored (no MP4 swap or remux) for the desktop app's mpv;
   through Cloudflare use `.../video.mp4/?direct=1` (trailing slash).
 - Player: HLS buffer 90–240 s (`src/common/hlsConfig.js` via webpack replacement); HEVC forced to H.264 for HLS.
+- Never use `window.confirm/prompt/alert` (eslint `no-alert`): the Mac app's web view answers them with "cancel" at once.
+  Use `confirmDialog` / `promptDialog` from `src/common/dialogs.js`.
+- Library folders: Admin › Library adds folders to scan (table `library_folders`, inside `MEDIA_ROOTS`; a folder inside
+  /Movies can be read as series); each can be scanned alone (`POST /api/library/scan {path}`).
 - Interface zoom defaults to 90%. No "new version" banner: updates apply on the next load.
 - Home hero: `src/routes/Board/HeroCarousel/pickHeroItems.js`. No "recently added" row by design. Continue watching cards show
   time left, or "Next up" after the furthest episode watched (core itself keeps a finished episode at ~0%); the Upcoming row

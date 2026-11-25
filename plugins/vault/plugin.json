@@ -1,0 +1,11 @@
+{
+    "id": "vault",
+    "name": "Locked folder",
+    "description": "A private folder of videos behind its own passcode, for the admin on the owner profile: thumbnails, private resume, and nothing in history, search, stats or Now playing.",
+    "version": "1.0.0",
+    "defaultEnabled": false,
+    "env": [
+        { "name": "VAULT_DIR", "required": true, "description": "Folder inside the container holding the locked videos (e.g. /Locked). Never inside MEDIA_ROOTS or a library folder. Needs the .cinema-root marker file." },
+        { "name": "VAULT_AUTOLOCK_MIN", "description": "Minutes without activity before the folder locks again (default 10). A video open in the player keeps it unlocked." }
+    ]
+}

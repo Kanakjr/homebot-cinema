@@ -77,8 +77,10 @@ Click the sparkle button in the top bar and ask: *"something light under two hou
 - **Sentinel** keeps shows up to date: monitor a series for *new episodes only*, chosen *seasons*, or *all* of it. It
   picks the best release under the show's quality profile, remembers what you deleted so it never re-downloads it, and can
   alert you on Telegram.
-- **Server library**: scans your movie and TV folders, matches titles, plays straight from the server, badges what is
-  new, and marks episodes on the Calendar.
+- **Server library**: scans your movie and TV folders (and any other folder you add in Admin › Library, each scannable on
+  its own), matches titles, plays straight from the server, badges what is new, and marks episodes on the Calendar.
+- **Locked folder** (plugin `vault`): a private folder of videos behind its own passcode, only for the admin on the owner
+  profile. Thumbnails made on your server, private resume points, and nothing in history, search, stats or Now playing.
 - **Player**: HLS with a deep buffer (90 to 240 s ahead), HEVC re-encoded to H.264 for smooth playback, subtitles from
   addons, and signed, expiring links for external players such as VLC.
 - **Skip intro, recap and credits** (plugin `skip`): a Skip button when their times are known (chapter markers in your

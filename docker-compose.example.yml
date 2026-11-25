@@ -31,6 +31,13 @@ services:
       - ./media/Movies:/Movies
       - ./media/TV:/TV
       - ./downloads:/downloads
+      # More folders for the library: mount them here, add them to MEDIA_ROOTS in .env, then Admin > Library > Add folder.
+      # - ./media/Anime:/media/Anime
+      # Locked folder (plugin "vault", see plugins/vault/README.md): its own mount, never in MEDIA_ROOTS.
+      # - type: bind
+      #   source: ./locked
+      #   target: /Locked
+      #   bind: { create_host_path: false }
     depends_on:
       - stremio-streaming-server
       - transmission
