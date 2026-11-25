@@ -3,1245 +3,575 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HomeBot Cinema - Private Household Media Server</title>
-    <meta name="description" content="A private, self-hosted household media hub built on Stremio Web: isolated profiles, server library, Transmission downloads, Sentinel automated episode tracking, Apple MetalFX 4K AI upscaling, and 13 modular plugins.">
+    <title>HomeBot Cinema: your household's own cinema</title>
+    <meta name="description" content="A private, self-hosted media hub built on Stremio Web. A profile for everyone, your own library and downloads, new episodes that arrive by themselves, and an AI copilot that only suggests.">
     <meta name="referrer" content="no-referrer">
-    <meta name="theme-color" content="#070709">
-    <meta property="og:title" content="HomeBot Cinema - Private Household Media Server">
-    <meta property="og:description" content="Your household's own cinema, on a box you own. Self-hosted, multi-profile, automated downloads, Apple MetalFX AI upscaling, and an extensible plugin system.">
-    <meta property="og:image" content="screenshots/home.webp">
+    <meta name="theme-color" content="#09090b">
+    <link rel="canonical" href="https://kanakjr.github.io/homebot-cinema/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="HomeBot Cinema">
+    <meta property="og:title" content="HomeBot Cinema: your household's own cinema">
+    <meta property="og:description" content="Self-hosted, open source, built on Stremio Web. Profiles for everyone, downloads to your own disk, new episodes that arrive by themselves.">
+    <meta property="og:url" content="https://kanakjr.github.io/homebot-cinema/">
+    <meta property="og:image" content="https://kanakjr.github.io/homebot-cinema/og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" href="brand/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+    <link rel="preload" href="fonts/PlusJakartaSans.ttf" as="font" type="font/ttf" crossorigin>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="nav">
-    <div class="wrap nav-inner">
-        <a class="brand" href="#top">
-            <img src="brand/icon.svg" alt="HomeBot Cinema logo" width="30" height="30">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="logo" href="./" aria-label="HomeBot Cinema, home">
+            <img src="brand/icon.svg" alt="" width="28" height="28">
             <span>HomeBot <b>Cinema</b></span>
         </a>
-        <nav class="nav-links" aria-label="Main Navigation">
-            <a href="#why">Why</a>
+        <nav class="nav" id="site-nav" aria-label="Main">
             <a href="#features">Features</a>
-            <a href="#showcase">Screenshots</a>
-            <a href="#plugins">Plugins (13)</a>
-            <a href="#architecture">Architecture</a>
+            <a href="#plugins">Plugins</a>
             <a href="#apps">Apps</a>
-            <a href="#start">Get Started</a>
-            <a href="#docs">Docs</a>
+            <a href="story.html">Story</a>
+            <a href="https://github.com/Kanakjr/homebot-cinema/tree/main/docs">Docs</a>
         </nav>
-        <div class="nav-actions">
-            <a class="btn ghost small" href="https://youtu.be/aCRXjZhj_kQ" target="_blank" rel="noopener">Demo</a>
-            <a class="btn small" href="https://github.com/Kanakjr/homebot-cinema" target="_blank" rel="noopener">GitHub</a>
+        <div class="header-actions">
+            <a class="icon-link" href="https://github.com/Kanakjr/homebot-cinema" aria-label="HomeBot Cinema on GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+            </a>
+            <a class="btn btn-primary btn-sm" href="#start">Get started</a>
+            <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+                <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
         </div>
     </div>
 </header>
 
-<main id="top">
-    <!-- Hero Section -->
+<main id="main">
+
+    <!-- Hero -->
     <section class="hero">
-        <div class="wrap hero-grid">
-            <div>
-                <p class="eyebrow"><span>●</span> Open Source · Self-Hosted · Built on Stremio Web</p>
-                <h1>Your household's own <span class="grad">cinema</span>, on a box you own.</h1>
-                <p class="lead">A profile for everyone with private watch history, downloads directly to your disk, automated Sentinel episode tracking, native Apple MetalFX 4K AI upscaling, and an extensible plugin ecosystem. Zero cloud subscriptions required.</p>
-                <div class="cta">
-                    <a class="btn" href="#start">Get Started</a>
-                    <a class="btn ghost" href="#showcase">Explore Screenshots</a>
-                    <a class="btn ghost" href="#plugins">View Plugins (13)</a>
-                </div>
+        <div class="container hero-copy">
+            <a class="pill" href="#apps"><span class="pill-dot" aria-hidden="true"></span> New: Android app and remote control <span aria-hidden="true">→</span></a>
+            <h1>Your household's own <span class="accent">cinema</span>.</h1>
+            <p class="lead">A private, self-hosted media hub built on Stremio Web. A profile for everyone, your own library and downloads, and new episodes that arrive by themselves, on a box you own.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="#start">Get started</a>
+                <a class="btn btn-ghost" href="#demo">
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4a.6.6 0 0 0 .9.5l8.3-5.2a.6.6 0 0 0 0-1L5.4 2.3a.6.6 0 0 0-.9.5Z"/></svg>
+                    Watch the demo
+                </a>
             </div>
-            <div class="hero-frame">
-                <div class="hero-frame-inner">
-                    <img src="screenshots/home.webp" alt="HomeBot Cinema home screen showing hero carousel, Continue Watching and Upcoming row" width="2200" height="1238" fetchpriority="high">
-                </div>
+            <p class="hero-meta">Free and open source · GPL-2.0 · Runs with Docker</p>
+        </div>
+        <div class="container hero-shot">
+            <div class="frame frame-hero">
+                <img src="screenshots/home.webp" alt="HomeBot Cinema home screen: a hero banner, the Upcoming row of episodes airing soon, and a row of popular movies with ratings" width="2200" height="1237" fetchpriority="high">
             </div>
         </div>
     </section>
 
-    <!-- Why Section -->
-    <section id="why" class="band">
-        <div class="wrap">
-            <div class="hero-grid" style="align-items: start;">
-                <div>
-                    <p class="eyebrow">Design Philosophy</p>
-                    <h2>Why we built HomeBot Cinema</h2>
-                    <p>Stremio Web is an exceptional player with an expansive addon catalog, but it was designed for a single individual with one account hosted in the cloud. A real household needs something else: everyone streaming from the same local box, each person with their own separate watch history and Continue Watching queue, a library of the media files already sitting on your NAS, and new episodes that arrive automatically without manual torrent hunting.</p>
-                    <p>We forked Stremio Web and engineered a robust Node/Express backend around it. Everything—profiles, watch progress, downloads, and plugins—resides in a single SQLite database and a clean <code>data/</code> folder. Protected by Cloudflare Access zero-trust authentication, only the people you invite can ever sign in.</p>
-                </div>
-                <div class="card highlight">
-                    <h3>Core Commitments</h3>
-                    <ul class="plugin-bullets" style="margin-top: 1rem;">
-                        <li><b>Data Sovereignty:</b> Runs locally on your Mac mini, NAS, or PC. Your watch history, library, and settings never leave your server.</li>
-                        <li><b>Small Core, Modular Plugins:</b> Core handles playback and household synchronization. Everything else is an isolated plugin.</li>
-                        <li><b>Suggest, Never Force:</b> The AI copilot stages downloads and monitors into interactive cards; a human must always click Confirm.</li>
-                        <li><b>Zero Tracked Piracy Sources:</b> The repository ships no indexer URLs or scraper endpoints. Operator sources are strictly external.</li>
-                        <li><b>Active Upstream Sync:</b> We continuously rebase and merge changes from official Stremio Web releases to maintain compatibility.</li>
+    <section class="facts" aria-label="At a glance">
+        <div class="container facts-grid">
+            <div><strong>8</strong><span>profiles per household</span></div>
+            <div><strong>13</strong><span>plugins, on or off</span></div>
+            <div><strong>3</strong><span>apps: web, macOS, Android</span></div>
+            <div><strong>1</strong><span>SQLite file to back up</span></div>
+        </div>
+    </section>
+
+    <!-- Demo -->
+    <section id="demo" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Demo</p>
+            <h2>See it in action</h2>
+            <p>Profiles, Smart filters, the AI copilot, downloads and Sentinel, in one short tour.</p>
+        </div>
+        <div class="container">
+            <a class="video" href="https://youtu.be/aCRXjZhj_kQ" data-youtube="aCRXjZhj_kQ" aria-label="Play the HomeBot Cinema demo video">
+                <img src="screenshots/player-metalfx.webp" alt="" width="2200" height="1237" loading="lazy">
+                <span class="video-play">
+                    <span class="play-icon"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8v10.4a.6.6 0 0 0 .9.5l8.3-5.2a.6.6 0 0 0 0-1L5.4 2.3a.6.6 0 0 0-.9.5Z"/></svg></span>
+                    <span class="play-label">Watch the tour</span>
+                </span>
+            </a>
+            <p class="video-note">Plays from YouTube (privacy-enhanced mode) when you click.</p>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Features</p>
+            <h2>Everything a household needs. Nothing it doesn't.</h2>
+            <p>Stremio's player and addon catalogs, plus the pieces a shared home server needs.</p>
+        </div>
+        <div class="container features">
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">Profiles</p>
+                    <h3>Everyone gets their own.</h3>
+                    <p>Up to eight profiles behind a "Who's watching?" screen, with avatars, an optional PIN and a kids mode. Each one keeps its own library, Continue watching, history, settings and accent colour.</p>
+                    <ul class="checks">
+                        <li>Kids profiles get child-friendly results</li>
+                        <li>Hide and reorder Home rows, per profile</li>
+                        <li>Admin is a sign-in, not a profile</li>
                     </ul>
                 </div>
+                <a class="frame" href="screenshots/library.webp" data-lightbox="features" data-title="Your library" data-text="Each profile keeps its own library, sorted the way they like.">
+                    <img src="screenshots/library.webp" alt="A profile's library: posters sorted by last watched, with watched badges" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">Discover</p>
+                    <h3>Find something to watch, fast.</h3>
+                    <p>Smart filters search by rating, votes, genre, language, runtime, year and "streaming on a service in your country". Forty quick picks cover charts, genres and short-on-time nights.</p>
+                    <ul class="checks">
+                        <li>Rotten Tomatoes, Metacritic, IMDb and Letterboxd ratings</li>
+                        <li>"More like this" and movie collections on title pages</li>
+                        <li>Search puts the best match first, across every catalog</li>
+                    </ul>
+                </div>
+                <a class="frame" href="screenshots/smart-filters.webp" data-lightbox="features" data-title="Smart filters" data-text="Filter by streaming service, rating, runtime, year, genre and language.">
+                    <img src="screenshots/smart-filters.webp" alt="Smart filters: streaming services, genres and rating filters above a grid of matching titles" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">Watch</p>
+                    <h3>Press play. Keep watching.</h3>
+                    <p>One click resumes where you stopped or starts the next episode. Continue watching shows the time left or what's up next, and the Upcoming row lists episodes airing in the next two weeks.</p>
+                    <ul class="checks">
+                        <li>Skip intro, recap and credits, with marks on the seek bar</li>
+                        <li>One panel for audio and subtitles, with subtitle auto-sync</li>
+                        <li>A deep 90 to 240 second buffer for smooth playback</li>
+                    </ul>
+                </div>
+                <a class="frame" href="screenshots/player-audio-subtitles.webp" data-lightbox="features" data-title="Audio and subtitles" data-text="Every audio track and subtitle in one panel, with size, delay and position.">
+                    <img src="screenshots/player-audio-subtitles.webp" alt="The player with the Audio and subtitles panel open, listing audio tracks, subtitle languages and subtitle settings" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">Your server</p>
+                    <h3>New episodes arrive by themselves.</h3>
+                    <p>Save movies and shows to your own disk through Transmission. Sentinel follows the shows you pick, fetches each new episode in the quality you chose, and never re-downloads one you deleted.</p>
+                    <ul class="checks">
+                        <li>Quality profiles: 4K, HD Balanced, Space Saver or your own</li>
+                        <li>A swarm check tells you a release is alive before you start</li>
+                        <li>The server library and Calendar show what is on disk</li>
+                    </ul>
+                </div>
+                <a class="frame" href="screenshots/series-details.webp" data-lightbox="features" data-title="Auto-download a show" data-text="Pick a quality, save to the server, and turn on auto-download for new episodes.">
+                    <img src="screenshots/series-details.webp" alt="A series page with the Save to server panel, a quality profile picker, auto-download, and the season's episode list" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">AI copilot · optional</p>
+                    <h3>Ask for ideas. You press the button.</h3>
+                    <p>Ask for "something light under two hours" or "is season 3 on the server?". The copilot answers with poster cards and can stage a download, but nothing starts until you confirm.</p>
+                    <ul class="checks">
+                        <li>Sees titles only: never names, emails or PINs</li>
+                        <li>Staged actions expire after ten minutes</li>
+                        <li>Off by default; kids profiles can't stage anything</li>
+                    </ul>
+                </div>
+                <a class="frame" href="screenshots/copilot.webp" data-lightbox="features" data-title="AI copilot" data-text="Ask in plain words. Answers come back as titles you can open.">
+                    <img src="screenshots/copilot.webp" alt="The copilot drawer answering a question with poster cards next to the home screen" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+
+            <article class="feature">
+                <div class="feature-copy">
+                    <p class="feature-kicker">For the admin</p>
+                    <h3>Know what's playing.</h3>
+                    <p>See who is watching what, on which device, and whether it plays directly or is transcoded. Watch stats keep every play on your own server: hours per day, streaks, top titles, devices and a CSV export.</p>
+                    <ul class="checks">
+                        <li>Switch plugins on and off in Admin › Plugins</li>
+                        <li>People, quality profiles and an activity log</li>
+                        <li>A daily database snapshot, the last seven kept</li>
+                    </ul>
+                </div>
+                <a class="frame" href="screenshots/watch-stats.webp" data-lightbox="features" data-title="Watch stats" data-text="Hours per day, when the household watches, streaks and top titles.">
+                    <img src="screenshots/watch-stats.webp" alt="Watch stats: hours watched, titles, current streak, a daily bar chart and a weekday by hour grid" width="2200" height="1237" loading="lazy">
+                </a>
+            </article>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="screens" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Screens</p>
+            <h2>A closer look</h2>
+            <p>Real captures from a running server. Click any screen to enlarge it.</p>
+        </div>
+        <div class="container gallery">
+            <figure>
+                <a class="frame" href="screenshots/discover.webp" data-lightbox="gallery" data-title="Discover" data-text="Catalogs with ratings on every poster and a details panel on hover.">
+                    <img src="screenshots/discover.webp" alt="Discover: a grid of posters with ratings and a details panel" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>Discover.</b> Ratings on every poster.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/quick-picks.webp" data-lightbox="gallery" data-title="Quick picks" data-text="Forty ready-made filters: charts, streaming services, genres and languages.">
+                    <img src="screenshots/quick-picks.webp" alt="The Smart filters quick picks menu" width="2200" height="1251" loading="lazy">
+                </a>
+                <figcaption><b>Quick picks.</b> Forty one-click filters.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/search.webp" data-lightbox="gallery" data-title="Search" data-text="One search across every catalog addon, movies and shows apart.">
+                    <img src="screenshots/search.webp" alt="Search results for an actor, split into movies and shows" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>Search.</b> Every catalog at once.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/calendar.webp" data-lightbox="gallery" data-title="Calendar" data-text="Episodes of the shows you follow by air date, in a month or agenda view.">
+                    <img src="screenshots/calendar.webp" alt="The calendar's month view with an agenda of upcoming episodes" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>Calendar.</b> What airs, and when.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/downloads.webp" data-lightbox="gallery" data-title="Downloads" data-text="Storage, active downloads, monitored shows and what finished recently.">
+                    <img src="screenshots/downloads.webp" alt="Downloads: storage bar, active downloads, monitored shows and recently completed" width="2200" height="1253" loading="lazy">
+                </a>
+                <figcaption><b>Downloads.</b> Straight to your disk.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/quality-profiles.webp" data-lightbox="gallery" data-title="Quality profiles" data-text="Decide which release gets picked: resolution, size limits, codecs and keywords.">
+                    <img src="screenshots/quality-profiles.webp" alt="Admin quality profiles editor with size limits per resolution" width="2200" height="1253" loading="lazy">
+                </a>
+                <figcaption><b>Quality profiles.</b> Your rules for every download.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/player-metalfx.webp" data-lightbox="gallery" data-title="4K AI upscaling" data-text="In the macOS app, Apple MetalFX upscales 1080p to 4K on the GPU, with live stats.">
+                    <img src="screenshots/player-metalfx.webp" alt="The macOS player with the MetalFX upscaler panel showing input and output resolution" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>4K AI upscaling.</b> MetalFX on Apple Silicon.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/admin-plugins.webp" data-lightbox="gallery" data-title="Admin › Plugins" data-text="Every plugin with a switch, its status, and what it still needs to run.">
+                    <img src="screenshots/admin-plugins.webp" alt="Admin Plugins: cards with toggle switches and status for each plugin" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>Plugins.</b> One switch each.</figcaption>
+            </figure>
+            <figure>
+                <a class="frame" href="screenshots/settings.webp" data-lightbox="gallery" data-title="Appearance" data-text="Each profile picks its own accent colour, pure black and corner radius.">
+                    <img src="screenshots/settings.webp" alt="Appearance settings with accent colour swatches" width="2200" height="1237" loading="lazy">
+                </a>
+                <figcaption><b>Appearance.</b> A look for every profile.</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <!-- Plugins -->
+    <section id="plugins" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Plugins</p>
+            <h2>A small core. Everything else is a plugin.</h2>
+            <p>Run only what your household wants. Ten are on by default, and each is isolated, so one that fails never takes the app down.</p>
+        </div>
+        <div class="container">
+            <div class="plugins">
+                <div class="plugin"><div class="plugin-top"><h3>Smart filters</h3><span class="tag on">On</span></div><p>Browse by rating, genre, language, runtime and streaming service.</p><span class="id">find · TMDB key</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Skip intro</h3><span class="tag on">On</span></div><p>Skip intro, recap and credits; Up next as the credits start.</p><span class="id">skip</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Ratings</h3><span class="tag on">On</span></div><p>Rotten Tomatoes, Metacritic, IMDb and Letterboxd on posters and title pages.</p><span class="id">mdblist · MDBList key</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Remote &amp; cast</h3><span class="tag on">On</span></div><p>Send a title from your phone to the living-room screen and control it.</p><span class="id">remote</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Now playing &amp; stats</h3><span class="tag on">On</span></div><p>Who is watching what, plus watch history and charts kept on your server.</p><span class="id">nowplaying</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Themes</h3><span class="tag on">On</span></div><p>Accent colour, pure black and corner radius for each profile.</p><span class="id">themes</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>More like this</h3><span class="tag on">On</span></div><p>A row of recommendations on movie and series pages.</p><span class="id">similar · TMDB key</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Collections</h3><span class="tag on">On</span></div><p>"Part of the X collection" on movie pages, in release order.</p><span class="id">collections · TMDB key</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>4K AI upscaler</h3><span class="tag on">On</span></div><p>Apple MetalFX upscaling with live GPU stats in the macOS app.</p><span class="id">metalfx · macOS app</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Game controllers</h3><span class="tag on">On</span></div><p>Xbox and PlayStation controllers in the macOS app, with remapping.</p><span class="id">controllers · macOS app</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>AI copilot</h3><span class="tag">Off</span></div><p>A Gemini chat that suggests titles and stages actions you confirm.</p><span class="id">ai · Gemini key</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Telegram alerts</h3><span class="tag">Off</span></div><p>Household news, like a new episode queued, in a Telegram chat.</p><span class="id">telegram · bot token</span></div>
+                <div class="plugin"><div class="plugin-top"><h3>Google Drive</h3><span class="tag">Off</span></div><p>Cloud folders as extra library roots, with offline safety.</p><span class="id">gdrive · rclone mount</span></div>
+                <div class="plugin plugin-extra"><div class="plugin-top"><h3>Choose what runs</h3></div><p>Flip switches in Admin › Plugins, or set it in <code>.env</code>:</p><div class="code"><pre>CINEMA_PLUGINS=all</pre></div></div>
+                <div class="plugin plugin-extra"><div class="plugin-top"><h3>Write your own</h3></div><p>Scaffold a plugin with server code, UI slots and tests:</p><div class="code"><pre>pnpm plugin:new my-plugin</pre></div><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md">Read the plugin guide →</a></div>
             </div>
         </div>
     </section>
 
-    <!-- Key Pillars / Features -->
-    <section id="features">
-        <div class="wrap">
-            <p class="eyebrow center">Capabilities</p>
-            <h2 class="center">Everything a modern media household needs</h2>
-            <p class="sub center">Built around the battle-tested Stremio Web WASM core, extended with household features.</p>
-
-            <div class="pillars-grid">
-                <article class="card">
-                    <div class="icon-box">👥</div>
-                    <h3>Profiles for Everyone</h3>
-                    <p>Up to 8 household profiles with custom avatars, optional PIN locks, dedicated kid-safe filters, and separate watch histories and Continue Watching queues.</p>
-                </article>
-
-                <article class="card">
-                    <div class="icon-box">⚡</div>
-                    <h3>Sentinel Auto-Downloads</h3>
-                    <p>Automated series tracking via Transmission. Monitor new episodes, specific seasons, or complete backlogs with quality profiles and live swarm health checks.</p>
-                </article>
-
-                <article class="card">
-                    <div class="icon-box">🍿</div>
-                    <h3>Universal Card Ratings</h3>
-                    <p>Rotten Tomatoes Tomatometer & Audience scores, Metacritic, IMDb, and Letterboxd ratings overlaid directly across Home cards, Discover, and Title details.</p>
-                </article>
-
-                <article class="card">
-                    <div class="icon-box">✨</div>
-                    <h3>Apple MetalFX 4K AI Upscaling</h3>
-                    <p>Native macOS desktop app integration using Apple Silicon GPU neural shaders. Upscale 1080p and 720p streams to crisp 4K Ultra HD in real time with zero server load.</p>
-                </article>
-
-                <article class="card">
-                    <div class="icon-box">📊</div>
-                    <h3>Tautulli-Style Watch Stats</h3>
-                    <p>Server-side analytics at <code>#/stats</code>: daily watch hours, active viewing streaks, hourly habit charts, top titles, device breakdowns, and CSV export.</p>
-                </article>
-
-                <article class="card">
-                    <div class="icon-box">🤖</div>
-                    <h3>Staged AI Copilot</h3>
-                    <p>Powered by Google Gemini with strict sandbox guards. Query your library, receive tailored recommendations, and stage downloads that require your explicit confirmation.</p>
-                </article>
+    <!-- Apps -->
+    <section id="apps" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Apps</p>
+            <h2>On every screen in the house.</h2>
+            <p>Start in any browser. Add the native apps where they help.</p>
+        </div>
+        <div class="container">
+            <div class="apps">
+                <div class="app">
+                    <span class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+                    <h3>Web and phone</h3>
+                    <p>Works in any modern browser. Add it to your home screen for a full-screen app on iPhone, Android or desktop.</p>
+                    <div class="app-foot"><p class="fine">Nothing to install.</p></div>
+                </div>
+                <div class="app">
+                    <span class="app-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-4ZM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4Z"/></svg></span>
+                    <h3>macOS app</h3>
+                    <p>Plays files as they are, with no server transcode: HEVC, AV1, Dolby and DTS audio, embedded subtitles. Adds 4K AI upscaling, game controllers, media keys and Control Center.</p>
+                    <div class="app-foot">
+                        <a class="btn btn-primary btn-sm" href="https://github.com/Kanakjr/homebot-cinema/releases/latest/download/HomeBot-Cinema-arm64.dmg">Download for Apple Silicon</a>
+                        <p class="fine">Needs <code>brew install mpv</code>. Not notarized yet: right-click › Open the first time.</p>
+                    </div>
+                </div>
+                <div class="app">
+                    <span class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
+                    <h3>Android app</h3>
+                    <p>For phones, tablets and Android TV, with hardware decoding and background playback. Doubles as a remote: send a title to the Mac and control it from the couch.</p>
+                    <div class="app-foot">
+                        <a class="btn btn-ghost btn-sm" href="https://github.com/Kanakjr/homebot-cinema/tree/main/android#readme">Build guide</a>
+                        <p class="fine">Built from source for now.</p>
+                    </div>
+                </div>
             </div>
+            <p class="apps-note">Windows and Linux desktop apps are planned.</p>
         </div>
     </section>
 
-    <!-- Interactive Screenshots Showcase -->
-    <section id="showcase" class="band">
-        <div class="wrap">
-            <p class="eyebrow center">Interface Tour</p>
-            <h2 class="center">See HomeBot Cinema in action</h2>
-            <p class="sub center">Explore real captures across all 6 core subsystems. Select a category and choose any screen to inspect.</p>
-
-            <div class="showcase-container">
-                <!-- 1. Category Tabs at the Top -->
-                <div class="showcase-categories" role="tablist" aria-label="Screenshot Categories">
-                    <button class="cat-btn" role="tab" id="cat-home" aria-selected="true" data-cat="home" tabindex="0">🏠 Home & Profiles (2)</button>
-                    <button class="cat-btn" role="tab" id="cat-catalog" aria-selected="false" data-cat="catalog" tabindex="-1">🔍 Catalog & Filters (3)</button>
-                    <button class="cat-btn" role="tab" id="cat-details" aria-selected="false" data-cat="details" tabindex="-1">🎬 Details & Sentinel (3)</button>
-                    <button class="cat-btn" role="tab" id="cat-playback" aria-selected="false" data-cat="playback" tabindex="-1">⚡ Playback & MetalFX (3)</button>
-                    <button class="cat-btn" role="tab" id="cat-server" aria-selected="false" data-cat="server" tabindex="-1">⚙️ Server & Management (5)</button>
-                    <button class="cat-btn" role="tab" id="cat-copilot" aria-selected="false" data-cat="copilot" tabindex="-1">🤖 AI Copilot (2)</button>
-                </div>
-
-                <!-- 2. Sub-Screen Selector (PROMINENTLY DIRECTLY UNDER CATEGORIES, ABOVE THE IMAGE!) -->
-                <div class="showcase-subnav" id="showcase-subnav" role="tablist" aria-label="Screens in selected category">
-                    <!-- Dynamic screen buttons injected by JS -->
-                </div>
-
-                <!-- 3. Screen Overview Card (ELEVATED CLEARLY ABOVE THE SCREENSHOT) -->
-                <div class="showcase-header-card" id="showcase-content">
-                    <div class="showcase-header-main">
-                        <h3 id="sc-title">Home Dashboard & Hero Carousel</h3>
-                        <p id="sc-desc">Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.</p>
-                        <div class="badge-group" id="sc-badges">
-                            <span class="badge primary">Continue Watching</span>
-                            <span class="badge gold">Upcoming 14 Days</span>
-                            <span class="badge purple">Hero Carousel</span>
-                        </div>
-                    </div>
-                    <div class="showcase-controls">
-                        <button class="nav-arrow-btn" id="sc-prev" aria-label="Previous screenshot">‹</button>
-                        <span class="screen-counter" id="sc-counter">Screen 1 of 2</span>
-                        <button class="nav-arrow-btn" id="sc-next" aria-label="Next screenshot">›</button>
-                    </div>
-                </div>
-
-                <!-- 4. Realistic macOS App Window Frame (NO TEXT UNDERNEATH!) -->
-                <div class="showcase-window">
-                    <div class="window-titlebar">
-                        <div class="window-dots">
-                            <span class="window-dot dot-red"></span>
-                            <span class="window-dot dot-yellow"></span>
-                            <span class="window-dot dot-green"></span>
-                        </div>
-                        <div class="window-title" id="sc-window-title">homebot.local — Home Dashboard — Continue Watching & Upcoming</div>
-                        <div class="window-badge" id="sc-window-badge">Real Capture · 4K</div>
-                    </div>
-                    <div class="window-viewport">
-                        <img id="sc-img" src="screenshots/home.webp" alt="Home dashboard hero carousel, continue watching, and upcoming row" width="2200" height="1238" loading="lazy">
-                    </div>
-                </div>
-            </div>
+    <!-- How it works -->
+    <section id="how" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">How it works</p>
+            <h2>Runs on a box you own.</h2>
+            <p>A Mac mini, a NAS or a mini PC. Cloudflare Access decides who can sign in, and everything else stays in one folder.</p>
         </div>
-    </section>
-
-    <!-- Detailed Plugins Section -->
-    <section id="plugins">
-        <div class="wrap">
-            <p class="eyebrow center">Extensibility</p>
-            <h2 class="center">Plugins: Run only what your household needs</h2>
-            <p class="sub center">Each plugin is an isolated bundle with server code, UI slots, and automated tests. Enable or disable any feature with a single environment flag or through the Admin UI.</p>
-
-            <!-- Plugin Category Filters -->
-            <div class="plugin-filters" role="group" aria-label="Filter Plugins by Category">
-                <button class="filter-btn active" data-category="all">All (13)</button>
-                <button class="filter-btn" data-category="playback">Playback & Upscaling (4)</button>
-                <button class="filter-btn" data-category="discovery">Discovery & Metadata (4)</button>
-                <button class="filter-btn" data-category="experience">Experience & UI (2)</button>
-                <button class="filter-btn" data-category="server">Server & Intelligence (3)</button>
-            </div>
-
-            <!-- Plugin Cards Grid -->
-            <div class="plugins-grid">
-                <!-- 1. find -->
-                <article class="plugin-card" data-category="discovery">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">find</span>
-                            <div class="plugin-title">Smart Filters & Quick Picks</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Discover Tab</span>
-                        <span class="plugin-tag">Requires: Free TMDB Key</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Advanced catalog filtering powered by TMDB Discover. Find movies and shows matching precise household criteria.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Streaming provider filtering:</b> See what is available on Netflix, Apple TV+, Prime, or Disney+ in your country.</li>
-                            <li><b>Precision sliders:</b> Filter by IMDb/TMDB rating, vote count, release year, runtime, and primary language.</li>
-                            <li><b>40 Ready Quick Picks:</b> Curated shortcuts for Top 250, Hidden Gems, Short on Time (&lt;90 min), and award winners.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>TMDB_API_KEY</code>, <code>WATCH_REGION</code></span>
-                    </div>
-                </article>
-
-                <!-- 2. metalfx -->
-                <article class="plugin-card" data-category="playback">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">metalfx</span>
-                            <div class="plugin-title">MetalFX 4K AI Upscaler</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Player HUD</span>
-                        <span class="plugin-tag">Platform: macOS Desktop</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Real-time Apple MetalFX AI Spatial Super-Resolution built exclusively for the macOS native desktop player.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Local GPU Acceleration:</b> Upscales 1080p and 720p streams to razor-sharp 4K Ultra HD on Apple Silicon.</li>
-                            <li><b>Zero Transcode Load:</b> The server streams the raw lightweight file; the client Mac performs the AI super-resolution.</li>
-                            <li><b>Live Telemetry HUD:</b> Real-time overlay reporting frame rate (up to 120 FPS), input/output resolution, and sub-0.5ms GPU times.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Zero server config (Apple Silicon Mac)</span>
-                    </div>
-                </article>
-
-                <!-- 3. skip -->
-                <article class="plugin-card" data-category="playback">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">skip</span>
-                            <div class="plugin-title">Skip Intro, Recap & Credits</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Video Player</span>
-                        <span class="plugin-tag">Source: Chapter Markers + IntroDB</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Smart detection of television intros, recaps, and closing credits with seekbar markers and auto-skip.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Seekbar Chapter Marks:</b> Visual chapter indicator bars highlighting exact intro and credit boundaries.</li>
-                            <li><b>Auto-Skip Option:</b> Configurable per profile to automatically jump over intros without lifting a finger.</li>
-                            <li><b>Instant Up Next:</b> Automatically presents the next episode countdown the moment closing credits begin.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>SKIP_INTRODB_URL</code> (or <code>off</code> for local only)</span>
-                    </div>
-                </article>
-
-                <!-- 4. mdblist -->
-                <article class="plugin-card" data-category="discovery">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">mdblist</span>
-                            <div class="plugin-title">Universal Card Ratings</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Poster Cards & Details</span>
-                        <span class="plugin-tag">Requires: MDBList Key</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Critic and audience score overlays rendered directly onto poster cards across Home, Discover, and Search.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Rotten Tomatoes:</b> Displays both the Tomatometer critic score and Audience Popcornmeter rating.</li>
-                            <li><b>Metacritic & IMDb:</b> Metascore badges alongside IMDb ratings and Letterboxd community scores.</li>
-                            <li><b>Cinematic Details:</b> Widens the title details pane to showcase high-resolution backdrops and audio badges.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>MDBLIST_API_KEY</code></span>
-                    </div>
-                </article>
-
-                <!-- 5. nowplaying -->
-                <article class="plugin-card" data-category="experience">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">nowplaying</span>
-                            <div class="plugin-title">Now Playing & Watch Stats</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Admin + Route #/stats</span>
-                        <span class="plugin-tag">Storage: Local SQLite</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Real-time playback telemetry for administrators and comprehensive Tautulli-grade watch analytics.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Live Activity Monitor:</b> See who is streaming, on what device, bitrate, and direct-play vs transcode status.</li>
-                            <li><b>Personal Watch Stats:</b> Track daily hours watched, viewing streaks, hourly habit heatmaps, and top titles.</li>
-                            <li><b>Privacy-First:</b> Non-admins only see their own history; admins can view aggregate household metrics or export CSV.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>NOWPLAYING_KEEP_DAYS</code> (default 730)</span>
-                    </div>
-                </article>
-
-                <!-- 6. themes -->
-                <article class="plugin-card" data-category="experience">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">themes</span>
-                            <div class="plugin-title">Custom Themes & Appearance</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Settings > Appearance</span>
-                        <span class="plugin-tag">Per-Profile Customization</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Complete visual customization saved independently per household profile.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>10 Accent Palettes:</b> Cinema Orange, Electric Purple, Cyber Blue, Emerald, Sunset, Rose, and more.</li>
-                            <li><b>AMOLED True Black:</b> Pitch-black UI mode tailored for OLED displays and home theater projectors.</li>
-                            <li><b>Adjustable Radius:</b> Slider control from sharp modern corners (4px) to soft rounded cards (18px).</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Zero server configuration required</span>
-                    </div>
-                </article>
-
-                <!-- 7. remote -->
-                <article class="plugin-card" data-category="playback">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">remote</span>
-                            <div class="plugin-title">Push-to-Play Cast & Remote</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Topbar + Player</span>
-                        <span class="plugin-tag">Real-Time WebSockets</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Seamless cross-device casting and virtual remote control for living room installations.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Push-to-Play Casting:</b> Browse on your phone or tablet and beam any stream directly to your Mac mini or TV player.</li>
-                            <li><b>Virtual Remote Control:</b> Interactive D-pad navigation, play/pause, seek scrubbing, volume, and subtitle controls.</li>
-                            <li><b>Zero Setup:</b> Operates automatically over LAN or through Cloudflare Access authenticated sessions.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Zero configuration required</span>
-                    </div>
-                </article>
-
-                <!-- 8. controllers -->
-                <article class="plugin-card" data-category="playback">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">controllers</span>
-                            <div class="plugin-title">Game Controller Navigation</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Settings > Controllers</span>
-                        <span class="plugin-tag">Hardware Gamepad API</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Console-style gamepad navigation built for lean-back home theater setups.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Broad Hardware Support:</b> Native mapping for Xbox Wireless, PlayStation DualSense/DualShock 4, and Switch Pro.</li>
-                            <li><b>Interactive Calibration:</b> Live button tester, deadzone adjustment, and custom key remapping.</li>
-                            <li><b>HUD Notifications:</b> On-screen battery status and controller connect/disconnect alerts.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Client-side Gamepad API</span>
-                    </div>
-                </article>
-
-                <!-- 9. similar -->
-                <article class="plugin-card" data-category="discovery">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">similar</span>
-                            <div class="plugin-title">More Like This Recommendations</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Title Details Bottom</span>
-                        <span class="plugin-tag">Source: TMDB Graph</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Contextual recommendations rendered directly below title descriptions on movie and series pages.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Collaborative Filtering:</b> Surfaces titles that viewers who loved the current title also watched and rated highly.</li>
-                            <li><b>Rich Card Badges:</b> Displays release year, duration, and universal ratings on each recommendation card.</li>
-                            <li><b>One-Click Navigation:</b> Instant transition between related titles without returning to the catalog search.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>TMDB_API_KEY</code> (shared)</span>
-                    </div>
-                </article>
-
-                <!-- 10. collections -->
-                <article class="plugin-card" data-category="discovery">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">collections</span>
-                            <div class="plugin-title">Movie & Franchise Collections</div>
-                        </div>
-                        <span class="plugin-status default">Enabled by default</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Movie Details Banner</span>
-                        <span class="plugin-tag">Source: TMDB Collections</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Chronological saga banners highlighting franchise sets (e.g. Star Wars, Lord of the Rings, John Wick).</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Release Timeline:</b> Lists every film in the franchise in correct chronological release order.</li>
-                            <li><b>Library Badging:</b> Immediately shows which movies from the franchise are already stored on your local disk.</li>
-                            <li><b>One-Click Download:</b> Quick actions to queue missing franchise installments directly to Sentinel.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>TMDB_API_KEY</code> (shared)</span>
-                    </div>
-                </article>
-
-                <!-- 11. ai -->
-                <article class="plugin-card" data-category="server">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">ai</span>
-                            <div class="plugin-title">AI Copilot (Gemini)</div>
-                        </div>
-                        <span class="plugin-status opt-in">Opt-in</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Topbar Sparkle Drawer</span>
-                        <span class="plugin-tag">Model: Gemini 2.5 Flash</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>An intelligent media copilot that recommends titles, checks server availability, and stages downloads.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Natural Language Queries:</b> Ask complex queries like <em>"find a 90-minute thriller with no gore"</em> or <em>"what did I start last week?"</em></li>
-                            <li><b>Staged Action Safety:</b> It can only stage a download or monitor card; nothing begins downloading until you press Confirm.</li>
-                            <li><b>Zero Personal Leakage:</b> Prompt context includes titles only—never personal names, emails, PINs, or raw file paths.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>GEMINI_API_KEY</code>, <code>GEMINI_MODEL</code></span>
-                    </div>
-                </article>
-
-                <!-- 12. telegram -->
-                <article class="plugin-card" data-category="server">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">telegram</span>
-                            <div class="plugin-title">Telegram Household Alerts</div>
-                        </div>
-                        <span class="plugin-status opt-in">Opt-in</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Server Hook Dispatch</span>
-                        <span class="plugin-tag">Integration: Telegram Bot API</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Automated notifications broadcast to your family Telegram group or administrator chat.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Sentinel Notifications:</b> Receive instant alerts when a newly aired episode is detected and queued.</li>
-                            <li><b>Completion Alerts:</b> Broadcasts a message when a large 4K movie download finishes and is ready for playback.</li>
-                            <li><b>Storage Warnings:</b> Notifies administrators when disk storage exceeds 90% capacity.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>TELEGRAM_BOT_TOKEN</code>, <code>TELEGRAM_CHAT_ID</code></span>
-                    </div>
-                </article>
-
-                <!-- 13. gdrive -->
-                <article class="plugin-card" data-category="server">
-                    <div class="plugin-header">
-                        <div>
-                            <span class="plugin-id">gdrive</span>
-                            <div class="plugin-title">Cloud Roots & Smart Tiering</div>
-                        </div>
-                        <span class="plugin-status opt-in">Opt-in</span>
-                    </div>
-                    <div class="plugin-tags">
-                        <span class="plugin-tag">Slot: Library Scanner</span>
-                        <span class="plugin-tag">Integration: rclone / Network Mounts</span>
-                    </div>
-                    <div class="plugin-body">
-                        <p>Mount remote cloud storage (Google Drive, Dropbox, OneDrive) as secondary offline-safe library roots.</p>
-                        <ul class="plugin-bullets">
-                            <li><b>Offline Safety:</b> Roots marked with <code>.cinema-root</code> are protected from accidental pruning if the cloud mount unlinks.</li>
-                            <li><b>Automated Tiering:</b> Move watched movies and completed show seasons from local NVMe/SSD to cold cloud storage.</li>
-                            <li><b>Seamless Playback:</b> Cloud-hosted titles appear seamlessly in your unified library alongside local files.</li>
-                        </ul>
-                    </div>
-                    <div class="plugin-config">
-                        <span>Config: <code>LIBRARY_EXTRA_MOVIES_DIRS</code>, <code>MEDIA_ROOTS</code></span>
-                    </div>
-                </article>
-            </div>
-
-            <!-- Configuration Snippet Block -->
-            <div class="steps-grid" style="margin-top: 36px;">
-                <div class="card" style="grid-column: span 3;">
-                    <h3>Enabling & Configuring Plugins</h3>
-                    <p>Plugins can be toggled using the <code>CINEMA_PLUGINS</code> environment variable or managed live through the Admin UI at <code>#/admin/plugins</code>.</p>
-                    <pre><code># .env file configuration
-CINEMA_PLUGINS=find,themes,skip,nowplaying,mdblist,remote,controllers,similar,collections,metalfx,ai,telegram
-
-# Or survive container rebuilds with data/plugins.json:
-{
-  "enabled": ["find", "themes", "skip", "nowplaying", "mdblist", "metalfx", "ai"]
-}</code></pre>
-                    <p class="note" style="margin-top: 0.6rem;">Admins can audit plugin status, startup logs, and missing configuration keys anytime via the <code>/api/plugins</code> REST endpoint.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Architecture & Diagram Section -->
-    <section id="architecture" class="band">
-        <div class="wrap">
-            <p class="eyebrow center">Under the Hood</p>
-            <h2 class="center">Clean architecture, private data</h2>
-            <p class="sub center">How the browser client, Node.js server, streaming engine, and local storage interact.</p>
-
+        <div class="container how">
             <div class="diagram-wrap">
-                <div class="diagram-flow" role="img" aria-label="Architecture diagram showing Client layer communicating via Cloudflare Access to HomeBot Cinema Node.js server, which controls SQLite, Stremio Streaming Engine, Transmission, and local media disks.">
-                    <div class="diagram-col">
-                        <div class="diagram-node">
-                            Web Browser / PWA
-                            <small>React UI + Stremio WASM</small>
-                        </div>
-                        <div class="diagram-node">
-                            macOS Desktop App
-                            <small>Tauri 2 + libmpv + MetalFX</small>
-                        </div>
-                        <div class="diagram-node">
-                            Android App
-                            <small>Jetpack Compose + Media3</small>
-                        </div>
-                    </div>
-
-                    <div class="diagram-arrow" aria-hidden="true">&rarr;</div>
-
-                    <div class="diagram-col">
-                        <div class="diagram-node hub">
-                            <b>HomeBot Cinema Server</b>
-                            <small>Node.js & Express 4 · Cloudflare Access Auth</small>
-                            <div class="hub-submodules">
-                                <span>Core Router & Sync</span>
-                                <span>13 Modular Plugins</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="diagram-arrow" aria-hidden="true">&rarr;</div>
-
-                    <div class="diagram-col">
-                        <div class="diagram-node">
-                            Streaming Engine
-                            <small>HLS & Torrent Protocol</small>
-                        </div>
-                        <div class="diagram-node">
-                            Transmission Daemon
-                            <small>Automated Downloads & Remux</small>
-                        </div>
-                        <div class="diagram-node">
-                            Local Media Storage
-                            <small>SQLite DB + Movies & TV Disks</small>
-                        </div>
-                    </div>
-                </div>
+            <svg class="diagram" viewBox="0 0 720 420" role="img" aria-labelledby="diagram-title diagram-desc">
+                <title id="diagram-title">How HomeBot Cinema fits together</title>
+                <desc id="diagram-desc">Your devices connect through Cloudflare Access to the HomeBot Cinema server, which uses a SQLite database, the Stremio streaming server and Transmission on your machine, and optionally TMDB, Gemini and your addons.</desc>
+                <style>
+                    .d-box { fill: #111114; stroke: rgba(255,255,255,.14); }
+                    .d-core { fill: rgba(242,122,36,.1); stroke: #f27a24; }
+                    .d-ext { fill: transparent; stroke: rgba(255,255,255,.22); stroke-dasharray: 5 5; }
+                    .d-line { stroke: rgba(255,255,255,.28); stroke-width: 1.5; fill: none; }
+                    .d-dash { stroke-dasharray: 4 5; }
+                    .d-t { fill: #fafafa; font-size: 15px; font-weight: 600; }
+                    .d-s { fill: #a1a1aa; font-size: 12.5px; }
+                    .d-a { fill: #f27a24; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; }
+                </style>
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="rgba(255,255,255,.45)"/></marker>
+                </defs>
+                <!-- devices -->
+                <rect class="d-box" x="2" y="150" width="150" height="120" rx="14"/>
+                <text class="d-t" x="77" y="196" text-anchor="middle">Your devices</text>
+                <text class="d-s" x="77" y="220" text-anchor="middle">Browser · PWA</text>
+                <text class="d-s" x="77" y="240" text-anchor="middle">macOS · Android</text>
+                <path class="d-line" d="M152 210h36" marker-end="url(#arrow)"/>
+                <!-- cloudflare -->
+                <rect class="d-box" x="192" y="172" width="132" height="76" rx="14"/>
+                <text class="d-t" x="258" y="205" text-anchor="middle">Cloudflare</text>
+                <text class="d-s" x="258" y="226" text-anchor="middle">Access sign-in</text>
+                <path class="d-line" d="M324 210h32" marker-end="url(#arrow)"/>
+                <!-- core -->
+                <rect class="d-core" x="360" y="140" width="160" height="140" rx="16"/>
+                <text class="d-a" x="440" y="180" text-anchor="middle">YOUR SERVER</text>
+                <text class="d-t" x="440" y="208" text-anchor="middle">HomeBot Cinema</text>
+                <text class="d-s" x="440" y="230" text-anchor="middle">Node / Express</text>
+                <text class="d-s" x="440" y="250" text-anchor="middle">+ plugins</text>
+                <!-- right column -->
+                <path class="d-line" d="M520 190 C545 190 545 58 566 58" marker-end="url(#arrow)"/>
+                <path class="d-line" d="M520 205 C545 205 545 148 566 148" marker-end="url(#arrow)"/>
+                <path class="d-line" d="M520 220 C545 220 545 238 566 238" marker-end="url(#arrow)"/>
+                <path class="d-line d-dash" d="M520 250 C545 250 545 342 566 342" marker-end="url(#arrow)"/>
+                <rect class="d-box" x="570" y="28" width="148" height="60" rx="12"/>
+                <text class="d-t" x="644" y="54" text-anchor="middle">SQLite</text>
+                <text class="d-s" x="644" y="73" text-anchor="middle">profiles, history</text>
+                <rect class="d-box" x="570" y="118" width="148" height="60" rx="12"/>
+                <text class="d-t" x="644" y="144" text-anchor="middle">Streaming server</text>
+                <text class="d-s" x="644" y="163" text-anchor="middle">HLS and playback</text>
+                <rect class="d-box" x="570" y="208" width="148" height="60" rx="12"/>
+                <text class="d-t" x="644" y="234" text-anchor="middle">Transmission</text>
+                <text class="d-s" x="644" y="253" text-anchor="middle">downloads to disk</text>
+                <rect class="d-ext" x="570" y="302" width="148" height="80" rx="12"/>
+                <text class="d-t" x="644" y="330" text-anchor="middle">Optional</text>
+                <text class="d-s" x="644" y="350" text-anchor="middle">TMDB · Gemini</text>
+                <text class="d-s" x="644" y="368" text-anchor="middle">your addons</text>
+            </svg>
             </div>
-
-            <p class="note center">One SQLite database (<code>data/cinema.db</code>) and one <code>data/</code> folder hold 100% of your household state. Back them up to preserve everything.</p>
+            <ul class="principles">
+                <li>
+                    <span class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6l-8-3Z"/></svg></span>
+                    <div><b>Fails closed</b><span>No valid Cloudflare Access token, no access. Only the people you invite can sign in.</span></div>
+                </li>
+                <li>
+                    <span class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z"/></svg></span>
+                    <div><b>Your data stays home</b><span>Profiles, history and settings live in one folder on your machine, never in someone else's cloud.</span></div>
+                </li>
+                <li>
+                    <span class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>
+                    <div><b>No sources shipped</b><span>The repository ships metadata, subtitle and public-domain addons only. You choose the rest.</span></div>
+                </li>
+                <li>
+                    <span class="p-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span>
+                    <div><b>Signed links</b><span>Links for VLC and other players are signed and expire. Stream responses are never cached.</span></div>
+                </li>
+            </ul>
         </div>
     </section>
 
-    <!-- Native Apps Section -->
-    <section id="apps">
-        <div class="wrap">
-            <p class="eyebrow center">Any Screen</p>
-            <h2 class="center">Native apps and modern web</h2>
-            <p class="sub center">Stream in any modern web browser or install high-performance native companion applications.</p>
-
-            <div class="apps-grid">
-                <div class="app-card">
-                    <span class="badge primary" style="align-self: flex-start; margin-bottom: 0.8rem;">Available Now</span>
-                    <h3>macOS Native Desktop</h3>
-                    <p>Built with Tauri 2 and libmpv for Apple Silicon. Zero-transcode direct playback, Apple MetalFX 4K AI upscaling, GameController support, and macOS Now Playing media keys.</p>
-                    <a class="btn small" href="https://github.com/Kanakjr/homebot-cinema/releases/latest/download/HomeBot-Cinema-arm64.dmg">Download DMG (Apple Silicon)</a>
-                </div>
-
-                <div class="app-card">
-                    <span class="badge gold" style="align-self: flex-start; margin-bottom: 0.8rem;">Available Now</span>
-                    <h3>Android Companion</h3>
-                    <p>Native Jetpack Compose and Kotlin app with Media3 (ExoPlayer) hardware decoding. Features snap Continue Watching, background audio, and real-time remote casting.</p>
-                    <a class="btn ghost small" href="https://github.com/Kanakjr/homebot-cinema/tree/main/android#readme">Android Setup Guide</a>
-                </div>
-
-                <div class="app-card">
-                    <span class="badge green" style="align-self: flex-start; margin-bottom: 0.8rem;">Any Browser</span>
-                    <h3>PWA (Progressive Web App)</h3>
-                    <p>Open your server URL on iOS Safari, Android Chrome, or desktop browsers and tap "Add to Home Screen" for a full-screen, standalone app experience with gesture controls.</p>
-                    <span class="note">Works anywhere out of the box</span>
-                </div>
-
-                <div class="app-card">
-                    <span class="badge purple" style="align-self: flex-start; margin-bottom: 0.8rem;">In Progress</span>
-                    <h3>Windows & Linux</h3>
-                    <p>Windows WebView2 + libmpv direct playback wrapper and Linux AppImage/Flatpak ports are actively in development to deliver native hardware decoding on PC.</p>
-                    <span class="note">Follow progress on GitHub</span>
-                </div>
-            </div>
+    <!-- Story teaser -->
+    <section id="story" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">The story</p>
+            <h2>From first release to every screen in nine days.</h2>
+            <p>84 commits, 13 plugins and three apps since the first public release. Here is how it came together.</p>
+        </div>
+        <div class="container">
+            <ol class="timeline">
+                <li><time datetime="2026-11-13">Nov 13</time><b>First release</b><span>Profiles, downloads, Sentinel and a copilot that only suggests.</span></li>
+                <li><time datetime="2026-11-16">Nov 16</time><b>Plugins</b><span>A small core, with optional features as isolated plugins.</span></li>
+                <li><time datetime="2026-11-16">Nov 16</time><b>Mac app</b><span>Tauri and libmpv: files play as they are.</span></li>
+                <li><time datetime="2026-11-17">Nov 17</time><b>Streaming-service feel</b><span>Skip intro, Up next, watch stats, 4K AI upscaling.</span></li>
+                <li><time datetime="2026-11-17">Nov 17–19</time><b>The UI review</b><span>Seven phases of polish and one-click playback.</span></li>
+                <li><time datetime="2026-11-19">Nov 19–20</time><b>Couch mode</b><span>Game controllers with console-style navigation.</span></li>
+                <li><time datetime="2026-11-21">Nov 21</time><b>Every screen</b><span>Android app, remote control and ratings everywhere.</span></li>
+            </ol>
+            <div class="story-cta"><a class="btn btn-ghost" href="story.html">Read the full story <span aria-hidden="true">→</span></a></div>
         </div>
     </section>
 
-    <!-- Get Started Section -->
-    <section id="start" class="band">
-        <div class="wrap">
-            <p class="eyebrow center">Quick Setup</p>
-            <h2 class="center">Get started in three steps</h2>
-            <p class="sub center">Deploy on any Mac mini, NAS, or Linux server using Docker Compose.</p>
-
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h3>Clone & Configure</h3>
-                    <p>Clone the repository and prepare your environment files.</p>
-                    <pre><code>git clone https://github.com/Kanakjr/homebot-cinema.git
-cd homebot-cinema
-cp .env.example .env
-cp data/addons.example.json data/addons.json
-cp docker-compose.example.yml docker-compose.yml</code></pre>
-                    <p class="note">Mount your existing Movies and TV folders in <code>docker-compose.yml</code>.</p>
+    <!-- Get started -->
+    <section id="start" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">Get started</p>
+            <h2>Up and running in five commands.</h2>
+            <p>You need Docker with Compose, a folder for movies and one for shows.</p>
+        </div>
+        <div class="container start">
+            <div>
+                <div class="code">
+                    <div class="code-bar"><span>Terminal</span><button class="copy" type="button" data-copy="#install-cmds">Copy</button></div>
+<pre id="install-cmds">git clone https://github.com/Kanakjr/homebot-cinema.git && cd homebot-cinema
+cp .env.example .env                              <span class="c"># fill in the values</span>
+cp data/addons.example.json data/addons.json      <span class="c"># addons every profile gets</span>
+cp docker-compose.example.yml docker-compose.yml  <span class="c"># point it at your folders</span>
+docker compose up -d --build</pre>
                 </div>
-
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h3>Launch Server</h3>
-                    <p>Start the container suite with Docker Compose.</p>
-                    <pre><code>docker compose up -d --build</code></pre>
-                    <p class="note">Open <code>http://localhost:3002</code> in your browser to begin first-time household setup.</p>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h3>Profiles & Addons</h3>
-                    <p>Create household profiles on the "Who's watching?" screen and add your favorite metadata and subtitle addons to <code>data/addons.json</code>.</p>
-                    <p class="note">Add a free TMDB key in <code>.env</code> for Smart Filters, and an optional Gemini key for AI Copilot.</p>
-                </div>
+                <p class="after-code">Then open <code>http://localhost:3002</code>, create the first profile, and you're in. Every setting is in the <a href="https://github.com/Kanakjr/homebot-cinema#configuration">README</a>.</p>
+            </div>
+            <div class="start-notes">
+                <div class="note"><b>Sign-in</b><p>On a real server, put it behind Cloudflare Access and set <code>CF_TEAM_DOMAIN</code>, <code>CF_ACCESS_AUD</code> and <code>ADMIN_EMAILS</code>.</p></div>
+                <div class="note"><b>Just trying it?</b><p>Uncomment the two local-trial lines in <code>docker-compose.yml</code>. Never on a server other people can reach.</p></div>
+                <div class="note"><b>Nice extras</b><p>A free TMDB key turns on Smart filters, an MDBList key adds ratings, and a Gemini key turns on the copilot.</p></div>
             </div>
         </div>
     </section>
 
-    <!-- Documentation & Roadmap -->
-    <section id="docs">
-        <div class="wrap">
-            <p class="eyebrow center">Resources</p>
-            <h2 class="center">Complete documentation</h2>
-            <p class="sub center">In-depth guides for operators, developers, and AI agents.</p>
+    <!-- FAQ -->
+    <section id="faq" class="section">
+        <div class="container section-head">
+            <p class="eyebrow">FAQ</p>
+            <h2>Good questions</h2>
+        </div>
+        <div class="container">
+            <div class="faq">
+                <details>
+                    <summary>Does HomeBot Cinema host or provide any media?</summary>
+                    <p>No. It does not host, index, provide or recommend any media. It is a client for the sources you configure and a manager for your own server. You decide what to point it at, and you are responsible for following the laws and terms that apply to you. Use it for media you have the right to access.</p>
+                </details>
+                <details>
+                    <summary>Do I need a Stremio account?</summary>
+                    <p>No. Sign-in goes through Cloudflare Access, and the app never calls Stremio's account API. It does use Stremio's public Cinemeta catalogs and artwork; every outside service is listed in <a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/third-party-services.md">docs/third-party-services.md</a>.</p>
+                </details>
+                <details>
+                    <summary>What hardware do I need?</summary>
+                    <p>Anything that runs Docker: a Mac mini, a NAS or a mini PC, plus disk space for your library. The macOS app needs Apple Silicon.</p>
+                </details>
+                <details>
+                    <summary>Is it safe to reach from outside my home?</summary>
+                    <p>Behind Cloudflare Access, only the people you invite can sign in, and the server refuses every request without a valid token. Admin rights belong to the sign-ins you list, not to a profile.</p>
+                </details>
+                <details>
+                    <summary>Can I turn the AI off?</summary>
+                    <p>It is off by default. The copilot runs only when you enable the <code>ai</code> plugin and add a Gemini key, and even then it can only stage actions that a person confirms.</p>
+                </details>
+                <details>
+                    <summary>Is it affiliated with Stremio?</summary>
+                    <p>No. HomeBot Cinema is an independent fork of Stremio Web (GPL-2.0) and is not affiliated with or endorsed by Stremio or Smart Code OOD.</p>
+                </details>
+            </div>
+        </div>
+    </section>
 
-            <div class="docs-grid">
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema#readme" target="_blank" rel="noopener">
-                    <h4>Main README</h4>
-                    <p>Comprehensive setup guide, configuration environment variables, and Docker deployment.</p>
-                </a>
-
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md" target="_blank" rel="noopener">
-                    <h4>Plugin Developer Guide</h4>
-                    <p>How to write, test, and register custom plugins using hooks, UI slots, and the server SDK.</p>
-                </a>
-
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugin-architecture.md" target="_blank" rel="noopener">
-                    <h4>Plugin Architecture</h4>
-                    <p>Core boundaries, failure isolation guarantees, and design contracts.</p>
-                </a>
-
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/upstream-sync.md" target="_blank" rel="noopener">
-                    <h4>Upstream Sync Workflow</h4>
-                    <p>How we rebase and graft upstream Stremio Web releases without breaking local enhancements.</p>
-                </a>
-
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/third-party-services.md" target="_blank" rel="noopener">
-                    <h4>Third-Party Services</h4>
-                    <p>Full inventory of external APIs, privacy audits, and offline-mode guidelines.</p>
-                </a>
-
-                <a class="doc-link" href="https://github.com/Kanakjr/homebot-cinema/blob/main/AGENTS.md" target="_blank" rel="noopener">
-                    <h4>AGENTS.md Guide</h4>
-                    <p>Machine-readable codebase map and constraints for autonomous AI coding agents.</p>
-                </a>
+    <section class="final">
+        <div class="container narrow">
+            <img src="brand/icon.svg" alt="" width="64" height="64">
+            <h2>Movie night, on your own terms.</h2>
+            <p>Free, open source, and yours to run.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="#start">Get started</a>
+                <a class="btn btn-ghost" href="https://github.com/Kanakjr/homebot-cinema">Star on GitHub</a>
             </div>
         </div>
     </section>
 </main>
 
-<!-- Footer -->
-<footer class="footer">
-    <div class="wrap">
-        <div class="footer-top">
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
             <div class="footer-brand">
-                <h4>HomeBot Cinema</h4>
-                <p>A private, self-hosted media server for the whole household. Built on Stremio Web (GPL-2.0).</p>
-                <p class="note"><b>Responsible Use Notice:</b> HomeBot Cinema does not host, index, or provide any media content. It is a client interface for the sources you configure and a manager for your own local media disks. Please use it only with media you have the legal right to access.</p>
+                <a class="logo" href="./"><img src="brand/icon.svg" alt="" width="28" height="28"><span>HomeBot <b>Cinema</b></span></a>
+                <p>A private, self-hosted media hub for the whole household.</p>
             </div>
-            <div class="footer-links">
-                <h5>Navigation</h5>
+            <div>
+                <h4>Project</h4>
                 <ul>
-                    <li><a href="#why">Why HomeBot</a></li>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#showcase">Screenshots</a></li>
-                    <li><a href="#plugins">Plugins (13)</a></li>
-                    <li><a href="#apps">Native Apps</a></li>
-                    <li><a href="#start">Quick Start</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema">GitHub</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/releases">Releases</a></li>
+                    <li><a href="story.html">Story</a></li>
+                    <li><a href="#demo">Demo video</a></li>
                 </ul>
             </div>
-            <div class="footer-links">
-                <h5>Community & Code</h5>
+            <div>
+                <h4>Docs</h4>
                 <ul>
-                    <li><a href="https://github.com/Kanakjr/homebot-cinema" target="_blank" rel="noopener">GitHub Repository</a></li>
-                    <li><a href="https://github.com/Kanakjr/homebot-cinema/releases" target="_blank" rel="noopener">Releases & Downloads</a></li>
-                    <li><a href="https://github.com/Kanakjr/homebot-cinema/issues" target="_blank" rel="noopener">Issue Tracker</a></li>
-                    <li><a href="https://youtu.be/aCRXjZhj_kQ" target="_blank" rel="noopener">Watch Video Demo</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema#readme">README</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/plugins.md">Plugin guide</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/native-apps.md">Native apps</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/docs/third-party-services.md">Outside services</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/CONTRIBUTING.md">Contributing</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/issues">Issues</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/security">Security</a></li>
+                    <li><a href="https://github.com/Kanakjr/homebot-cinema/blob/main/AGENTS.md">AGENTS.md</a></li>
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">
-            <span>GPL-2.0 Open Source License &middot; Independent project not affiliated with Stremio or Smart Code OOD.</span>
-            <span>Metadata provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a> where enabled.</span>
+        <div class="legal">
+            <p>Built on <a href="https://github.com/Stremio/stremio-web">Stremio Web</a> by Smart Code OOD. HomeBot Cinema is independent and not affiliated with or endorsed by Stremio.</p>
+            <p>This product uses the TMDB API but is not endorsed or certified by TMDB. Posters and artwork belong to their owners.</p>
+            <p>Released under the GNU General Public License v2.0. HomeBot Cinema does not host or provide any media.</p>
         </div>
     </div>
 </footer>
 
-<!-- Interactive Scripts for Tabs & Showcase -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Screenshot Showcase Data & Controller
-    const showcaseScreens = {
-        home: [
-            {
-                title: "Home Dashboard & Hero Carousel",
-                subTitle: "Home Dashboard",
-                icon: "🏠",
-                desc: "Dynamic hero banner with backdrop art, Continue Watching with progress bars, and an Upcoming row listing followed episodes airing in the next 14 days.",
-                badges: [
-                    { text: "Continue Watching", cls: "primary" },
-                    { text: "Upcoming 14 Days", cls: "gold" },
-                    { text: "Hero Carousel", cls: "purple" }
-                ],
-                src: "screenshots/home.webp",
-                alt: "Home dashboard hero carousel, continue watching, and upcoming row",
-                windowTitle: "Home Dashboard — Continue Watching & Upcoming",
-                windowBadge: "4K UHD · 2200 × 1238"
-            },
-            {
-                title: "Who's Watching: Household Profiles",
-                subTitle: "Household Profiles",
-                icon: "👥",
-                desc: "Household profile selector supporting up to 8 members, custom avatars, kid-safe filters, private watch history, and optional PIN security gates.",
-                badges: [
-                    { text: "Multi-Profile", cls: "primary" },
-                    { text: "Avatars", cls: "gold" },
-                    { text: "Kids Mode", cls: "green" },
-                    { text: "PIN Gate", cls: "purple" }
-                ],
-                src: "screenshots/profiles.webp",
-                alt: "Household profile selector with avatars and PIN security gate",
-                windowTitle: "Who's Watching? — Household Profiles",
-                windowBadge: "Multi-Profile"
-            }
-        ],
-        catalog: [
-            {
-                title: "Discover Catalog with Universal Ratings",
-                subTitle: "Discover Catalog",
-                icon: "🍿",
-                desc: "Catalog grid displaying Rotten Tomatoes Tomatometer & Audience Popcornmeter, Metacritic, and IMDb scores directly on poster cards via MDBList.",
-                badges: [
-                    { text: "Plugin: mdblist", cls: "primary" },
-                    { text: "Rotten Tomatoes", cls: "gold" },
-                    { text: "Metacritic", cls: "purple" },
-                    { text: "IMDb Ratings", cls: "green" }
-                ],
-                src: "screenshots/discover.webp",
-                alt: "Discover catalog grid with universal ratings",
-                windowTitle: "Discover Catalog — Universal Card Ratings",
-                windowBadge: "Universal Ratings"
-            },
-            {
-                title: "Smart Filters & Streaming Providers",
-                subTitle: "Smart Filters",
-                icon: "🔍",
-                desc: "Filter by IMDb/TMDB rating slider, votes, runtime, release year, genres, and streaming service provider in your country via TMDB Discover.",
-                badges: [
-                    { text: "Plugin: find", cls: "primary" },
-                    { text: "Streaming Providers", cls: "gold" },
-                    { text: "Rating Slider", cls: "purple" },
-                    { text: "40 Quick Picks", cls: "green" }
-                ],
-                src: "screenshots/smart-filters.webp",
-                alt: "Smart filters by streaming service, rating and runtime",
-                windowTitle: "Discover > Smart Filters — Streaming Providers & Ratings",
-                windowBadge: "TMDB Discover"
-            },
-            {
-                title: "Unified Cross-Addon Search",
-                subTitle: "Cross-Addon Search",
-                icon: "⚡",
-                desc: "Instant search results aggregated across all configured addon catalogs, with universal rating badges and server library indicators.",
-                badges: [
-                    { text: "Cross-Addon Search", cls: "primary" },
-                    { text: "Universal Ratings", cls: "gold" },
-                    { text: "Instant Results", cls: "purple" }
-                ],
-                src: "screenshots/search.webp",
-                alt: "Cross-addon search results with universal ratings",
-                windowTitle: "Search — All Catalogs & Addons",
-                windowBadge: "Unified Search"
-            }
-        ],
-        details: [
-            {
-                title: "Movie Details & Stream Quality Sorting",
-                subTitle: "Movie Details",
-                icon: "🎬",
-                desc: "Widened title details pane showing stream options ranked by your quality profile (4K UHD, HDR, 1080p), audio channels, and server storage status.",
-                badges: [
-                    { text: "Quality Profiles", cls: "primary" },
-                    { text: "Direct Play", cls: "gold" },
-                    { text: "Swarm Probe", cls: "green" },
-                    { text: "MDBList Scores", cls: "purple" }
-                ],
-                src: "screenshots/title-page.webp",
-                alt: "Movie details page with stream quality profiles",
-                windowTitle: "The Odyssey — Movie Details & Stream Quality",
-                windowBadge: "Quality Sorting"
-            },
-            {
-                title: "Series Details & Sentinel Monitoring",
-                subTitle: "Series & Sentinel",
-                icon: "⚡",
-                desc: "TV series page with Sentinel auto-download scope (new episodes only, seasons, all), season picker, and on-server indicators.",
-                badges: [
-                    { text: "Sentinel Auto-Download", cls: "primary" },
-                    { text: "Scope: New/Seasons/All", cls: "gold" },
-                    { text: "Episode Picker", cls: "purple" }
-                ],
-                src: "screenshots/series-details.webp",
-                alt: "Series details with Sentinel auto-download monitoring",
-                windowTitle: "Dexter: Resurrection — Series Details & Sentinel Monitor",
-                windowBadge: "Sentinel Monitor"
-            },
-            {
-                title: "Server Library: Local Disk Storage",
-                subTitle: "Server Library",
-                icon: "💾",
-                desc: "On-server movies and TV shows matching your local media disks, badged with watched/unwatched progress and play-from-server actions.",
-                badges: [
-                    { text: "Server Library", cls: "primary" },
-                    { text: "Local Disk Roots", cls: "gold" },
-                    { text: "Watched Progress", cls: "green" }
-                ],
-                src: "screenshots/library.webp",
-                alt: "Server library with watched indicators and on-server files",
-                windowTitle: "Server Library — Local Movies & TV Disks",
-                windowBadge: "Local Storage"
-            }
-        ],
-        playback: [
-            {
-                title: "Apple MetalFX AI 4K Upscaler (HUD Telemetry)",
-                subTitle: "MetalFX 4K AI Upscaler",
-                icon: "✨",
-                desc: "Real-time Apple MetalFX AI Spatial Super-Resolution HUD in the macOS desktop app: transforms 1080p streams into razor-sharp 4K Ultra HD on Apple Silicon GPU at 120 FPS with 0.4ms render latency.",
-                badges: [
-                    { text: "Plugin: metalfx", cls: "primary" },
-                    { text: "Apple Silicon Neural", cls: "gold" },
-                    { text: "120 FPS 4K", cls: "purple" },
-                    { text: "Zero Server Load", cls: "green" }
-                ],
-                src: "screenshots/player-metalfx.webp",
-                alt: "Player with Apple MetalFX 4K AI Upscaler HUD telemetry",
-                windowTitle: "macOS Desktop Player — Apple MetalFX 4K Super-Resolution HUD",
-                windowBadge: "MetalFX 4K HUD"
-            },
-            {
-                title: "Multi-Track Audio & Subtitle Selector",
-                subTitle: "Audio & Subtitles",
-                icon: "🔊",
-                desc: "Support for multi-track audio including Dolby Atmos 7.1 TrueHD and embedded PGS/SRT SDH subtitle tracks with custom synchronization offset.",
-                badges: [
-                    { text: "Dolby Atmos 7.1", cls: "primary" },
-                    { text: "TrueHD", cls: "gold" },
-                    { text: "PGS / SRT SDH", cls: "purple" },
-                    { text: "Track Sync Offset", cls: "green" }
-                ],
-                src: "screenshots/player-audio-subtitles.webp",
-                alt: "Player audio and subtitle stream selector menu",
-                windowTitle: "Player — Audio & Subtitle Track Selector",
-                windowBadge: "Dolby Atmos 7.1"
-            },
-            {
-                title: "Video Player with Chapter Markers & Auto-Skip",
-                subTitle: "Player & Chapters",
-                icon: "▶",
-                desc: "High-performance video player with deep HLS buffer (90-240s), IntroDB chapter markers on the seek bar, and automatic intro/credits skip buttons.",
-                badges: [
-                    { text: "Deep HLS Buffer", cls: "primary" },
-                    { text: "Seekbar Chapters", cls: "gold" },
-                    { text: "Plugin: skip", cls: "purple" },
-                    { text: "IntroDB Integration", cls: "green" }
-                ],
-                src: "screenshots/player.webp",
-                alt: "Video player with seekbar chapter marks and controls",
-                windowTitle: "Player — Playback Controls & Chapter Markers",
-                windowBadge: "Deep HLS Buffer"
-            }
-        ],
-        server: [
-            {
-                title: "Admin Overview & System Health",
-                subTitle: "Admin Dashboard",
-                icon: "📊",
-                desc: "Central administrative dashboard tracking disk storage capacity, Sentinel monitored series, active downloads, library maintenance scans, and streaming server status.",
-                badges: [
-                    { text: "Admin Dashboard", cls: "primary" },
-                    { text: "Storage Capacity", cls: "gold" },
-                    { text: "Sentinel Health", cls: "green" },
-                    { text: "Streaming Engine", cls: "purple" }
-                ],
-                src: "screenshots/admin-overview.webp",
-                alt: "Admin overview dashboard with storage and downloads",
-                windowTitle: "Admin > Overview — Storage, Downloads & Sentinel",
-                windowBadge: "Admin Overview"
-            },
-            {
-                title: "Admin Plugins Manager (13 Active)",
-                subTitle: "Plugins Manager",
-                icon: "🧩",
-                desc: "Modular plugin control panel displaying all 13 plugins, enable/disable toggles, configuration key validation, and failure isolation telemetry.",
-                badges: [
-                    { text: "13 Modular Plugins", cls: "primary" },
-                    { text: "Failure Isolation", cls: "gold" },
-                    { text: "Live REST Audit", cls: "green" },
-                    { text: "Config Validation", cls: "purple" }
-                ],
-                src: "screenshots/admin-plugins.webp",
-                alt: "Admin plugins manager with 13 active plugins",
-                windowTitle: "Admin > Plugins — Modular Architecture & Audit",
-                windowBadge: "13 Active Plugins"
-            },
-            {
-                title: "Tautulli-Style Watch Stats & Viewing Habits",
-                subTitle: "Watch Stats",
-                icon: "📈",
-                desc: "Server-side playback analytics at #/stats: viewing streaks, hours watched per day, top devices, hourly viewing heatmaps, and full CSV history export.",
-                badges: [
-                    { text: "Plugin: nowplaying", cls: "primary" },
-                    { text: "Route: #/stats", cls: "gold" },
-                    { text: "Streak Tracking", cls: "green" },
-                    { text: "CSV Export", cls: "purple" }
-                ],
-                src: "screenshots/watch-stats.webp",
-                alt: "Watch stats dashboard with streaks and daily hours",
-                windowTitle: "Watch Stats (#/stats) — Streaks, Hours & Devices",
-                windowBadge: "Watch Stats"
-            },
-            {
-                title: "Release Calendar with Library Indicators",
-                subTitle: "Release Calendar",
-                icon: "📅",
-                desc: "Monthly release schedule showing upcoming episodes of monitored TV shows, with badges indicating which episodes are already downloaded to your disk.",
-                badges: [
-                    { text: "Release Calendar", cls: "primary" },
-                    { text: "On-Server Badges", cls: "gold" },
-                    { text: "Monthly / Agenda", cls: "green" }
-                ],
-                src: "screenshots/calendar.webp",
-                alt: "Release calendar with on-server episode indicators",
-                windowTitle: "Calendar — Upcoming Episode Air Dates",
-                windowBadge: "Release Calendar"
-            },
-            {
-                title: "Appearance Settings & Accent Color Palette",
-                subTitle: "Theme Settings",
-                icon: "🎨",
-                desc: "Custom appearance settings per profile: 10 curated accent colors, true AMOLED pitch-black mode, and adjustable interface corner radius.",
-                badges: [
-                    { text: "Plugin: themes", cls: "primary" },
-                    { text: "10 Accent Colors", cls: "gold" },
-                    { text: "AMOLED Black", cls: "purple" },
-                    { text: "Corner Radius", cls: "green" }
-                ],
-                src: "screenshots/settings.webp",
-                alt: "Appearance settings with accent color palette",
-                windowTitle: "Settings > Appearance — 10 Accent Colors & AMOLED Black",
-                windowBadge: "Themes & Accents"
-            }
-        ],
-        copilot: [
-            {
-                title: "AI Copilot: Conversational Chat Drawer",
-                subTitle: "Desktop Copilot",
-                icon: "🤖",
-                desc: "Conversational media copilot powered by Google Gemini. Ask for tailored recommendations, check what is on the server, and stage downloads that require your explicit confirmation.",
-                badges: [
-                    { text: "Plugin: ai", cls: "primary" },
-                    { text: "Gemini 2.5 Flash", cls: "gold" },
-                    { text: "Staged Action Cards", cls: "purple" },
-                    { text: "Privacy Guard", cls: "green" }
-                ],
-                src: "screenshots/copilot.webp",
-                alt: "AI Copilot chat drawer with recommendation cards",
-                windowTitle: "AI Copilot — Conversational Recommendations & Staging",
-                windowBadge: "Gemini Copilot"
-            },
-            {
-                title: "AI Copilot: Mobile PWA Card Layout",
-                subTitle: "Mobile Copilot",
-                icon: "📱",
-                desc: "Optimized mobile PWA interface with poster recommendation cards and quick one-tap suggestion chips for phone screens.",
-                badges: [
-                    { text: "Mobile PWA", cls: "primary" },
-                    { text: "Gesture Controls", cls: "gold" },
-                    { text: "Compact View", cls: "green" }
-                ],
-                src: "screenshots/copilot-mobile.webp",
-                alt: "AI Copilot mobile layout with recommendation cards",
-                windowTitle: "AI Copilot Mobile — PWA Poster Cards",
-                windowBadge: "Mobile PWA"
-            }
-        ]
-    };
+<dialog class="lightbox" id="lightbox" aria-label="Screenshot viewer">
+    <div class="lb-stage"><img alt=""></div>
+    <p class="lb-caption"></p>
+    <button class="lb-btn lb-close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button class="lb-btn lb-prev" type="button" aria-label="Previous screenshot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+    <button class="lb-btn lb-next" type="button" aria-label="Next screenshot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+</dialog>
 
-    let currentCategory = "home";
-    let currentScreenIndex = 0;
-
-    const catButtons = Array.from(document.querySelectorAll('.cat-btn'));
-    const subnavContainer = document.getElementById('showcase-subnav');
-    const titleEl = document.getElementById('sc-title');
-    const descEl = document.getElementById('sc-desc');
-    const badgesEl = document.getElementById('sc-badges');
-    const counterEl = document.getElementById('sc-counter');
-    const prevBtn = document.getElementById('sc-prev');
-    const nextBtn = document.getElementById('sc-next');
-    const windowTitleEl = document.getElementById('sc-window-title');
-    const windowBadgeEl = document.getElementById('sc-window-badge');
-    const imgEl = document.getElementById('sc-img');
-
-    function updateScreen(screenIndex) {
-        const screens = showcaseScreens[currentCategory];
-        if (!screens || !screens[screenIndex]) return;
-
-        currentScreenIndex = screenIndex;
-        const screen = screens[screenIndex];
-
-        // Update Text & Badges (Above screenshot!)
-        titleEl.textContent = screen.title;
-        descEl.textContent = screen.desc;
-
-        badgesEl.innerHTML = screen.badges.map(b => `<span class="badge ${b.cls}">${b.text}</span>`).join(' ');
-
-        // Update Counter
-        counterEl.textContent = `Screen ${screenIndex + 1} of ${screens.length}`;
-
-        // Update Window Frame Header
-        windowTitleEl.textContent = `homebot.local — ${screen.windowTitle}`;
-        windowBadgeEl.textContent = screen.windowBadge;
-
-        // Update Image with smooth fade
-        imgEl.style.opacity = '0.4';
-        imgEl.src = screen.src;
-        imgEl.alt = screen.alt;
-        setTimeout(() => {
-            imgEl.style.opacity = '1';
-        }, 60);
-
-        // Update Subnav Active State
-        const subButtons = subnavContainer.querySelectorAll('.subnav-btn');
-        subButtons.forEach((btn, idx) => {
-            if (idx === screenIndex) {
-                btn.classList.add('active');
-                btn.setAttribute('aria-selected', 'true');
-            } else {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-selected', 'false');
-            }
-        });
-    }
-
-    function renderCategory(catKey, initialScreenIndex = 0) {
-        currentCategory = catKey;
-        const screens = showcaseScreens[catKey];
-        if (!screens) return;
-
-        // Update Category Tab States
-        catButtons.forEach(btn => {
-            const isCatActive = btn.dataset.cat === catKey;
-            btn.setAttribute('aria-selected', isCatActive ? 'true' : 'false');
-            btn.setAttribute('tabindex', isCatActive ? '0' : '-1');
-        });
-
-        // Render Subnav Buttons DIRECTLY UNDER Categories (ABOVE Screenshot!)
-        subnavContainer.innerHTML = '';
-        screens.forEach((screen, idx) => {
-            const btn = document.createElement('button');
-            btn.className = `subnav-btn ${idx === initialScreenIndex ? 'active' : ''}`;
-            btn.setAttribute('role', 'tab');
-            btn.setAttribute('aria-selected', idx === initialScreenIndex ? 'true' : 'false');
-            btn.innerHTML = `<span>${screen.icon}</span> <span>${screen.subTitle}</span>`;
-            btn.addEventListener('click', () => {
-                updateScreen(idx);
-            });
-            subnavContainer.appendChild(btn);
-        });
-
-        updateScreen(initialScreenIndex);
-    }
-
-    // Category click listeners
-    catButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            renderCategory(btn.dataset.cat, 0);
-        });
-    });
-
-    // Arrow Prev/Next controls
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            const screens = showcaseScreens[currentCategory];
-            const nextIdx = (currentScreenIndex - 1 + screens.length) % screens.length;
-            updateScreen(nextIdx);
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const screens = showcaseScreens[currentCategory];
-            const nextIdx = (currentScreenIndex + 1) % screens.length;
-            updateScreen(nextIdx);
-        });
-    }
-
-    // Keyboard Arrow navigation for categories
-    const categoriesBar = document.querySelector('.showcase-categories');
-    if (categoriesBar) {
-        categoriesBar.addEventListener('keydown', (e) => {
-            const currentTab = document.activeElement;
-            const currentIndex = catButtons.indexOf(currentTab);
-            if (currentIndex === -1) return;
-
-            let nextIndex = null;
-            if (e.key === 'ArrowRight') {
-                nextIndex = (currentIndex + 1) % catButtons.length;
-            } else if (e.key === 'ArrowLeft') {
-                nextIndex = (currentIndex - 1 + catButtons.length) % catButtons.length;
-            } else if (e.key === 'Home') {
-                nextIndex = 0;
-            } else if (e.key === 'End') {
-                nextIndex = catButtons.length - 1;
-            }
-
-            if (nextIndex !== null) {
-                e.preventDefault();
-                catButtons[nextIndex].focus();
-                renderCategory(catButtons[nextIndex].dataset.cat, 0);
-            }
-        });
-    }
-
-    // Initial render
-    renderCategory('home', 0);
-
-    // 2. Plugin Category Filtering
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const pluginCards = document.querySelectorAll('.plugin-card');
-
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const category = btn.dataset.category;
-            pluginCards.forEach(card => {
-                if (category === 'all' || card.dataset.category === category) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    });
-});
-</script>
+<script src="site.js" defer></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ name: Website
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'docs/screenshots/**', 'assets/brand/**', 'scripts/build-site.sh', '.github/workflows/pages.yml']
+    paths: ['site/**', 'docs/screenshots/**', 'assets/brand/**', 'assets/images/apple-touch-icon.png', 'assets/fonts/**', 'scripts/build-site.sh', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
