@@ -51,6 +51,8 @@ cat > "$app/Contents/Info.plist" <<PLIST
 <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict></plist>
 PLIST
+echo "==> bundle libmpv (needs Homebrew mpv on the BUILD machine only)"
+python3 "$HERE/bundle-libmpv.py" "$app"
 echo "==> ad-hoc sign"
 codesign --force --deep --sign - "$app"
 codesign --verify --deep --strict "$app"

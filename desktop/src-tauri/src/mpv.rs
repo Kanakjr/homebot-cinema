@@ -71,6 +71,14 @@ unsafe impl Sync for Mpv {}
 
 fn libmpv_path() -> String {
     std::env::var("LIBMPV_PATH").unwrap_or_else(|_| {
+        // Packaged app: libmpv and its dependencies are bundled in Contents/Frameworks.
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(p) = exe.parent().and_then(|d| d.parent()).map(|c| c.join("Frameworks/libmpv.2.dylib")) {
+                if p.exists() {
+                    return p.to_string_lossy().into_owned();
+                }
+            }
+        }
         for p in ["/opt/homebrew/lib/libmpv.dylib", "/usr/local/lib/libmpv.dylib"] {
             if std::path::Path::new(p).exists() {
                 return p.to_string();

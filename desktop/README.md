@@ -5,7 +5,7 @@ as they are (HEVC, AV1, Dolby/DTS audio, embedded subtitles) instead of asking t
 
 ## Use it
 1. Download the `.dmg` from the [latest release](https://github.com/Kanakjr/homebot-cinema/releases/latest) (Apple Silicon, macOS 12+).
-2. `brew install mpv` once (provides libmpv; not bundled yet).
+2. Nothing else to install: libmpv and its libraries are bundled in the app (`scripts/bundle-libmpv.py`; building needs Homebrew `mpv`).
 3. Drag the app to Applications. It is not notarized yet: right-click → Open the first time.
 4. Enter your server's address when asked, then sign in. Both are remembered.
    Menu bar → **Server → Change Server…** switches servers.
@@ -63,7 +63,7 @@ Development: `scripts/spike.sh` builds and runs a dev build with a file-based te
 releases); `spike.sh run setup` starts it on the first-run page with a scratch config folder.
 
 ## Known limits
-- Apple Silicon only; ad-hoc signed, not notarized; libmpv comes from Homebrew.
+- Apple Silicon only; ad-hoc signed, not notarized; libmpv is bundled from the build machine's Homebrew (~34 MB DMG).
 - A hidden or minimized window drops frames (audio continues): the player pauses on minimize.
 - OpenGL is deprecated on macOS (still works); libmpv has no Metal render API yet.
 - Windows and Linux are not started: see `docs/native-apps.md`.
