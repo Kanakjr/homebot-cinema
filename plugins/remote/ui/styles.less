@@ -631,7 +631,25 @@
 .remote-title-wrap {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.65rem;
+}
+
+.remote-back-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.6rem;
+    border: 1px solid @border;
+    background: @bg-card;
+    color: @fg;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
 }
 
 .remote-page-title {

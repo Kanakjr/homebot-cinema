@@ -8,7 +8,8 @@
     flex-direction: row;
     align-items: center;
     padding: 1rem;
-    background-color: @color-accent5-dark3;
+    background-color: #2f260b;
+    border: 1px solid rgba(255, 209, 71, 0.45);
     border-radius: 0.5rem;
     box-shadow: 0rem 0.25rem 1rem rgba(0, 0, 0, 0.48), 0rem 0.5rem 3rem rgba(0, 0, 0, 0.64);
 
@@ -16,7 +17,7 @@
         flex: 1;
         font-size: 1.2rem;
         max-height: 2.4em;
-        color: @color-surface-light5-90;
+        color: #ffffff;
     }
 
     .actions {
@@ -26,8 +27,9 @@
         .action {
             flex: none;
             padding: 0.5rem 1rem;
-            color: @color-surface-light5-90;
-            background-color: rgba(0, 0, 0, 0.24);
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: var(--border-radius);
     
             &:first-child {
@@ -36,10 +38,12 @@
     
             .label {
                 font-size: 1.2rem;
-                color: @color-surface-light5-90;
+                color: #ffffff;
             }
     
             &:hover {
+                background-color: rgba(255, 255, 255, 0.24);
+
                 .label {
                     text-decoration: underline;
                 }

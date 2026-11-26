@@ -10,6 +10,7 @@ const styles = require('./styles.less');
 
 const RemoteRoute = () => {
     const {
+        deviceId,
         selectedTargetId,
         selectTarget,
         disconnectTarget,
@@ -21,6 +22,20 @@ const RemoteRoute = () => {
 
     const [searchQuery, setSearchQuery] = React.useState('');
     const [scrubTime, setScrubTime] = React.useState(null);
+
+    const remoteTargets = React.useMemo(() => {
+        const filtered = (targets || []).filter((t) => t && t.id && t.id !== deviceId);
+        // Deduplicate stale targets sharing the same name & device, keeping the online / most recently updated entry
+        const byKey = new Map();
+        for (const t of filtered) {
+            const key = `${t.name}::${t.device || ''}`;
+            const prev = byKey.get(key);
+            if (!prev || (!prev.online && t.online) || String(t.updatedAt || '') > String(prev.updatedAt || '')) {
+                byKey.set(key, t);
+            }
+        }
+        return Array.from(byKey.values());
+    }, [targets, deviceId]);
 
     const selectedTarget = selectedTargetId ? targets.find((t) => t.id === selectedTargetId) : null;
     const isPlaying = remoteNowPlaying && !remoteNowPlaying.paused;
@@ -63,9 +78,10 @@ const RemoteRoute = () => {
     return (
         <div className={styles['remote-page']}>
             <div className={styles['remote-container']}>
-                {/* Header with target selection */}
+                {/* Header with back nav & target selection */}
                 <div className={styles['remote-header']}>
                     <div className={styles['remote-title-wrap']}>
+                        <a href="#/" className={styles['remote-back-btn']} title="Back to Home">← Home</a>
                         <h1 className={styles['remote-page-title']}>Cinema Remote</h1>
                         <span className={styles['remote-badge']}>Live</span>
                     </div>
@@ -81,7 +97,7 @@ const RemoteRoute = () => {
                             }}
                         >
                             <option value="">📱 This Device (Local)</option>
-                            {targets.map((t) => (
+                            {remoteTargets.map((t) => (
                                 <option key={t.id} value={t.id}>
                                     {t.isDesktop ? '🖥️' : '📺'} {t.name} {t.online ? '(Online)' : ''}
                                 </option>
@@ -101,9 +117,9 @@ const RemoteRoute = () => {
                         <div className={styles['no-target-desc']}>
                             Select your Mac Mini or TV screen above to search and control playback remotely.
                         </div>
-                        {targets.length > 0 ? (
+                        {remoteTargets.length > 0 ? (
                             <div className={styles['target-quick-pick']}>
-                                {targets.map((t) => (
+                                {remoteTargets.map((t) => (
                                     <button
                                         key={t.id}
                                         type="button"

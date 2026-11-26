@@ -28,8 +28,8 @@
     .empty { padding: 1.2rem 0; color: @muted; }
     .hint { margin: 0.4rem 0 0.8rem; font-size: 0.9rem; color: @muted; }
 
-    .tabs { display: inline-flex; gap: 0.3rem; margin-bottom: 1.4rem; padding: 0.3rem; border: 1px solid @border; border-radius: 0.9rem; background: @surface; }
-    .tab { padding: 0.5rem 1.1rem; border: none; border-radius: 0.65rem; background: none; color: @muted; font: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer; &.active { background: @surface-2; color: #fff; } }
+    .tabs { display: flex; flex-wrap: nowrap; width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; gap: 0.3rem; margin-bottom: 1.4rem; padding: 0.3rem; border: 1px solid @border; border-radius: 0.9rem; background: @surface; box-sizing: border-box; }
+    .tab { flex: none; white-space: nowrap; padding: 0.5rem 1.1rem; border: none; border-radius: 0.65rem; background: none; color: @muted; font: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer; &.active { background: @surface-2; color: #fff; } }
 
     .section { display: flex; align-items: center; gap: 0.6rem; margin: 1.8rem 0 0.8rem; font-size: 1.3rem; font-weight: 800; }
     .count { padding: 0.1rem 0.6rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.1); font-size: 0.82rem; }

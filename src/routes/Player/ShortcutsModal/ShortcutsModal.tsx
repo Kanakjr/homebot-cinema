@@ -38,7 +38,7 @@ const SHORTCUT_SECTIONS = [
     {
         title: '⚙️ Controls & Display',
         items: [
-            { label: 'Speed ±0.25x', keys: ['<', '>', '[', ']'] },
+            { label: 'Speed ±0.25x', keys: ['<', '>', '[', ']', ',', '.'] },
             { label: 'Speed Menu', keys: ['R'] },
             { label: 'Toggle Fullscreen', keys: ['F'] },
             { label: 'Aspect Ratio Mode', keys: ['V'] },
@@ -49,7 +49,7 @@ const SHORTCUT_SECTIONS = [
     }
 ];
 
-const ShortcutsModal = ({ className, onClose }: Props) => {
+const ShortcutsModal = React.forwardRef<HTMLDivElement, Props>(({ className, onClose }, ref) => {
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -62,14 +62,21 @@ const ShortcutsModal = ({ className, onClose }: Props) => {
     }, [onClose]);
 
     return (
-        <div className={classnames(styles['shortcuts-modal-overlay'], className)} onClick={onClose}>
+        <div
+            ref={ref}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Keyboard shortcuts"
+            className={classnames(styles['shortcuts-modal-overlay'], className)}
+            onClick={onClose}
+        >
             <div className={styles['shortcuts-modal-card']} onClick={(e) => e.stopPropagation()}>
                 <div className={styles['shortcuts-modal-header']}>
                     <div className={styles['title-group']}>
                         <span className={styles['icon']}>⚡</span>
                         <span className={styles['title']}>HomeBot Cinema Hotkeys & Shortcuts</span>
                     </div>
-                    <button className={styles['close-button']} onClick={onClose} title="Close (Esc)">
+                    <button type="button" className={styles['close-button']} onClick={onClose} title="Close (Esc)" aria-label="Close shortcuts guide">
                         ✕
                     </button>
                 </div>
@@ -95,6 +102,8 @@ const ShortcutsModal = ({ className, onClose }: Props) => {
             </div>
         </div>
     );
-};
+});
+
+ShortcutsModal.displayName = 'ShortcutsModal';
 
 export default ShortcutsModal;

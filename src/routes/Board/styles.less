@@ -39,8 +39,9 @@
     .board-warning-container {
         position: absolute;
         bottom: calc(var(--safe-area-inset-bottom) + 0.5rem);
-        left: calc(var(--safe-area-inset-left) + 0.5rem);
-        right: calc(var(--safe-area-inset-right) + 0.5rem);
+        left: calc(var(--safe-area-inset-left) + var(--vertical-nav-bar-size) + 0.75rem);
+        right: calc(var(--safe-area-inset-right) + 0.75rem);
+        z-index: 2;
     }
 }
 
@@ -124,8 +125,10 @@
         }
         
         .board-warning-container {
+            left: calc(var(--safe-area-inset-left) + 0.5rem);
+            right: calc(var(--safe-area-inset-right) + 0.5rem);
             bottom: calc(var(--vertical-nav-bar-size) + 0.5rem);
-            height: 7rem;
+            height: auto;
         }
     }
 }

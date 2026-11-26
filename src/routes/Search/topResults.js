@@ -22,6 +22,46 @@ const subtitleOf = (item) => {
 };
 
 /**
+ * Merge addon Top Results with /api/library?q= hits (both IMDb-matched and unmatched local titles).
+ */
+const mergeServerResults = (ranked, serverItems) => {
+    const rankedList = Array.isArray(ranked) ? ranked : [];
+    const serverList = Array.isArray(serverItems) ? serverItems : [];
+    if (serverList.length === 0) return rankedList;
+
+    const imdbSet = new Set(serverList.map((i) => i && i.imdbId).filter(Boolean));
+    const localMatched = rankedList
+        .filter((item) => imdbSet.has(item.id))
+        .map((item) => ({
+            ...item,
+            subtitle: ['On your server', item.subtitle].filter(Boolean).join(' · '),
+        }));
+
+    const seenImdb = new Set(localMatched.map((item) => item.id));
+    const localOnly = [];
+    for (const s of serverList) {
+        if (!s || !s.id || !s.title) continue;
+        if (s.imdbId && seenImdb.has(s.imdbId)) continue;
+        if (s.imdbId) seenImdb.add(s.imdbId);
+        const type = s.type || 'movie';
+        const href = s.imdbId ? `#/detail/${type}/${s.imdbId}` : `#/server/${s.id}`;
+        localOnly.push({
+            id: s.imdbId || `server:${s.id}`,
+            type,
+            name: s.title,
+            poster: s.poster || undefined,
+            posterShape: 'poster',
+            href,
+            deepLinks: { metaDetailsStreams: href },
+            subtitle: ['On your server', s.year, TYPE_LABEL[type] || ''].filter(Boolean).join(' · '),
+        });
+    }
+
+    const remote = rankedList.filter((item) => !imdbSet.has(item.id));
+    return [...localMatched, ...localOnly, ...remote];
+};
+
+/**
  * @param catalogs  search.catalogs (each `{ content: { type: 'Ready', content: [metaItem] } }`)
  * @param query     the search text
  * @param limit     how many cards
@@ -48,3 +88,4 @@ const topResults = (catalogs, query, limit = 12) => {
 
 module.exports = topResults;
 module.exports.score = score;
+module.exports.mergeServerResults = mergeServerResults;

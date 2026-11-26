@@ -34,21 +34,27 @@ const List = ({ className, items, loading, selected, monthInfo, profile, onChang
     return (
         <div ref={listRef} className={`${styles['list']}${className ? ` ${className}` : ''}`}>
             {
-                items.length === 0 || loading ?
+                loading ?
                     [1, 2, 3].map((index) => (
                         <ItemPlaceholder key={index} />
                     ))
                     :
-                    filteredItems.map((item) => (
-                        <Item
-                            key={item.date.day}
-                            {...item}
-                            selected={selected}
-                            monthInfo={monthInfo}
-                            profile={profile}
-                            onClick={onChange}
-                        />
-                    ))
+                    filteredItems.length === 0 ?
+                        <div className={styles['empty-state']}>
+                            <div className={styles['empty-title']}>No episodes this month</div>
+                            <div className={styles['empty-sub']}>Follow shows in your library to see upcoming air dates here.</div>
+                        </div>
+                        :
+                        filteredItems.map((item) => (
+                            <Item
+                                key={item.date.day}
+                                {...item}
+                                selected={selected}
+                                monthInfo={monthInfo}
+                                profile={profile}
+                                onClick={onChange}
+                            />
+                        ))
             }
         </div>
     );

@@ -8,6 +8,7 @@ const { t } = require('i18next');
 const { useCore } = require('stremio/core');
 const { useProfile, usePlatform, useToast, useBinaryState } = require('stremio/common');
 const { Button, Image, Popup } = require('stremio/components');
+const { api } = require('stremio/common/serverApi');
 const ActionButton = require('stremio/components/MetaPreview/ActionButton');
 const { default: useRouteFocused } = require('stremio/common/useRouteFocused');
 const StreamPlaceholder = require('./StreamPlaceholder');
@@ -193,16 +194,12 @@ const Stream = ({ className = '', compact = false, isEpg = false, videoId = unde
         try {
             toast.show({ type: 'success', title: 'Sending download to HomeServer…', timeout: 3000 });
             const titleLine = (description && description.split('\n')[0]) || name || addonName || 'Media';
-            const res = await fetch('/api/downloads/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    magnet: targetUrl,
-                    mediaId: videoId,
-                    title: titleLine,
-                    type: videoId ? 'series' : 'movie'
-                })
-            }).then((r) => r.json());
+            const res = await api('POST', '/api/downloads/add', {
+                magnet: targetUrl,
+                mediaId: videoId,
+                title: titleLine,
+                type: videoId ? 'series' : 'movie'
+            });
             if (res && res.success) {
                 toast.show({ type: 'success', title: '⚡ Queued in HomeServer Transmission!', timeout: 4000 });
             } else {

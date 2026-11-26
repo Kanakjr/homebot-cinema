@@ -6,6 +6,7 @@ const PropTypes = require('prop-types');
 const classNames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button } = require('stremio/components');
+const { decodeStreamUrl, decodeStreamUrlSync } = require('./decodeStreamUrl');
 const styles = require('./styles');
 
 const Error = React.forwardRef(({ className, code, message, stream }, ref) => {
@@ -19,20 +20,27 @@ const Error = React.forwardRef(({ className, code, message, stream }, ref) => {
     }, [stream]);
 
     const [copied, setCopied] = React.useState(false);
+    const [hashStreamUrl, setHashStreamUrl] = React.useState(() => {
+        const hash = typeof window !== 'undefined' ? window.location.hash || '' : '';
+        return decodeStreamUrlSync(hash);
+    });
 
-    const streamUrl = React.useMemo(() => {
-        if (stream?.url) return stream.url;
-        if (playlist) return playlist;
-        try {
-            const hash = typeof window !== 'undefined' ? window.location.hash || '' : '';
-            const match = hash.match(/#\/player\/([^/?#]+)/);
-            if (match && match[1]) {
-                const decoded = JSON.parse(atob(decodeURIComponent(match[1])));
-                if (decoded && decoded.url) return decoded.url;
-            }
-        } catch (_) { /* not available here */ }
-        return null;
+    React.useEffect(() => {
+        if (stream?.url || playlist) return undefined;
+        const hash = typeof window !== 'undefined' ? window.location.hash || '' : '';
+        const syncUrl = decodeStreamUrlSync(hash);
+        if (syncUrl) {
+            setHashStreamUrl(syncUrl);
+            return undefined;
+        }
+        let cancelled = false;
+        decodeStreamUrl(hash).then((url) => {
+            if (!cancelled && url) setHashStreamUrl(url);
+        });
+        return () => { cancelled = true; };
     }, [stream, playlist]);
+
+    const streamUrl = stream?.url || playlist || hashStreamUrl || null;
 
     // External players need a link they can open without a Cloudflare session. /api/downloads/stream/* is
     // bypassed at Cloudflare Access on this host and protected by a signed link, added below.
@@ -105,7 +113,9 @@ const Error = React.forwardRef(({ className, code, message, stream }, ref) => {
             {
                 code === 2 || code === 83 ?
                     <div className={styles['error-sub']}>
-                        Your browser couldn&apos;t play this stream (it may use an unsupported container or audio codec). Try Retry, or open in VLC/Infuse/IINA, or download the file directly:
+                        {publicUrl
+                            ? 'Your browser couldn\u2019t play this stream (it may use an unsupported container or audio codec). Try Retry, or open in VLC/Infuse/IINA, or download the file directly:'
+                            : 'Your browser couldn\u2019t play this stream (it may use an unsupported container or audio codec).'}
                     </div>
                     :
                     null

@@ -959,18 +959,6 @@ const Player = () => {
                 }
             }
 
-            // Subtitle Delay G (-50ms) and H (+50ms)
-            if ((e.key === 'g' || e.key === 'G' || e.key === 'h' || e.key === 'H') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
-                e.preventDefault();
-                const delta = (e.key === 'g' || e.key === 'G') ? -50 : 50;
-                const currentDelay = video.state.extraSubtitlesDelay || 0;
-                const newDelay = currentDelay + delta;
-                video.setSubtitlesDelay(newDelay);
-                const delaySec = (newDelay / 1000).toFixed(2);
-                video.setHudNotice(`Subtitle Delay: ${newDelay > 0 ? '+' : ''}${delaySec}s`);
-                return;
-            }
-
             const keyboardKey = getKeyboardShortcutKey(e);
             if (keyboardKey !== 'Space' || e.repeat) return;
             if (menusOpen || detailsHold.current !== null || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1066,7 +1054,7 @@ const Player = () => {
             window.removeEventListener('mouseup', onMouseUp);
             window.removeEventListener('blur', onBlur);
         };
-    }, [routeFocused, menusOpen, video.state.volume, video.state.paused, video.state.duration, seekStart, seekEnd, video.state.playbackSpeed, video.state.extraSubtitlesDelay, video.state.selectedSubtitlesTrackId, video.state.selectedExtraSubtitlesTrackId, canSeek, allSubtitleTracks, finishDetailsHold, releaseDetailsHold, cancelKeyboardSeek, flushKeyboardSeek, releaseKeyboardSeek, startPlaybackSpeedHold, finishPlaybackSpeedHold, cancelPlaybackSpeedHold, onSeekRequested, onKeyboardSeekRequested, onPlaybackSpeedChanged, toggleShortcutsModal]);
+    }, [routeFocused, menusOpen, video.state.volume, video.state.paused, video.state.duration, seekStart, seekEnd, video.state.playbackSpeed, video.state.selectedSubtitlesTrackId, video.state.selectedExtraSubtitlesTrackId, canSeek, allSubtitleTracks, finishDetailsHold, releaseDetailsHold, cancelKeyboardSeek, flushKeyboardSeek, releaseKeyboardSeek, startPlaybackSpeedHold, finishPlaybackSpeedHold, cancelPlaybackSpeedHold, onSeekRequested, onKeyboardSeekRequested, onPlaybackSpeedChanged, toggleShortcutsModal]);
 
     React.useEffect(() => {
         video.events.on('error', onError);
@@ -1325,7 +1313,7 @@ const Player = () => {
             </Transition>
             <Transition when={shortcutsModalOpen} name={'fade'}>
                 <ShortcutsModal
-                    className={classnames(styles['layer'], styles['menu-layer'])}
+                    className={styles['layer']}
                     onClose={closeShortcutsModal}
                 />
             </Transition>

@@ -30,39 +30,37 @@ const Search = () => {
             :
             null;
     }, [search.selected]);
-    // HomeBot: titles already on the server for this query, so they can be marked and listed first
-    const [onServer, setOnServer] = React.useState(() => new Set());
+    // HomeBot: titles already on the server for this query (matched or unmatched), marked and listed first
+    const [serverItems, setServerItems] = React.useState([]);
     React.useEffect(() => {
         let cancelled = false;
         if (!query) {
-            setOnServer(new Set());
+            setServerItems([]);
             return undefined;
         }
         api('GET', `/api/library?q=${encodeURIComponent(query)}`)
-            .then((res) => !cancelled && setOnServer(new Set((res.items || []).map((i) => i.imdbId).filter(Boolean))))
-            .catch(() => !cancelled && setOnServer(new Set()));
+            .then((res) => !cancelled && setServerItems(Array.isArray(res && res.items) ? res.items : []))
+            .catch(() => !cancelled && setServerItems([]));
         return () => { cancelled = true; };
     }, [query]);
     const top = React.useMemo(() => {
         if (query === null) return [];
         const ranked = topResults(search.catalogs, query);
-        const local = ranked.filter((item) => onServer.has(item.id));
-        return [...local, ...ranked.filter((item) => !onServer.has(item.id))]
-            .map((item) => (onServer.has(item.id) ? { ...item, subtitle: ['On your server', item.subtitle].filter(Boolean).join(' · ') } : item));
-    }, [search.catalogs, query, onServer]);
+        return topResults.mergeServerResults(ranked, serverItems);
+    }, [search.catalogs, query, serverItems]);
     const { catalogRows, scrollContainerRef, onScroll } = useVisibleCatalogs({
         catalogs: search.catalogs,
         loadRange: loadSearchRows,
     });
-    // HomeBot: every catalog answered "nothing found" -> say so instead of an empty page (rows still loading keep their skeletons)
-    const noResults = search.catalogs.length > 0 && search.catalogs.every((catalog) => {
+    // HomeBot: only show empty-state when neither addon catalogs nor the local library have results
+    const noResults = top.length === 0 && search.catalogs.length > 0 && search.catalogs.every((catalog) => {
         return catalog.content?.type === 'Err' && catalog.content.content === 'EmptyContent';
     });
     return (
         <MainNavBars className={styles['search-container']} route={'search'} query={query}>
             <div ref={scrollContainerRef} className={styles['search-content']} onScroll={onScroll}>
                 {
-                    query !== null && !noResults && search.catalogs.length > 0 ?
+                    query !== null && !noResults && (search.catalogs.length > 0 || top.length > 0) ?
                         <div className={styles['search-page-header']}>
                             <PageHeader eyebrow="Search" title={`Results for “${query}”`} />
                         </div>
@@ -95,7 +93,7 @@ const Search = () => {
                             </div>
                         </div>
                         :
-                        search.catalogs.length === 0 ?
+                        search.catalogs.length === 0 && top.length === 0 ?
                             <div className={styles['message-container']}>
                                 <Image
                                     className={styles['image']}
@@ -117,7 +115,7 @@ const Search = () => {
                                 </div>
                                 :
                                 <>
-                                    {top.length >= 2 ?
+                                    {top.length >= 1 ?
                                         <MetaRow
                                             className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
                                             title="Top results"
