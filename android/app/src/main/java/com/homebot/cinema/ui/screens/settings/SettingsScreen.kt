@@ -1,5 +1,6 @@
 package com.homebot.cinema.ui.screens.settings
 
+import android.annotation.SuppressLint
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.homebot.cinema.data.preferences.ServerUrlConfig
 import com.homebot.cinema.data.preferences.UserPreferences
 import com.homebot.cinema.ui.theme.CinemaAccentOrange
 import com.homebot.cinema.ui.theme.CinemaBackground
@@ -64,7 +66,7 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val serverUrl by userPreferences.serverUrl.collectAsState(initial = "https://cinema.kanakjr.in")
+    val serverUrl by userPreferences.serverUrl.collectAsState(initial = "")
     val cfToken by userPreferences.cfToken.collectAsState(initial = null)
     val directPlay by userPreferences.directPlayEnabled.collectAsState(initial = true)
     val scope = rememberCoroutineScope()
@@ -141,7 +143,9 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         scope.launch {
-                            userPreferences.setServerUrl(urlInput.trim())
+                            ServerUrlConfig.normalizeServerUrl(urlInput)?.let { normalized ->
+                                userPreferences.setServerUrl(normalized)
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = CinemaAccentOrange),
@@ -238,6 +242,7 @@ fun SettingsScreen(
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            @SuppressLint("SetJavaScriptEnabled")
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             webViewClient = object : WebViewClient() {

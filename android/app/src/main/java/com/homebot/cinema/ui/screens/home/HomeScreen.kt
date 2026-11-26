@@ -1,5 +1,6 @@
 package com.homebot.cinema.ui.screens.home
 
+import android.annotation.SuppressLint
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -80,7 +81,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
-    val serverUrl by userPreferences.serverUrl.collectAsState(initial = "https://cinema.kanakjr.in")
+    val serverUrl by userPreferences.serverUrl.collectAsState(initial = "")
     val cfToken by userPreferences.cfToken.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
     var showLoginDialog by remember { mutableStateOf(false) }
@@ -286,6 +287,7 @@ fun HomeScreen(
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            @SuppressLint("SetJavaScriptEnabled")
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             webViewClient = object : WebViewClient() {

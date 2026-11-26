@@ -16,11 +16,15 @@ class UserPreferences(private val context: Context) {
         val KEY_PROFILE_ID = stringPreferencesKey("profile_id")
         val KEY_CF_TOKEN = stringPreferencesKey("cf_token")
         val KEY_DIRECT_PLAY = booleanPreferencesKey("direct_play")
-        const val DEFAULT_SERVER_URL = "https://cinema.kanakjr.in"
+        const val DEFAULT_SERVER_URL = ""
     }
 
     val serverUrl: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[KEY_SERVER_URL] ?: DEFAULT_SERVER_URL
+        prefs[KEY_SERVER_URL]?.takeIf { it.isNotBlank() } ?: DEFAULT_SERVER_URL
+    }
+
+    val configuredServerUrl: Flow<String?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_SERVER_URL]?.let { ServerUrlConfig.normalizeServerUrl(it) }
     }
 
     val profileId: Flow<String?> = context.dataStore.data.map { prefs ->

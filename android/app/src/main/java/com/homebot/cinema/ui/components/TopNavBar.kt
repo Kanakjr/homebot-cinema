@@ -46,9 +46,9 @@ fun TopNavBar(
     currentProfile: Profile?,
     onSearchClick: () -> Unit,
     onProfileClick: () -> Unit,
-    serverUrl: String = "https://cinema.kanakjr.in",
-    cfToken: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    serverUrl: String = "",
+    cfToken: String? = null
 ) {
     Surface(
         modifier = modifier

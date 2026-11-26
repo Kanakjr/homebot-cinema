@@ -46,6 +46,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -93,5 +94,6 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
+    testImplementation(libs.junit)
     debugImplementation(libs.androidx.ui.tooling)
 }

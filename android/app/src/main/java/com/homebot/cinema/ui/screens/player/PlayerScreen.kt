@@ -2,9 +2,9 @@ package com.homebot.cinema.ui.screens.player
 
 import android.app.Activity
 import android.app.PictureInPictureParams
-import android.os.Build
 import android.util.Rational
 import android.view.KeyEvent
+import java.util.Locale
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -182,26 +182,24 @@ fun PlayerScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    // PiP Button (for Android 8.0+)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        IconButton(
-                            onClick = {
-                                val activity = context as? Activity
-                                activity?.let {
-                                    val params = PictureInPictureParams.Builder()
-                                        .setAspectRatio(Rational(16, 9))
-                                        .build()
-                                    it.enterPictureInPictureMode(params)
-                                }
+                    // PiP Button
+                    IconButton(
+                        onClick = {
+                            val activity = context as? Activity
+                            activity?.let {
+                                val params = PictureInPictureParams.Builder()
+                                    .setAspectRatio(Rational(16, 9))
+                                    .build()
+                                it.enterPictureInPictureMode(params)
                             }
-                        ) {
-                            Text(
-                                text = "PiP",
-                                color = CinemaAccentOrange,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            )
                         }
+                    ) {
+                        Text(
+                            text = "PiP",
+                            color = CinemaAccentOrange,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
                     }
                 }
 
@@ -305,8 +303,8 @@ private fun formatTime(millis: Long): String {
     val minutes = (totalSeconds % 3600) / 60
     val seconds = totalSeconds % 60
     return if (hours > 0) {
-        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
     } else {
-        String.format("%02d:%02d", minutes, seconds)
+        String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
 }

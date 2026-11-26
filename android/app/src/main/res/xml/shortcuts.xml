@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="switch_server"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/switch_server"
+        android:shortcutLongLabel="@string/switch_server">
+        <intent
+            android:action="com.homebot.cinema.ACTION_CHANGE_SERVER"
+            android:targetPackage="com.homebot.cinema"
+            android:targetClass="com.homebot.cinema.MainActivity" />
+    </shortcut>
+</shortcuts>
