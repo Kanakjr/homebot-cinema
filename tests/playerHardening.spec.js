@@ -43,4 +43,14 @@ describe('Player shortcuts & HUD hardening guards', () => {
         expect(errSrc).toContain('decodeStreamUrl');
         expect(errSrc).toMatch(/publicUrl\s*\?\s*'Your browser couldn/);
     });
+
+    it('Buffering overlay sizes logo container from natural aspect ratio without overflow clipping', () => {
+        const tsx = read('src/routes/Player/Buffering/Buffering.tsx');
+        const less = read('src/routes/Player/Buffering/Buffering.less');
+        expect(tsx).toMatch(/Math\.min\(100,\s*Math\.max\(0,\s*progress\)\)/);
+        expect(less).toMatch(/\.logo-container[\s\S]*?overflow:\s*visible/);
+        expect(less).not.toMatch(/\.logo-container[\s\S]*?min-width:\s*12rem/);
+        expect(less).toMatch(/&\.background[\s\S]*?position:\s*relative/);
+        expect(less).toMatch(/object-fit:\s*contain/);
+    });
 });

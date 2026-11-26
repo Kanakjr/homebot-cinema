@@ -1,8 +1,8 @@
-
 .buffering {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: visible;
 
     .content {
         position: relative;
@@ -11,29 +11,41 @@
         align-items: center;
         justify-content: center;
         gap: 2rem;
+        max-width: 90vw;
+        overflow: visible;
     }
 
+    // `* { overflow: hidden; }` in App/styles.less would otherwise clip wide logos to a tiny box;
+    // keep `.background` in flow so the container matches the logo's natural aspect ratio cleanly.
     .logo-container {
         position: relative;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 12rem;
-        min-height: 8rem;
+        overflow: visible;
     }
 
     .logo {
-        position: absolute;
         display: block;
-        max-width: 15rem;
-        max-height: 15rem;
+        max-width: min(26rem, 75vw);
+        max-height: clamp(6rem, 22vh, 14rem);
         width: auto;
         height: auto;
+        object-fit: contain;
         animation: pulse 2s infinite;
         transition: clip-path 0.1s ease-in-out;
 
         &.background {
+            position: relative;
             opacity: 0.2 !important;
+        }
+
+        &.foreground {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
     }
 

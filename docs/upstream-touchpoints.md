@@ -96,8 +96,8 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Player/ControlBar/VolumeSlider/styles.less` | 4 | Phase 5: accent fill up to 100% volume. |
 | `src/routes/Player/ControlBar/VolumeSlider/VolumeSlider.js` | 1 | Phase 5: accessible name ("Volume") for the slider. |
 | `src/routes/Player/AudioMenu/AudioMenu.tsx` | 62 | Phase 5: rich audio track labels distinguishing multiple tracks of the same language with codec and channels. |
-| `src/routes/Player/Buffering/Buffering.tsx` | 45 | Phase 5: loading spinner and status label ("Connecting...", "Buffering X%"). |
-| `src/routes/Player/Buffering/Buffering.less` | 54 | Phase 5: styling for buffering spinner and frosted status badge. |
+| `src/routes/Player/Buffering/Buffering.tsx` | 48 | Phase 5: loading spinner and status label ("Connecting...", "Buffering X%"). |
+| `src/routes/Player/Buffering/Buffering.less` | 74 | Phase 5: styling for buffering spinner and frosted status badge. |
 | `src/routes/Player/ControlBar/styles.less` | 6 | Phase 5: tactile active state on control buttons. |
 | `src/routes/Player/OptionsMenu/OptionsMenu.js` | 51 | Phase 5: admin-only magnet link, aspect ratio, network statistics and keyboard shortcuts options; slot `playerMenuItems` (MetalFX 4K AI entry). |
 | `src/routes/Player/SideDrawer/SideDrawer.tsx` | 12 | Phase 5: live watch progress on currently playing episode. |

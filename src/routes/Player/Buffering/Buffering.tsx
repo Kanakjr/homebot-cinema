@@ -12,8 +12,9 @@ type Props = {
 
 const Buffering = forwardRef<HTMLDivElement, Props>(({ className, logo, progress, loaded }, ref) => {
     const style = useMemo(() => {
+        const clamped = Number.isFinite(progress) ? Math.min(100, Math.max(0, progress)) : 0;
         return {
-            clipPath: `inset(0 ${100 - progress}% 0 0)`,
+            clipPath: `inset(0 ${100 - clamped}% 0 0)`,
         };
     }, [progress]);
 
@@ -30,14 +31,14 @@ const Buffering = forwardRef<HTMLDivElement, Props>(({ className, logo, progress
             <div className={styles['content']}>
                 <div className={styles['logo-container']}>
                     <Image
-                        className={styles['logo']}
-                        style={style}
+                        className={classNames(styles['logo'], styles['background'])}
                         src={logo}
                         alt={' '}
                         fallbackSrc={require('/assets/images/stremio_symbol.png')}
                     />
                     <Image
-                        className={classNames(styles['logo'], styles['background'])}
+                        className={classNames(styles['logo'], styles['foreground'])}
+                        style={style}
                         src={logo}
                         alt={' '}
                         fallbackSrc={require('/assets/images/stremio_symbol.png')}
