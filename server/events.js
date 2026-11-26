@@ -9,8 +9,25 @@ const HEADERS = {
     'X-Accel-Buffering': 'no',
 };
 
+const TARGET_ID_RE = /^[a-zA-Z0-9:_-]{1,64}$/;
+const normLogin = (val) => (typeof val === 'string' && val.trim() ? val.trim().toLowerCase() : null);
+
+function parseTargetIds(raw) {
+    const out = new Set();
+    const list = Array.isArray(raw) ? raw : [raw];
+    for (const item of list) {
+        if (typeof item !== 'string') continue;
+        for (const part of item.split(',')) {
+            const id = part.trim();
+            if (TARGET_ID_RE.test(id)) out.add(id);
+        }
+    }
+    return out;
+}
+
 function createEventHub({ heartbeatMs = 25000, throttleMs = 1000, now = () => Date.now() } = {}) {
     const clients = new Set();
+    const connectListeners = new Set();
     const last = new Map();
     const pending = new Map();
     const write = (res, chunk) => {
@@ -18,21 +35,63 @@ function createEventHub({ heartbeatMs = 25000, throttleMs = 1000, now = () => Da
     };
     const send = (type, data) => {
         const chunk = `event: ${type}\ndata: ${JSON.stringify(data || {})}\n\n`;
-        for (const res of clients) write(res, chunk);
+        for (const c of clients) write(c.res, chunk);
     };
 
     // GET /api/events (mounted behind requireLogin). The heartbeat keeps Cloudflare (100 s idle cut-off) and proxies from closing it.
     function handler(req, res) {
         res.writeHead(200, HEADERS);
         res.write('retry: 5000\n\n');
-        clients.add(res);
+        const closeFns = [];
+        const entry = {
+            res,
+            login: normLogin(req.login && req.login.email),
+            targetIds: parseTargetIds(req.query && req.query.targetId),
+            send: (type, data) => write(res, `event: ${type}\ndata: ${JSON.stringify(data || {})}\n\n`),
+            onClose: (cb) => { if (typeof cb === 'function') closeFns.push(cb); },
+            closed: false,
+        };
+        clients.add(entry);
         const hb = setInterval(() => write(res, ': hb\n\n'), heartbeatMs);
         const done = () => {
+            if (entry.closed) return;
+            entry.closed = true;
             clearInterval(hb);
-            clients.delete(res);
+            clients.delete(entry);
+            for (const cb of closeFns) {
+                try { cb(); } catch (_) { /* ignore cleanup errors */ }
+            }
         };
         req.on('close', done);
         res.on('close', done);
+
+        for (const listener of connectListeners) {
+            try {
+                listener({
+                    login: entry.login,
+                    targetIds: Array.from(entry.targetIds),
+                    query: (req && req.query) || {},
+                    send: entry.send,
+                    onClose: entry.onClose,
+                });
+            } catch (_) { /* isolate connect listener failures */ }
+        }
+    }
+
+    // Immediate, login/target-scoped emission (unthrottled so low-latency events like remote commands stay responsive).
+    function emitScoped(type, data, { login = null, targetId = null } = {}) {
+        const wantLogin = normLogin(login);
+        const chunk = `event: ${type}\ndata: ${JSON.stringify(data || {})}\n\n`;
+        for (const c of clients) {
+            if (wantLogin && c.login !== wantLogin) continue;
+            if (targetId && !c.targetIds.has(targetId)) continue;
+            write(c.res, chunk);
+        }
+    }
+
+    function onConnect(fn) {
+        if (typeof fn === 'function') connectListeners.add(fn);
+        return () => connectListeners.delete(fn);
     }
 
     // At most one event per type per throttle window; bursts collapse into one trailing event with the latest data.
@@ -60,13 +119,13 @@ function createEventHub({ heartbeatMs = 25000, throttleMs = 1000, now = () => Da
     function close() {
         for (const p of pending.values()) clearTimeout(p.timer);
         pending.clear();
-        for (const res of clients) {
-            try { res.end(); } catch (_) { /* ignore */ }
+        for (const c of clients) {
+            try { c.res.end(); } catch (_) { /* ignore */ }
         }
         clients.clear();
     }
 
-    return { handler, emit, close, size: () => clients.size };
+    return { handler, emit, emitScoped, onConnect, close, size: () => clients.size };
 }
 
 // Emit `type` after each listed method settles (sync or async), without changing what the method returns or throws.
@@ -91,7 +150,7 @@ function emitAfter(obj, methods, emit, type) {
 
 // Watches Transmission so progress and completions are pushed: every activeMs while something downloads, else idleMs.
 // onComplete(hash) runs once per torrent that reaches 100 % (used to post-process and rescan the library).
-function createTorrentWatcher({ getTorrents, emit, onComplete = () => {}, activeMs = 3000, idleMs = 20000, log = console }) {
+function createTorrentWatcher({ getTorrents, emit, onComplete = () => undefined, activeMs = 3000, idleMs = 20000, log = console }) {
     let sig = null;
     let timer = null;
     let stopped = false;

@@ -19,14 +19,20 @@ function fakeCtx({ id = 'test', app, db, services = {}, env = {}, settings = {},
     const admin = (req, res, next) => (login.isAdmin ? pass(req, res, next) : res.status(403).json({ error: 'admin_only' }));
     const dataPath = fs.mkdtempSync(path.join(os.tmpdir(), `plugin-${id}-`));
     let reason = null;
+    const scopedEvents = [];
+    const connectListeners = [];
     const makeCtx = createContextFactory({
         app, db: db || { raw: null, audit: () => {}, migratePlugin: () => 0 }, hooks, services, env, settings, dataPath,
         auth: { requireLogin: pass, requireAdmin: admin, requireProfile: pass },
-        events: { emit: (type) => events.push(type) },
+        events: {
+            emit: (type) => events.push(type),
+            emitScoped: (type, data, filter) => scopedEvents.push({ type, data, filter }),
+            onConnect: (fn) => { connectListeners.push(fn); return () => {}; },
+        },
         log: { info: () => {}, warn: () => {}, error: () => {} },
     });
     const ctx = makeCtx({ id, root: dataPath, manifest: { name: id } }, { disable: (r) => { reason = r; }, get: () => undefined });
-    return { ctx, hooks, events, dataPath, disabled: () => reason };
+    return { ctx, hooks, events, scopedEvents, connectListeners, dataPath, disabled: () => reason };
 }
 
 module.exports = { fakeCtx };

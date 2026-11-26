@@ -129,3 +129,65 @@ test('a torrent that is already complete at start is not reported as newly compl
     assert.deepEqual(completed, []);
     w.stop();
 });
+
+test('onConnect and emitScoped isolate SSE payloads by login and targetId and clean up on close', async () => {
+    const hub = createEventHub({ heartbeatMs: 1e6, throttleMs: 0 });
+    const app = express();
+    app.use('/api', (req, _res, next) => {
+        req.login = { email: req.headers['x-test-user'] || 'alice@example.com' };
+        next();
+    });
+    const closed = [];
+    hub.onConnect((client) => {
+        client.send('hello', { login: client.login, targetIds: client.targetIds });
+        client.onClose(() => closed.push(client.login + ':' + client.targetIds.join(',')));
+    });
+    app.get('/api/events', hub.handler);
+    const server = await new Promise((r) => { const s = app.listen(0, () => r(s)); });
+    const base = `http://127.0.0.1:${server.address().port}/api/events`;
+    try {
+        const collectUser = async (user, targetId, fn) => {
+            const ctrl = new AbortController();
+            const res = await fetch(`${base}?targetId=${encodeURIComponent(targetId)}`, {
+                headers: { 'x-test-user': user },
+                signal: ctrl.signal,
+            });
+            const reader = res.body.getReader();
+            let text = '';
+            const pump = (async () => {
+                try {
+                    for (;;) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        text += Buffer.from(value).toString();
+                    }
+                } catch (_) { /* aborted */ }
+            })();
+            await wait(30);
+            if (fn) fn();
+            await wait(40);
+            ctrl.abort();
+            await pump;
+            return text;
+        };
+
+        const [aliceText, bobText] = await Promise.all([
+            collectUser('alice@example.com', 'tv-1', () => {
+                hub.emitScoped('command', { action: 'pause' }, { login: 'alice@example.com', targetId: 'tv-1' });
+                hub.emitScoped('command', { action: 'bob_only' }, { login: 'bob@example.com', targetId: 'tv-1' });
+            }),
+            collectUser('bob@example.com', 'tv-1'),
+        ]);
+        assert.match(aliceText, /event: hello\ndata: \{"login":"alice@example\.com","targetIds":\["tv-1"\]\}/);
+        assert.match(aliceText, /event: command\ndata: \{"action":"pause"\}/);
+        assert.equal(aliceText.includes('bob_only'), false);
+        assert.match(bobText, /event: command\ndata: \{"action":"bob_only"\}/);
+        assert.equal(bobText.includes('pause'), false);
+        await wait(20);
+        assert.equal(closed.length, 2);
+    } finally {
+        hub.close();
+        server.closeAllConnections();
+        await new Promise((r) => server.close(r));
+    }
+});

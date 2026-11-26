@@ -5,6 +5,7 @@
 const React = require('react');
 const { api } = require('stremio/common/serverApi');
 const pm = require('stremio/common/profileManager');
+const useServerEvents = require('stremio/common/useServerEvents');
 
 const DEVICE_ID_KEY = 'cinema_remote_device_id';
 const DEVICE_NAME_KEY = 'cinema_remote_device_name';
@@ -102,7 +103,7 @@ let state = {
 };
 
 const listeners = new Set();
-let controllerEventSource = null;
+let controllerSubscribed = false;
 let pollTimer = null;
 let toastTimer = null;
 let activePlayerControls = null; // Registered by PlayerReceiverBridge
@@ -156,45 +157,33 @@ async function refreshTargets() {
     }
 }
 
-// 2. Controller SSE stream (subscribes to live target discovery & state)
+// 2. Controller SSE updates (shared over /api/events via useServerEvents)
 function initControllerEvents() {
-    if (controllerEventSource || typeof window === 'undefined' || typeof window.EventSource !== 'function') return;
+    if (controllerSubscribed) return;
+    controllerSubscribed = true;
+    useServerEvents.subscribe(['targets'], (_type, data) => {
+        if (data && Array.isArray(data.targets)) {
+            const list = data.targets;
+            let currentTargetNp = state.remoteNowPlaying;
+            let currentTargetConnected = false;
 
-    try {
-        controllerEventSource = new window.EventSource('/api/remote/events', { withCredentials: true });
-        controllerEventSource.addEventListener('targets', (e) => {
-            try {
-                const data = JSON.parse(e.data);
-                if (data && Array.isArray(data.targets)) {
-                    const list = data.targets;
-                    let currentTargetNp = state.remoteNowPlaying;
-                    let currentTargetConnected = false;
-
-                    if (state.selectedTargetId) {
-                        const found = list.find((t) => t.id === state.selectedTargetId);
-                        if (found) {
-                            currentTargetConnected = found.online;
-                            currentTargetNp = found.nowPlaying || null;
-                        } else {
-                            currentTargetConnected = false;
-                        }
-                    }
-
-                    emit({
-                        targets: list,
-                        remoteNowPlaying: currentTargetNp,
-                        isTargetConnected: currentTargetConnected,
-                    });
+            if (state.selectedTargetId) {
+                const found = list.find((t) => t.id === state.selectedTargetId);
+                if (found) {
+                    currentTargetConnected = found.online;
+                    currentTargetNp = found.nowPlaying || null;
+                } else {
+                    currentTargetConnected = false;
                 }
-            } catch (_) { /* ignore */ }
-        });
+            }
 
-        controllerEventSource.onerror = () => {
-            // Reconnection handled automatically by browser
-        };
-    } catch (_) {
-        // SSE not supported or blocked
-    }
+            emit({
+                targets: list,
+                remoteNowPlaying: currentTargetNp,
+                isTargetConnected: currentTargetConnected,
+            });
+        }
+    });
 }
 
 // 3. Register THIS screen with server if receiver is enabled
@@ -338,9 +327,13 @@ function useRemoteState() {
         refreshTargets();
         initControllerEvents();
 
-        // Fallback polling every 8s
+        // Fallback polling every 8s only while shared SSE is disconnected
         if (!pollTimer) {
-            pollTimer = setInterval(refreshTargets, 8000);
+            pollTimer = setInterval(() => {
+                if (!useServerEvents.isLive() && (typeof document === 'undefined' || document.visibilityState === 'visible')) {
+                    refreshTargets();
+                }
+            }, 8000);
         }
     }, []);
 

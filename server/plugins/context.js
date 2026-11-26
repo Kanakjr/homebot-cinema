@@ -54,7 +54,11 @@ function createContextFactory(base) {
                 on: (name, fn) => base.hooks.on(name, fn, id),
                 provide: (name, fn) => base.hooks.provide(name, fn, id),
             }),
-            events: Object.freeze({ emit: (type) => base.events.emit(type) }),
+            events: Object.freeze({
+                emit: (type, data) => base.events.emit(type, data),
+                emitScoped: (type, data, filter) => (typeof base.events.emitScoped === 'function' ? base.events.emitScoped(type, data, filter) : undefined),
+                onConnect: (fn) => (typeof base.events.onConnect === 'function' ? base.events.onConnect(fn) : undefined),
+            }),
             services: Object.freeze({ ...base.services }),
             /** server/sdk.js (pure helpers). Private plugins in data/plugins/ must use this: no relative path reaches core from there */
             sdk,

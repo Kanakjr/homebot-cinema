@@ -69,7 +69,7 @@ available to plugins that `require` it (`ctx.plugins.get(id)`). To stay inactive
 | `db.raw`, `db.audit(email, profileId, action, payload)` | SQLite (node:sqlite) and the audit log |
 | `db.migrate([sql, ...])` | Own tables, versioned per plugin (`plugin_schema`). Append-only; prefix tables with the plugin id |
 | `hooks.on(event, fn)` / `hooks.provide(name, fn)` | Extension points, below |
-| `events.emit(type)` | Live-update hint to open pages (SSE `/api/events`) |
+| `events.emit(type)` / `emitScoped` / `onConnect` | Live-update hints and multiplexed per-login/per-target events on SSE `/api/events` |
 | `sdk` | `server/sdk.js` (below) |
 | `services.*` | `library`, `downloads`, `sentinel`, `quality`, `probeMany`, `tmdb`, `region`, `streamLinks` |
 | `config.get(NAME, default)`, `list`, `bool`, `int` | Env first, then `data/plugins.json` `settings.<id>` |

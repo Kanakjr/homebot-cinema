@@ -5,6 +5,7 @@
 
 const React = require('react');
 const { useToast } = require('stremio/common');
+const useServerEvents = require('stremio/common/useServerEvents');
 const { useRemoteState, getPlayerBridge, pushPlay, setConnectedControllers } = require('./remoteState');
 const { KEY_CODES, parsePlayerPath } = require('./logic');
 
@@ -34,72 +35,52 @@ function dispatchSyntheticKey(keyName, code, keyCode) {
 const ReceiverBridge = () => {
     const toast = useToast();
     const { deviceId, isReceiverEnabled, selectedTargetId, targets } = useRemoteState();
-    const eventSourceRef = React.useRef(null);
+    const commandHandlerRef = React.useRef(null);
 
-    // 1. Target screen SSE receiver
+    // 1. Target screen SSE receiver (multiplexed onto the single shared /api/events SSE stream)
     React.useEffect(() => {
-        if (!isReceiverEnabled || !deviceId || typeof window === 'undefined' || typeof window.EventSource !== 'function') {
+        if (!isReceiverEnabled || !deviceId) {
+            useServerEvents.setParam('targetId', null);
             return undefined;
         }
-
-        const url = `/api/remote/target/events?targetId=${encodeURIComponent(deviceId)}`;
-        const es = new window.EventSource(url, { withCredentials: true });
-        eventSourceRef.current = es;
-
-        es.addEventListener('target_info', (e) => {
-            try {
-                const info = JSON.parse(e.data);
-                if (info && Array.isArray(info.controllers)) {
-                    setConnectedControllers(info.controllers);
-                }
-            } catch (_) { /* ignore */ }
-        });
-
-        es.addEventListener('controller_status', (e) => {
-            try {
-                const data = JSON.parse(e.data);
-                if (!data) return;
-                if (Array.isArray(data.controllers)) {
-                    setConnectedControllers(data.controllers);
-                }
-                const name = (data.controller && data.controller.name) || 'Remote';
-                if (data.action === 'connected') {
-                    toast.show({
-                        type: 'info',
-                        title: '📱 Remote Connected',
-                        message: `${name} is controlling this screen`,
-                        timeout: 3500,
-                    });
-                } else if (data.action === 'disconnected') {
-                    toast.show({
-                        type: 'info',
-                        title: '📱 Remote Disconnected',
-                        message: `${name} disconnected`,
-                        timeout: 3000,
-                    });
-                }
-            } catch (_) { /* ignore */ }
-        });
-
-        es.addEventListener('command', (e) => {
-            try {
-                const cmd = JSON.parse(e.data);
-                if (!cmd || !cmd.action) return;
-                handleIncomingCommand(cmd);
-            } catch (_) {
-                // ignore
-            }
-        });
-
-        es.onerror = () => {
-            // Reconnection handled automatically
-        };
-
+        useServerEvents.setParam('targetId', deviceId);
         return () => {
-            es.close();
-            eventSourceRef.current = null;
+            useServerEvents.setParam('targetId', null);
         };
-    }, [deviceId, isReceiverEnabled, toast]);
+    }, [deviceId, isReceiverEnabled]);
+
+    useServerEvents(['target_info', 'controller_status', 'command'], (type, data) => {
+        if (!data) return;
+        if (type === 'target_info') {
+            if (Array.isArray(data.controllers)) {
+                setConnectedControllers(data.controllers);
+            }
+        } else if (type === 'controller_status') {
+            if (Array.isArray(data.controllers)) {
+                setConnectedControllers(data.controllers);
+            }
+            const name = (data.controller && data.controller.name) || 'Remote';
+            if (data.action === 'connected') {
+                toast.show({
+                    type: 'info',
+                    title: '📱 Remote Connected',
+                    message: `${name} is controlling this screen`,
+                    timeout: 3500,
+                });
+            } else if (data.action === 'disconnected') {
+                toast.show({
+                    type: 'info',
+                    title: '📱 Remote Disconnected',
+                    message: `${name} disconnected`,
+                    timeout: 3000,
+                });
+            }
+        } else if (type === 'command') {
+            if (!data.action) return;
+            if (typeof useServerEvents.isLeader === 'function' && !useServerEvents.isLeader()) return;
+            if (commandHandlerRef.current) commandHandlerRef.current(data);
+        }
+    }, { enabled: Boolean(isReceiverEnabled && deviceId) });
 
     // 2. Handle commands on this target screen
     const handleIncomingCommand = (cmd) => {
@@ -239,6 +220,7 @@ const ReceiverBridge = () => {
                 break;
         }
     };
+    commandHandlerRef.current = handleIncomingCommand;
 
     // 3. Controller click interception on mobile (push-to-play)
     // When connected to a target screen (e.g. Mac Mini), clicking any stream or player link

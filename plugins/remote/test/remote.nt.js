@@ -4,6 +4,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const http = require('http');
 const express = require('express');
 const { createTargetRegistry } = require('../server/targets');
 const { register } = require('../server/index');
@@ -241,4 +242,166 @@ test('server routes: register, state, command, list, delete', async () => {
     const del = plugin.registry.removeTarget('mac-mini-server-test');
     assert.equal(del, true);
     assert.equal(plugin.registry.listTargets().length, 0);
+});
+
+test('multi-login HTTP & SSE isolation: users cannot see or control other logins targets', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+        req.login = { email: String(req.headers['x-test-user'] || 'alice@example.com').toLowerCase(), isAdmin: false };
+        req.profile = { id: 1, name: 'Main' };
+        next();
+    });
+
+    const plugin = register({
+        app,
+        auth: { requireLogin: (_req, _res, next) => next(), requireAdmin: (_req, _res, next) => next(), requireProfile: (_req, _res, next) => next() },
+        log: { info: () => undefined, warn: () => undefined, error: () => undefined },
+    });
+
+    const server = http.createServer(app);
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    const base = `http://127.0.0.1:${server.address().port}`;
+    try {
+        const aliceHeaders = { 'content-type': 'application/json', 'x-test-user': 'alice@example.com' };
+        const bobHeaders = { 'content-type': 'application/json', 'x-test-user': 'bob@example.com' };
+
+        // Alice registers target and updates nowPlaying with sensitive streamUrl
+        const reg = await fetch(`${base}/api/remote/target/register`, {
+            method: 'POST', headers: aliceHeaders,
+            body: JSON.stringify({ targetId: 'alice-tv-1', name: 'Alice TV', isDesktop: true }),
+        });
+        assert.equal(reg.status, 200);
+        const st = await fetch(`${base}/api/remote/target/state`, {
+            method: 'POST', headers: aliceHeaders,
+            body: JSON.stringify({ targetId: 'alice-tv-1', state: 'playing', nowPlaying: { title: 'Secret', streamUrl: 'https://secret.local/video.mp4?sig=xyz' } }),
+        });
+        assert.equal(st.status, 200);
+
+        // Bob's /api/remote/targets and /api/remote/events SSE must NOT see Alice's target or streamUrl
+        const bobList = await (await fetch(`${base}/api/remote/targets`, { headers: bobHeaders })).json();
+        assert.deepEqual(bobList.targets, []);
+
+        const bobEventsChunk = await new Promise((resolve, reject) => {
+            const req = http.get(`${base}/api/remote/events`, { headers: { 'x-test-user': 'bob@example.com' } }, (res) => {
+                let buf = '';
+                res.on('data', (d) => {
+                    buf += d;
+                    if (buf.includes('event: targets')) {
+                        req.destroy();
+                        resolve(buf);
+                    }
+                });
+            });
+            req.on('error', reject);
+        });
+        assert.ok(bobEventsChunk.includes('"targets":[]'));
+        assert.equal(bobEventsChunk.includes('alice-tv-1'), false);
+        assert.equal(bobEventsChunk.includes('secret.local'), false);
+
+        // Bob cannot register over, update, listen to, command, connect, disconnect, or delete Alice's target
+        assert.equal((await fetch(`${base}/api/remote/target/register`, { method: 'POST', headers: bobHeaders, body: JSON.stringify({ targetId: 'alice-tv-1', name: 'Hijacked' }) })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/target/state`, { method: 'POST', headers: bobHeaders, body: JSON.stringify({ targetId: 'alice-tv-1', state: 'paused' }) })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/target/events?targetId=alice-tv-1`, { headers: bobHeaders })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/targets/alice-tv-1/command`, { method: 'POST', headers: bobHeaders, body: JSON.stringify({ action: 'navigate', payload: { path: '/evil' } }) })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/targets/alice-tv-1/connect`, { method: 'POST', headers: bobHeaders, body: JSON.stringify({ controllerId: 'bob-phone' }) })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/targets/alice-tv-1/disconnect`, { method: 'POST', headers: bobHeaders, body: JSON.stringify({ controllerId: 'bob-phone' }) })).status, 403);
+        assert.equal((await fetch(`${base}/api/remote/targets/alice-tv-1`, { method: 'DELETE', headers: bobHeaders })).status, 403);
+    } finally {
+        plugin.registry.close();
+        server.closeAllConnections();
+        await new Promise((r) => server.close(r));
+    }
+});
+
+test('remote multiplexes targets and commands onto core /api/events without cross-login leakage', async () => {
+    const http = require('http');
+    const express = require('express');
+    const { createEventHub } = require('../../../server/events');
+    const { createContextFactory } = require('../../../server/plugins/context');
+    const { createHooks } = require('../../../server/plugins/hooks');
+    const { register } = require('../server');
+
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+        req.login = { email: req.headers['x-test-user'] || 'alice@example.com', isAdmin: false };
+        next();
+    });
+    const eventHub = createEventHub({ heartbeatMs: 60000, throttleMs: 0 });
+    app.get('/api/events', eventHub.handler);
+    const makeCtx = createContextFactory({
+        app,
+        auth: {
+            requireLogin: (_req, _res, next) => next(),
+            requireAdmin: (_req, _res, next) => next(),
+            requireProfile: (_req, _res, next) => next(),
+        },
+        db: { raw: null, audit: () => undefined, migratePlugin: () => 0 },
+        hooks: createHooks({ log: { warn: () => undefined } }),
+        events: eventHub,
+        services: {},
+        dataPath: require('os').tmpdir(),
+        settings: {},
+        log: { info: () => undefined, warn: () => undefined, error: () => undefined },
+    });
+    const ctx = makeCtx({ id: 'remote', root: __dirname, manifest: { name: 'remote' } }, { disable: () => undefined, get: () => undefined });
+    const plugin = register(ctx);
+
+    const server = await new Promise((resolve) => {
+        const s = app.listen(0, '127.0.0.1', () => resolve(s));
+    });
+    const base = `http://127.0.0.1:${server.address().port}`;
+    try {
+        await fetch(`${base}/api/remote/target/register`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-test-user': 'alice@example.com' },
+            body: JSON.stringify({ targetId: 'alice-tv', name: 'Alice TV' }),
+        });
+        const chunks = await new Promise((resolve, reject) => {
+            const req = http.get(`${base}/api/events?targetId=alice-tv`, { headers: { 'x-test-user': 'alice@example.com' } }, async (res) => {
+                let buf = '';
+                res.on('data', (d) => {
+                    buf += d;
+                    if (buf.includes('event: command')) {
+                        req.destroy();
+                        resolve(buf);
+                    }
+                });
+                await fetch(`${base}/api/remote/targets/alice-tv/command`, {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json', 'x-test-user': 'alice@example.com' },
+                    body: JSON.stringify({ action: 'pause' }),
+                });
+            });
+            req.on('error', reject);
+        });
+        assert.ok(chunks.includes('event: targets'));
+        assert.ok(chunks.includes('event: target_info'));
+        assert.ok(chunks.includes('event: command'));
+        assert.ok(chunks.includes('"action":"pause"'));
+
+        // Bob subscribing to /api/events?targetId=alice-tv must NOT see Alice's target in targets list or command
+        const bobBuf = await new Promise((resolve, reject) => {
+            const req = http.get(`${base}/api/events?targetId=alice-tv`, { headers: { 'x-test-user': 'bob@example.com' } }, (res) => {
+                let buf = '';
+                res.on('data', (d) => {
+                    buf += d;
+                    if (buf.includes('event: targets')) {
+                        req.destroy();
+                        resolve(buf);
+                    }
+                });
+            });
+            req.on('error', reject);
+        });
+        assert.ok(bobBuf.includes('"targets":[]'));
+        assert.equal(bobBuf.includes('Alice TV'), false);
+        assert.equal(bobBuf.includes('target_info'), false);
+    } finally {
+        plugin.registry.close();
+        eventHub.close();
+        server.closeAllConnections();
+        await new Promise((r) => server.close(r));
+    }
 });
