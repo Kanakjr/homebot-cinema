@@ -23,13 +23,61 @@ const upstreamFiles = new Set(git('ls-tree', '-r', '--name-only', base).split('\
 const changed = git('diff', '--name-status', base, '--', '.').split('\n').filter(Boolean)
     .map((l) => l.split('\t')).filter(([st, f]) => /^[MD]/.test(st) && upstreamFiles.has(f)).map(([st, f]) => ({ st: st[0], f }));
 const doc = fs.readFileSync(path.join(ROOT, 'docs', 'upstream-touchpoints.md'), 'utf8');
-const listed = new Set([...doc.matchAll(/`([^`]+)`/g)].map((m) => m[1]));
-const isListed = ({ f }) => listed.has(f) || (f.startsWith('assets/images/splash/') && doc.includes('assets/images/splash/*'));
-const missing = changed.filter((c) => !isListed(c));
+
+function extractPaths(markdown) {
+    const out = new Set();
+    for (const line of markdown.split('\n')) {
+        const table = line.match(/^\|\s*`([^`]+)`\s*\|/);
+        if (table) { out.add(table[1]); continue; }
+        const bullet = line.match(/^\s*-\s+`([^`]+)`/);
+        if (bullet) out.add(bullet[1]);
+    }
+    return out;
+}
+
+function parseSections(markdown) {
+    const sections = new Map();
+    const parts = markdown.split(/^##\s+/m);
+    for (const part of parts.slice(1)) {
+        const nl = part.indexOf('\n');
+        const heading = (nl === -1 ? part : part.slice(0, nl)).trim();
+        const body = nl === -1 ? '' : part.slice(nl + 1);
+        sections.set(heading, body);
+    }
+    return sections;
+}
+
+const sections = parseSections(doc);
+const replacedBody = sections.get('Replaced images (branding: `scripts/brand/build.js` regenerates them)') || sections.get('Replaced images') || '';
+const modifiedTablePaths = extractPaths(sections.get('Modified') || '');
+const modifiedSet = new Set([
+    ...modifiedTablePaths,
+    ...extractPaths(replacedBody),
+]);
+const removedSet = extractPaths(sections.get('Removed') || '');
+
+const hasModified = (f) => modifiedSet.has(f) || (f.startsWith('assets/images/splash/') && replacedBody.includes('assets/images/splash/*'));
+const hasRemoved = (f) => removedSet.has(f);
+
+const missingModified = changed.filter((c) => c.st === 'M' && !hasModified(c.f));
+const missingRemoved = changed.filter((c) => c.st === 'D' && !hasRemoved(c.f));
+const nonUpstream = [...modifiedTablePaths, ...removedSet]
+    .filter((f) => f !== 'assets/images/splash/*' && !upstreamFiles.has(f));
+
 console.log(`${changed.length} upstream files changed vs ${base} (${changed.filter((c) => c.st === 'D').length} removed).`);
-if (missing.length) {
-    console.error('\nNot listed in docs/upstream-touchpoints.md (add each with a reason, or move the change into a new file/plugin):');
-    missing.forEach((c) => console.error(`  ${c.st === 'D' ? 'removed ' : 'modified'} ${c.f}`));
+if (missingModified.length || missingRemoved.length || nonUpstream.length) {
+    if (missingModified.length) {
+        console.error('\nModified upstream files missing from `## Modified` / `## Replaced images` in docs/upstream-touchpoints.md:');
+        missingModified.forEach((c) => console.error(`  modified ${c.f}` + (hasRemoved(c.f) ? ' (currently listed under ## Removed!)' : '')));
+    }
+    if (missingRemoved.length) {
+        console.error('\nRemoved upstream files missing from `## Removed` in docs/upstream-touchpoints.md:');
+        missingRemoved.forEach((c) => console.error(`  removed  ${c.f}` + (hasModified(c.f) ? ' (currently listed under ## Modified!)' : '')));
+    }
+    if (nonUpstream.length) {
+        console.error('\nListed in docs/upstream-touchpoints.md but not present in upstream base:');
+        nonUpstream.forEach((f) => console.error(`  non-upstream ${f}`));
+    }
     process.exit(1);
 }
-console.log('All listed in docs/upstream-touchpoints.md.');
+console.log('All listed in the matching sections of docs/upstream-touchpoints.md.');

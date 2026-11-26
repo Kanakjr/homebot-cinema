@@ -35,6 +35,4 @@ CLAUDE.local.md
 
 # backend test deps (scripts/test-server.sh)
 /.cache/
-
-/.cache
 /_site

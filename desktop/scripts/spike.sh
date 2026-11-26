@@ -12,8 +12,7 @@
 #   spike.sh status                    last mpv status line from the log
 #   spike.sh stop
 #
-# Needs: brew install rust mpv ffmpeg. The app captures its own windows (no Screen Recording permission
-# needed) and is driven through a command file, so the whole thing can run without GUI automation.
+# Needs: brew install rust mpv ffmpeg. Window captures (`cmd snap`) capture the app's own windows on an unlocked desktop session (Screen Recording permission is not needed, though macOS refuses offscreen CGWindow captures when the display session is locked). Driven through a command file, so runs work without GUI automation.
 set -e
 HERE=${0:A:h}; ROOT=${HERE:h}
 SPIKE_HOME=${SPIKE_HOME:-${TMPDIR:-/tmp}/cinema-spike}
@@ -54,7 +53,7 @@ run)
     [[ $mode == child ]] && extra+=(--env SPIKE_NO_WID=1)
     # render/child/wid play the test clip on the spike's own overlay page; setup = first run with a scratch config folder
     [[ $mode == render || $mode == child || $mode == wid ]] && extra+=(--env SPIKE_LOCAL_PAGE=1)
-    [[ $mode == setup ]] && { clip=(); mpvlog=(); extra+=(--env CINEMA_CONFIG_DIR="$SPIKE_HOME/config"); }
+    [[ $mode == setup ]] && { clip=(); mpvlog=(); extra+=(--env CINEMA_CONFIG_DIR="$SPIKE_HOME/config" --env SPIKE_SETUP=1); }
     # ui = the real web UI (SPIKE_URL, default a scratch server on :3102) with the render-API shell, no auto-play
     # home = no SPIKE_URL: the app uses its baked-in addresses and home mode (extra env: CINEMA_HOME_MODE=0 forces public only)
     [[ $mode == home ]] && { clip=(); mpvlog=(); [[ -n ${CINEMA_HOME_MODE:-} ]] && extra+=(--env CINEMA_HOME_MODE="$CINEMA_HOME_MODE"); }

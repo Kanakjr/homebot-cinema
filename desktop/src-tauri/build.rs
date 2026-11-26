@@ -4,7 +4,9 @@ fn main() {
     // The remote capability names the one web origin allowed to call `shell_ipc`. It comes from the environment
     // (CINEMA_ORIGIN=https://your-host) so no personal hostname is committed; the generated file is git-ignored.
     println!("cargo:rerun-if-env-changed=CINEMA_ORIGIN");
-    let origin = env::var("CINEMA_ORIGIN").ok().filter(|v| !v.trim().is_empty()).unwrap_or_else(|| "https://cinema.example.com".into());
+    let custom_origin = env::var("CINEMA_ORIGIN").ok().filter(|v| !v.trim().is_empty());
+    let has_custom_origin = custom_origin.is_some();
+    let origin = custom_origin.unwrap_or_else(|| "https://cinema.example.com".into());
     let origin = origin.trim_end_matches('/');
     let ok_chars = origin.chars().all(|c| c.is_ascii_alphanumeric() || ".:-/".contains(c));
     let ok_scheme = origin.starts_with("https://") || origin.starts_with("http://localhost");
@@ -12,7 +14,9 @@ fn main() {
     println!("cargo:rustc-env=CINEMA_ORIGIN_BAKED={origin}"); // read by main.rs (env!)
     // Home mode: the server's direct address on this machine / home network (plain HTTP). "none" disables it.
     println!("cargo:rerun-if-env-changed=CINEMA_LOCAL_ORIGIN");
-    let local = env::var("CINEMA_LOCAL_ORIGIN").unwrap_or_else(|_| "http://localhost:3002".into());
+    let local = env::var("CINEMA_LOCAL_ORIGIN").unwrap_or_else(|_| {
+        if has_custom_origin { String::new() } else { "http://localhost:3002".into() }
+    });
     let local = local.trim_end_matches('/');
     let local = if local == "none" { "" } else { local };
     if !local.is_empty() {

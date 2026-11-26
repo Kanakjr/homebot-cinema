@@ -25,7 +25,7 @@
         "check:upstream": "node scripts/upstream-check.js",
         "lint": "eslint src plugins --max-warnings 287",
         "test:mobile": "node scripts/test-mobile-browser.js",
-        "scan-translations": "pnpx jest ./tests/i18nScan.test.js"
+        "scan-translations": "jest ./tests/i18nScan.test.js --roots tests"
     },
     "engines": {
         "node": ">=22",

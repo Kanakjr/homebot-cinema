@@ -46,9 +46,13 @@ fn ui_for(public: &str, local: &str) -> Ui {
     Ui { start: start.to_string(), home: Some((public.to_string(), local.to_string())) }
 }
 
-/// Which server to open, in order: SPIKE_URL (development, no home mode), the one chosen in the app (server.json),
-/// the one baked in at build time (CINEMA_ORIGIN, private builds). None = first run: show setup.html.
+/// Which server to open, in order: SPIKE_SETUP=1 (forced setup test), SPIKE_URL (development, no home mode),
+/// the one chosen in the app (server.json), the one baked in at build time (CINEMA_ORIGIN, private builds).
+/// None = first run: show setup.html.
 fn ui_config(app: &tauri::AppHandle) -> Option<Ui> {
+    if std::env::var("SPIKE_SETUP").as_deref() == Ok("1") {
+        return None;
+    }
     if let Ok(u) = std::env::var("SPIKE_URL") {
         return Some(Ui { start: u, home: None });
     }
@@ -460,8 +464,35 @@ fn dev_tools_loop(handle: &tauri::AppHandle, m: &Arc<mpv::Mpv>) {
         if let Some(cf) = &cmd_file {
             if let Ok(text) = std::fs::read_to_string(cf) {
                 let _ = std::fs::remove_file(cf);
-                for line in text.lines().map(str::trim).filter(|l| !l.is_empty()) {
-                    let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
+                // Collapse continuation lines belonging to a multi-line `eval` script until the next known verb.
+                const VERBS: &[&str] = &[
+                    "snap", "reorder", "dump", "attach", "aux", "hide", "show",
+                    "minimize", "unminimize", "simplefs", "resize", "fullscreen",
+                    "region", "mpv", "eval", "quit",
+                ];
+                let mut commands: Vec<String> = Vec::new();
+                for raw_line in text.lines() {
+                    let trimmed = raw_line.trim();
+                    if trimmed.is_empty() {
+                        continue;
+                    }
+                    let first_word = trimmed.split_whitespace().next().unwrap_or("");
+                    if VERBS.contains(&first_word) {
+                        commands.push(trimmed.to_string());
+                    } else if let Some(prev) = commands.last_mut() {
+                        if prev.starts_with("eval") {
+                            prev.push('\n');
+                            prev.push_str(raw_line);
+                        } else {
+                            commands.push(trimmed.to_string());
+                        }
+                    } else {
+                        commands.push(trimmed.to_string());
+                    }
+                }
+                for line in commands {
+                    let (verb, rest) = line.split_once(char::is_whitespace).unwrap_or((&line, ""));
+                    let rest = rest.trim_start();
                     eprintln!("[spike] cmd {line}");
                     match verb {
                         "snap" => snapshot(&w, format!("{snap_dir}/{rest}")),

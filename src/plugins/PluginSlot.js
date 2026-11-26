@@ -15,7 +15,6 @@ class PluginBoundary extends React.Component {
         return { failed: true };
     }
     componentDidCatch(error) {
-        // eslint-disable-next-line no-console
         console.error(`[plugins] ${this.props.pluginId} crashed in ${this.props.where}:`, error);
     }
     render() {

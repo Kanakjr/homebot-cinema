@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Button } from 'stremio/components';
 import styles from './User.less';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { switchProfile, signOutUrl } = require('stremio/common/profileManager');
 
 type Props = {

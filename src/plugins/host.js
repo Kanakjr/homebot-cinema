@@ -32,7 +32,6 @@ async function loadPlugins(fetchImpl = (typeof fetch === 'function' ? fetch : nu
         const json = res.ok ? await res.json() : { plugins: [] };
         active = new Set((json.plugins || []).filter((p) => p && p.active).map((p) => p.id));
     } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn('[plugins] could not load the plugin list, running without plugins:', e && e.message);
         active = new Set();
     }

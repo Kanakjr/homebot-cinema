@@ -7,7 +7,6 @@ use std::ffi::{c_char, c_int, c_void, CStr, CString};
 type MpvHandle = *mut c_void;
 
 // ---- event / node structs (client.h) ----
-pub const FORMAT_NONE: c_int = 0;
 pub const FORMAT_STRING: c_int = 1;
 pub const FORMAT_FLAG: c_int = 3;
 pub const FORMAT_INT64: c_int = 4;
@@ -17,7 +16,6 @@ pub const FORMAT_NODE_ARRAY: c_int = 7;
 pub const FORMAT_NODE_MAP: c_int = 8;
 
 pub const EVENT_SHUTDOWN: c_int = 1;
-pub const EVENT_START_FILE: c_int = 6;
 pub const EVENT_END_FILE: c_int = 7;
 pub const EVENT_PROPERTY_CHANGE: c_int = 22;
 
