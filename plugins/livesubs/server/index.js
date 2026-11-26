@@ -56,7 +56,15 @@ function register(ctx, { engine: injectedEngine, fetchImpl } = {}) {
     });
     const defaultLanguage = ctx.config.get('LIVESUBS_LANGUAGE', 'auto');
     const streamingBase = `http://${ctx.config.get('STREMIO_SERVER_HOST', 'stremio-streaming-server')}:${ctx.config.int('STREMIO_SERVER_PORT', 11470)}`;
-    const ids = new Map(); // public id -> engine key
+    const ids = new Map(); // public id -> { key, owner }
+    const ownerOf = (req) => ((req.login && req.login.email) ? String(req.login.email).trim().toLowerCase() : null);
+    function entryFor(req, res) {
+        const entry = ids.get(req.params.id);
+        if (!entry) { res.status(404).json({ error: 'not_found' }); return null; }
+        const owner = ownerOf(req);
+        if (entry.owner && owner !== entry.owner) { res.status(403).json({ error: 'forbidden' }); return null; }
+        return entry;
+    }
 
     async function guessFileIdx(hash) {
         const r = await (fetchImpl || fetch)(`${streamingBase}/${hash}/create`, {
@@ -113,30 +121,36 @@ function register(ctx, { engine: injectedEngine, fetchImpl } = {}) {
         const src = await resolveSource(body);
         if (src.error) return res.status(400).json({ error: src.error });
         const key = `${src.key}|${language}|${translate ? 'en' : 'src'}`;
+        const owner = ownerOf(req);
         const t = engine.open({ key, input: src.input, language, translate, position });
-        const id = crypto.createHash('sha1').update(key).digest('hex').slice(0, 16);
-        ids.set(id, key);
+        const id = crypto.createHash('sha1').update(`${owner || ''}|${key}`).digest('hex').slice(0, 16);
+        ids.set(id, { key, owner });
         res.json({ id, status: t.status() });
     });
 
     // the viewer switched AI subtitles off (or left the player): stop reading the stream now
     ctx.app.post('/api/livesubs/:id/close', (req, res) => {
         res.set('Cache-Control', 'private, no-store');
-        const key = ids.get(req.params.id);
-        if (!key || !engine.release(key)) return res.status(404).json({ error: 'not_found' });
+        const entry = entryFor(req, res);
+        if (!entry) return;
+        if (!engine.release(entry.key)) return res.status(404).json({ error: 'not_found' });
         res.json({ ok: true });
     });
 
     ctx.app.get('/api/livesubs/:id/vtt', (req, res) => {
-        const t = engine.get(ids.get(req.params.id));
-        if (!t) return res.status(404).json({ error: 'not_found' });
         res.set('Cache-Control', 'private, no-store');
+        const entry = entryFor(req, res);
+        if (!entry) return;
+        const t = engine.get(entry.key);
+        if (!t) return res.status(404).json({ error: 'not_found' });
         res.type('text/vtt').send(C.toVtt(t.cues));
     });
 
     ctx.app.get('/api/livesubs/:id', (req, res) => {
         res.set('Cache-Control', 'private, no-store');
-        const t = engine.get(ids.get(req.params.id));
+        const entry = entryFor(req, res);
+        if (!entry) return;
+        const t = engine.get(entry.key);
         if (!t) return res.status(404).json({ error: 'not_found' });
         const pos = Number(req.query.pos);
         if (Number.isFinite(pos)) t.touch(pos);

@@ -111,12 +111,19 @@ test('PIN change needs current PIN (admin may reset); remove works', async () =>
     t.close();
 });
 
-test('editing a PIN-locked profile needs its token (or admin); unlocked profiles are editable', async () => {
+test('editing a PIN-locked profile needs its token (or admin); unlocked profiles are creator/admin managed', async () => {
     const t = await boot();
     const p = (await t.call('POST', '/api/profiles', { body: { name: 'Priv', pin: '1234' } })).json;
     assert.equal((await t.call('PATCH', `/api/profiles/${p.id}`, { body: { name: 'Hacked' } })).status, 423);
     assert.equal((await t.call('PATCH', `/api/profiles/${p.id}`, { body: { name: 'Renamed' }, headers: ADMIN })).json.name, 'Renamed');
     const open = (await t.call('POST', '/api/profiles', { body: { name: 'Open' } })).json;
+    // Non-admin second login cannot hijack or PIN-lock another login's un-PINned profile
+    assert.equal((await t.call('PATCH', `/api/profiles/${open.id}`, { body: { name: 'Hijacked' }, headers: { 'x-test-email': 'other@example.com' } })).status, 403);
+    assert.equal((await t.call('POST', `/api/profiles/${open.id}/pin`, { body: { pin: '9999' }, headers: { 'x-test-email': 'other@example.com' } })).status, 403);
+    // Kids profile cannot strip its own isKid flag unless admin
+    const kid = (await t.call('POST', '/api/profiles', { body: { name: 'Kid', isKid: true } })).json;
+    assert.equal((await t.call('PATCH', `/api/profiles/${kid.id}`, { body: { isKid: false } })).status, 403);
+    assert.equal((await t.call('PATCH', `/api/profiles/${kid.id}`, { body: { isKid: false }, headers: ADMIN })).json.isKid, false);
     const upd = await t.call('PATCH', `/api/profiles/${open.id}`, { body: { accent: 'amber', settings: { amoled: true } } });
     assert.equal(upd.json.accent, 'amber');
     assert.deepEqual(upd.json.settings, { amoled: true });

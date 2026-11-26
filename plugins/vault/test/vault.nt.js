@@ -270,11 +270,12 @@ test('routes: set up, unlock, browse, stream with a grant, resume, lock', async 
         assert.equal((await t.call('GET', link.replace(`/${clip.id}?`, '/999?'))).status, 401, 'another file');
         assert.equal((await t.call('GET', link, { headers: { range: 'bytes=99999999-' } })).status, 416);
 
-        // thumbnails: <img> sends the token in the query
-        r = await t.call('GET', `/api/vault/thumb/${clip.id}?vt=${encodeURIComponent(token)}`);
+        // thumbnails: authenticated via X-Vault-Token header (query-string ?vt= is refused)
+        r = await t.call('GET', `/api/vault/thumb/${clip.id}`, { token });
         assert.equal(r.status, 200);
         assert.equal(r.headers.get('content-type'), 'image/jpeg');
         assert.match(r.headers.get('cache-control'), /private, no-store/);
+        assert.equal((await t.call('GET', `/api/vault/thumb/${clip.id}?vt=${encodeURIComponent(token)}`)).status, 401);
         assert.equal((await t.call('GET', `/api/vault/thumb/${clip.id}`)).status, 401);
 
         // private resume point, written with the grant from the player URL

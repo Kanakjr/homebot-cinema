@@ -81,3 +81,38 @@ test('scope validation: bad input is a 400, never a silent "download everything"
     assert.equal(scopeLabel({ mode: 'new', since: '2026-01-01' }), 'New episodes only');
     assert.equal(scopeLabel(undefined), 'All seasons');
 });
+
+test('SentinelDaemon.checkSeries serializes concurrent runs per imdbId', async () => {
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const SentinelDaemon = require('../sentinel');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sent-lock-'));
+    let addCalls = 0;
+    const dm = {
+        downloads: {},
+        addDownload: async (args) => {
+            addCalls += 1;
+            await new Promise((r) => setTimeout(r, 40));
+            return { id: `dl_${addCalls}`, ...args };
+        },
+    };
+    const prevAddon = process.env.STREAM_ADDON_URL;
+    process.env.STREAM_ADDON_URL = 'http://addon.test';
+    try {
+        const daemon = new SentinelDaemon(dm, dir);
+        daemon.setGrabber({ resolve: () => ({ name: 'HD', config: { qualities: ['1080p'], sizes: { '1080p': { episode: { minGB: 0.1, maxGB: 5 } } }, bannedKeywords: [], requiredKeywords: [], preferredKeywords: [], minSeeders: 0, hdr: 'any', codec: 'any', sizeBias: 'none' } }) });
+        daemon.fetchJson = async () => ({ meta: { videos: [{ season: 1, episode: 1, released: '2026-01-01T00:00:00Z' }] } });
+        daemon.fetchStreams = async () => [{ name: '1080p', title: 'Show.S01E01.1080p.WEB-DL.x264\n👤 50 💾 1 GB', infoHash: 'a'.repeat(40), fileIdx: 0 }];
+        daemon.monitored['tt9999999'] = {
+            imdbId: 'tt9999999', title: 'Test Show', scope: { mode: 'all' }, monitored: true,
+            downloadedEpisodes: [], skippedEpisodes: [], downloadedAt: {},
+        };
+        const [r1, r2] = await Promise.all([daemon.checkSeries('tt9999999'), daemon.checkSeries('tt9999999')]);
+        assert.equal(addCalls, 1);
+        assert.equal(r1, r2);
+        assert.deepEqual(daemon.monitored['tt9999999'].downloadedEpisodes, ['S01E01']);
+    } finally {
+        if (prevAddon === undefined) delete process.env.STREAM_ADDON_URL; else process.env.STREAM_ADDON_URL = prevAddon;
+    }
+});

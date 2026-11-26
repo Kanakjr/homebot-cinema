@@ -22,7 +22,9 @@ const cleanStream = (s) => ({
     behaviorHints: s && s.behaviorHints && typeof s.behaviorHints === 'object' ? { videoSize: Number(s.behaviorHints.videoSize) || undefined } : undefined,
 });
 
-function registerGrabberRoutes(app, { store, requireAdmin, downloadsManager, db, probeMany }) {
+function registerGrabberRoutes(app, { store, requireAdmin, requireProfile, downloadsManager, db, probeMany }) {
+    const notKids = (req, res, next) => (req.profile && req.profile.is_kid ? res.status(403).json({ error: 'kids_restricted' }) : next());
+    const grabGuard = requireProfile ? [requireProfile, notKids] : [notKids];
     const fail = (res, e) => {
         const status = e.status || 500;
         if (status >= 500) console.error('[Grabber]', e);
@@ -98,7 +100,7 @@ function registerGrabberRoutes(app, { store, requireAdmin, downloadsManager, db,
     });
 
     // Pick the best release for a profile and queue it.
-    app.post('/api/grabber/grab', async (req, res) => {
+    app.post('/api/grabber/grab', ...grabGuard, async (req, res) => {
         try {
             const b = req.body || {};
             const meta = b.meta || {};

@@ -45,9 +45,15 @@ const streamLinksSecret = loadSecret(data_path);
 const streamLinks = createStreamLinks({ secret: streamLinksSecret });
 
 const app = express();
+app.disable('x-powered-by');
 // Outside services get only our origin, never a path. Not 'same-origin': WebKit (desktop app) then sends YouTube no
 // referrer and trailers fail with embed error 153.
-app.use((_req, res, next) => { res.set('Referrer-Policy', 'strict-origin-when-cross-origin'); next(); });
+app.use((_req, res, next) => {
+    res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('X-Frame-Options', 'SAMEORIGIN');
+    next();
+});
 
 // Plugin hooks (server/plugins/hooks.js): named extension points core exposes to plugins/ (see docs/plugins.md).
 const { createHooks } = require('./server/plugins/hooks');
@@ -104,6 +110,20 @@ function warmTorrent(infoHash, extraTrackers) {
     return promise;
 }
 
+function allowedCorsOrigin(origin, req) {
+    if (!origin) return null;
+    try {
+        const u = new URL(origin);
+        const host = u.host.toLowerCase();
+        const allowed = [req.headers.host, ...PUBLIC_HOSTS]
+            .map((h) => String(h || '').trim().toLowerCase())
+            .filter(Boolean);
+        return allowed.includes(host) ? u.origin : null;
+    } catch (_) {
+        return null;
+    }
+}
+
 // Streaming Proxy to official Stremio Streaming Server container
 const streamingPaths = [
     '/streaming', '/streaming/*',
@@ -118,20 +138,33 @@ const streamingPaths = [
     /^\/[0-9a-fA-F]{40}(\/.*)?$/
 ];
 
-// Streaming-server settings (cache size, transcoding, torrent profile) are household-wide: only admins may change them.
-// '/streaming/settings' reaches the same endpoint (the proxy strips the /streaming prefix).
-app.post(['/settings', '/streaming/settings'], auth.requireLogin, auth.requireAdmin);
-
-app.use(streamingPaths, async (req, res) => {
+app.use(streamingPaths, (req, res, next) => {
     if (req.method === 'OPTIONS') {
-        res.writeHead(200, {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, HEAD',
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Max-Age': '86400'
+        const origin = allowedCorsOrigin(req.headers.origin, req);
+        if (!origin) return res.status(403).end();
+        res.writeHead(204, {
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS, HEAD',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range, X-Profile-Id, X-Profile-Token',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Max-Age': '86400',
+            'Vary': 'Origin'
         });
         return res.end();
     }
+    return auth.requireLogin(req, res, next);
+});
+
+// Streaming-server settings (cache size, transcoding, torrent profile) are household-wide: only admins may change them.
+// '/streaming/settings' reaches the same endpoint (the proxy strips the /streaming prefix).
+app.use(['/settings', '/streaming/settings'], (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+        return auth.requireAdmin(req, res, next);
+    }
+    next();
+});
+
+app.use(streamingPaths, async (req, res) => {
 
     let targetPath = req.originalUrl.replace(/^\/streaming/, '') || '/';
 
@@ -169,9 +202,16 @@ app.use(streamingPaths, async (req, res) => {
         }
     }, (proxyRes) => {
         const responseHeaders = { ...proxyRes.headers };
-        responseHeaders['access-control-allow-origin'] = '*';
-        responseHeaders['access-control-allow-methods'] = 'GET, POST, OPTIONS, HEAD';
-        responseHeaders['access-control-allow-headers'] = '*';
+        delete responseHeaders['access-control-allow-origin'];
+        delete responseHeaders['access-control-allow-methods'];
+        delete responseHeaders['access-control-allow-headers'];
+        delete responseHeaders['access-control-allow-credentials'];
+        const origin = allowedCorsOrigin(req.headers.origin, req);
+        if (origin) {
+            responseHeaders['access-control-allow-origin'] = origin;
+            responseHeaders['access-control-allow-credentials'] = 'true';
+            responseHeaders['vary'] = responseHeaders['vary'] ? `${responseHeaders['vary']}, Origin` : 'Origin';
+        }
         res.writeHead(proxyRes.statusCode, responseHeaders);
         proxyRes.on('error', () => res.destroy());
         proxyRes.pipe(res, { end: true });
@@ -290,8 +330,8 @@ sentinelDaemon.setNotifier((n) => hooks.emit('notify', n));
 // Start sentinel daemon in background (checks every 2 hours)
 sentinelDaemon.start();
 
-registerGrabberRoutes(app, { store: qualityStore, requireAdmin: auth.requireAdmin, downloadsManager, db: cinemaDb, probeMany: swarmProbe.probeMany });
-registerProbeRoutes(app, { probeMany: swarmProbe.probeMany });
+registerGrabberRoutes(app, { store: qualityStore, requireAdmin: auth.requireAdmin, requireProfile: profileApi.requireProfile, downloadsManager, db: cinemaDb, probeMany: swarmProbe.probeMany });
+registerProbeRoutes(app, { probeMany: swarmProbe.probeMany, requireProfile: profileApi.requireProfile });
 
 // Server media library (Jellyfin-style view over /Movies and /TV)
 const { Library } = require('./server/library/library');
@@ -419,8 +459,13 @@ app.get('/api/downloads', async (_req, res) => {
     }
 });
 
+const requireAdultProfile = [
+    profileApi.requireProfile,
+    (req, res, next) => (req.profile && req.profile.is_kid ? res.status(403).json({ error: 'kids_restricted' }) : next()),
+];
+
 // 6. Downloads API: Add a new download task
-app.post('/api/downloads/add', async (req, res) => {
+app.post('/api/downloads/add', ...requireAdultProfile, async (req, res) => {
     try {
         const { magnet, mediaId, imdbId, title, type, season, episode, poster, year } = req.body;
         if (!magnet) {
@@ -445,7 +490,7 @@ app.post('/api/downloads/add', async (req, res) => {
 });
 
 // 7. Downloads API: Action (pause, resume, delete)
-app.post('/api/downloads/action', async (req, res) => {
+app.post('/api/downloads/action', ...requireAdultProfile, async (req, res) => {
     try {
         const { id, action, deleteLocalData } = req.body;
         if (!id || !action) {

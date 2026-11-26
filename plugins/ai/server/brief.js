@@ -38,7 +38,8 @@ function createBrief({ raw, library, downloadsManager, sentinel, qualityStore, s
     /** Returns { text, catalog }: the brief text, and the titles it mentions (id -> card data) so they can be shown as cards. */
     async function build({ profile, login }) {
         const t = now();
-        const hit = cache.get(profile.id);
+        const cacheKey = `${profile.id}:${login && login.isAdmin ? 1 : 0}`;
+        const hit = cache.get(cacheKey);
         let base = hit && t - hit.ts < ttlMs ? hit : null;
         if (!base) {
             const lines = [];
@@ -91,7 +92,7 @@ function createBrief({ raw, library, downloadsManager, sentinel, qualityStore, s
             } catch (_) { /* optional */ }
 
             base = { ts: t, text: lines.join('\n'), catalog };
-            cache.set(profile.id, base);
+            cache.set(cacheKey, base);
             if (cache.size > 50) cache.delete(cache.keys().next().value);
         }
         // pending actions change within a conversation, so they are never cached

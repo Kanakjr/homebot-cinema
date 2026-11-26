@@ -46,6 +46,21 @@ async function lock() {
     }
 }
 
-const thumbUrl = (id) => `/api/vault/thumb/${Number(id)}?vt=${encodeURIComponent(token || '')}`;
+async function fetchThumbUrl(id, signal) {
+    const res = await fetch(`/api/vault/thumb/${Number(id)}`, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: token ? { 'X-Vault-Token': token } : undefined,
+        signal,
+    });
+    if (res.status === 401) {
+        try {
+            const err = await res.json();
+            if (err && err.error === 'vault_locked') setToken(null);
+        } catch (_) { /* ignore */ }
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return URL.createObjectURL(await res.blob());
+}
 
-module.exports = { setToken, getToken, touch, idleFor, subscribe, vaultApi, lock, thumbUrl };
+module.exports = { setToken, getToken, touch, idleFor, subscribe, vaultApi, lock, fetchThumbUrl };

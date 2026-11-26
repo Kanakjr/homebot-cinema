@@ -9,6 +9,8 @@ class DownloadsManager {
         this.dataPath = dataPath;
         this.downloadsFile = path.join(dataPath, 'downloads.json');
         this.monitoredFile = path.join(dataPath, 'monitored_series.json');
+        this.moviesDir = process.env.LIBRARY_MOVIES_DIR || '/Movies';
+        this.tvDir = process.env.LIBRARY_TV_DIR || '/TV';
         this.transmission = new TransmissionClient();
 
         // Ensure data path exists
@@ -111,13 +113,13 @@ class DownloadsManager {
         }
 
         let downloadDir = '/downloads/complete';
-        if (type === 'movie' && fs.existsSync('/Movies')) {
-            downloadDir = '/Movies';
-        } else if (type === 'series' && fs.existsSync('/TV')) {
-            // one folder per show: /TV/<Show>/Season NN (not one folder per episode)
+        if (type === 'movie' && fs.existsSync(this.moviesDir)) {
+            downloadDir = this.moviesDir;
+        } else if (type === 'series' && fs.existsSync(this.tvDir)) {
+            // one folder per show: <tvDir>/<Show>/Season NN (not one folder per episode)
             const safeTitle = (showTitle || title || 'Show').replace(/[^a-zA-Z0-9 ._-]/g, '').trim() || 'Show';
             const seasonFolder = `Season ${String(season || 1).padStart(2, '0')}`;
-            downloadDir = path.join('/TV', safeTitle, seasonFolder);
+            downloadDir = path.join(this.tvDir, safeTitle, seasonFolder);
             try {
                 fs.mkdirSync(downloadDir, { recursive: true });
             } catch (_) {}
@@ -266,13 +268,13 @@ class DownloadsManager {
         const discovered = [];
         const videoExtensions = ['.mp4', '.mkv', '.webm'];
 
-        // 1. Scan /Movies
-        if (fs.existsSync('/Movies')) {
+        // 1. Scan movies dir
+        if (fs.existsSync(this.moviesDir)) {
             try {
-                const items = fs.readdirSync('/Movies');
+                const items = fs.readdirSync(this.moviesDir);
                 for (const item of items) {
                     if (item.startsWith('.')) continue;
-                    const itemPath = path.join('/Movies', item);
+                    const itemPath = path.join(this.moviesDir, item);
                     const stat = fs.statSync(itemPath);
                     if (stat.isFile() && videoExtensions.includes(path.extname(item).toLowerCase())) {
                         discovered.push({
@@ -303,13 +305,13 @@ class DownloadsManager {
             }
         }
 
-        // 2. Scan /TV
-        if (fs.existsSync('/TV')) {
+        // 2. Scan TV dir
+        if (fs.existsSync(this.tvDir)) {
             try {
-                const shows = fs.readdirSync('/TV');
+                const shows = fs.readdirSync(this.tvDir);
                 for (const show of shows) {
                     if (show.startsWith('.')) continue;
-                    const showPath = path.join('/TV', show);
+                    const showPath = path.join(this.tvDir, show);
                     const stat = fs.statSync(showPath);
                     if (stat.isDirectory()) {
                         const videoFiles = [];
@@ -625,7 +627,6 @@ class DownloadsManager {
                 'Content-Type': 'video/mp4',
                 'Content-Disposition': disposition,
                 'Cache-Control': 'private, no-store',
-                'Access-Control-Allow-Origin': '*',
                 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type, Content-Disposition'
             });
 
@@ -644,19 +645,32 @@ class DownloadsManager {
 
         // 2. Direct Range Streaming (for MP4/WebM or explicit downloads)
         const range = req.headers.range;
+        const m = range ? /^bytes=(\d*)-(\d*)$/.exec(String(range).trim()) : null;
 
-        if (range) {
-            const parts = range.replace(/bytes=/, "").split("-");
-            const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        if (m && (m[1] !== '' || m[2] !== '')) {
+            let start;
+            let end;
+            if (m[1] === '') {
+                const suffix = Number(m[2]);
+                if (!Number.isFinite(suffix) || suffix <= 0) {
+                    res.status(416).set('Content-Range', `bytes */${fileSize}`).end();
+                    return;
+                }
+                start = Math.max(0, fileSize - suffix);
+                end = fileSize - 1;
+            } else {
+                start = Number(m[1]);
+                end = m[2] === '' ? fileSize - 1 : Math.min(Number(m[2]), fileSize - 1);
+            }
 
-            if (start >= fileSize) {
+            if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start > end || start >= fileSize || fileSize === 0) {
                 res.status(416).set('Content-Range', `bytes */${fileSize}`).end();
                 return;
             }
 
             const chunksize = (end - start) + 1;
             const fileStream = fs.createReadStream(targetPath, { start, end });
+            fileStream.on('error', () => res.destroy());
 
             const headers = {
                 'Content-Range': `bytes ${start}-${end}/${fileSize}`,
@@ -665,9 +679,6 @@ class DownloadsManager {
                 'Content-Type': mimeType,
                 'Content-Disposition': disposition,
                 'Cache-Control': 'private, no-store',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-                'Access-Control-Allow-Headers': 'Range, Content-Type, Accept, Origin',
                 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type, Content-Disposition'
             };
 
@@ -684,13 +695,13 @@ class DownloadsManager {
                 'Accept-Ranges': 'bytes',
                 'Content-Disposition': disposition,
                 'Cache-Control': 'private, no-store',
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-                'Access-Control-Allow-Headers': 'Range, Content-Type, Accept, Origin',
                 'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type, Content-Disposition'
             };
             res.writeHead(200, headers);
-            fs.createReadStream(targetPath).pipe(res);
+            const fullStream = fs.createReadStream(targetPath);
+            fullStream.on('error', () => res.destroy());
+            req.on('close', () => fullStream.destroy());
+            fullStream.pipe(res);
         }
     }
 }

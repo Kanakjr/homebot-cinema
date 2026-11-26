@@ -23,6 +23,15 @@ function parseVideoId(videoId) {
     return m ? { season: Number(m[1]), episode: Number(m[2]) } : null;
 }
 
+function parseNonNegInt(val, name) {
+    if (val === undefined || val === null || val === '') return undefined;
+    const s = String(val).trim();
+    if (!/^\d+$/.test(s)) {
+        throw Object.assign(new Error(`invalid_${name}`), { status: 400 });
+    }
+    return Number(s);
+}
+
 function createPlayResolver({ library, upnext, grabberStore, streamAddonUrl, fetchImpl = fetch }) {
     function streamAddonBase() {
         const u = streamAddonUrl || process.env.STREAM_ADDON_URL || '';
@@ -38,8 +47,8 @@ function createPlayResolver({ library, upnext, grabberStore, streamAddonUrl, fet
         }
 
         let targetVideoId = videoId || null;
-        let targetSeason = season != null ? Number(season) : null;
-        let targetEpisode = episode != null ? Number(episode) : null;
+        let targetSeason = parseNonNegInt(season, 'season') ?? null;
+        let targetEpisode = parseNonNegInt(episode, 'episode') ?? null;
         let mode = 'first';
         let remainingMs = null;
 
@@ -207,8 +216,8 @@ function registerPlayRoutes(app, { resolver, requireProfile }) {
                 id: String(id),
                 type: String(type),
                 videoId: videoId ? String(videoId) : undefined,
-                season: season != null ? Number(season) : undefined,
-                episode: episode != null ? Number(episode) : undefined,
+                season: parseNonNegInt(season, 'season'),
+                episode: parseNonNegInt(episode, 'episode'),
             });
             res.json(result);
         } catch (e) {

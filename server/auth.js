@@ -44,11 +44,16 @@ function cookieValue(header, name) {
 
 function createAuth({ db, env = process.env, jwks } = {}) {
     const cfg = loadConfig(env);
-    const keySet = jwks || (cfg.team ? createRemoteJWKSet(new URL(`https://${cfg.team}/cdn-cgi/access/certs`)) : null);
+    const isProd = env.NODE_ENV === 'production';
+    const allowAnyAud = env.ALLOW_ANY_CF_AUD === '1';
+    const audMissingInProd = isProd && !!cfg.team && !cfg.aud.length && !allowAnyAud;
+    const keySet = audMissingInProd ? null : (jwks || (cfg.team ? createRemoteJWKSet(new URL(`https://${cfg.team}/cdn-cgi/access/certs`)) : null));
     const isAdminEmail = (email) => cfg.admins.includes(norm(email));
 
     if (!cfg.team && !cfg.devEmail) {
         console.error('[Auth] CF_TEAM_DOMAIN is not set: every /api request will be rejected (503). Set CF_TEAM_DOMAIN, CF_ACCESS_AUD and ADMIN_EMAILS.');
+    } else if (audMissingInProd) {
+        console.error('[Auth] CF_ACCESS_AUD is not set in production: every /api request will be rejected (503). Set CF_ACCESS_AUD (or ALLOW_ANY_CF_AUD=1 to opt out).');
     } else if (cfg.team && !cfg.aud.length) {
         console.warn('[Auth] CF_ACCESS_AUD is not set: JWT audience is not being checked.');
     }

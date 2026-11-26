@@ -129,3 +129,12 @@ test('CF_ACCESS_AUD may list several apps (cinema + streamio); others rejected',
         assert.ok((await run(auth.requireLogin, reqWith({ 'cf-access-jwt-assertion': await sign({ email: 'a@example.com' }, { aud }) }))).nextCalled);
     assert.equal((await run(auth.requireLogin, reqWith({ 'cf-access-jwt-assertion': await sign({ email: 'a@example.com' }, { aud: 'aud-c' }) }))).status, 401);
 });
+
+test('empty CF_ACCESS_AUD fails closed in production unless ALLOW_ANY_CF_AUD=1', async () => {
+    const { auth, sign } = await setup({ ...ENV, NODE_ENV: 'production', CF_ACCESS_AUD: '' });
+    const tok = await sign({ email: 'owner@example.com' }, { aud: 'other-app' });
+    assert.equal((await run(auth.requireLogin, reqWith({ 'cf-access-jwt-assertion': tok }))).status, 503);
+    const optIn = await setup({ ...ENV, NODE_ENV: 'production', CF_ACCESS_AUD: '', ALLOW_ANY_CF_AUD: '1' });
+    const tokOpt = await optIn.sign({ email: 'owner@example.com' }, { aud: 'other-app' });
+    assert.ok((await run(optIn.auth.requireLogin, reqWith({ 'cf-access-jwt-assertion': tokOpt }))).nextCalled);
+});

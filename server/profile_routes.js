@@ -45,7 +45,8 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
     const getProfile = (id) => raw.prepare('SELECT * FROM profiles WHERE id = ?').get(Number(id));
     const count = () => raw.prepare('SELECT COUNT(*) c FROM profiles').get().c;
     const tokenOk = (req, p) => tokens.verify(req.headers['x-profile-token'], p.id, req.login.email);
-    const canManage = (req, p) => req.login.isAdmin || !p.pin_hash || tokenOk(req, p);
+    const isCreator = (req, p) => !!(p.created_by && String(p.created_by).toLowerCase() === String((req.login && req.login.email) || '').toLowerCase());
+    const canManage = (req, p) => req.login.isAdmin || (p.pin_hash ? tokenOk(req, p) : (!p.created_by || isCreator(req, p)));
     const bad = (res, code, error, extra = {}) => res.status(code).json({ error, ...extra });
 
     function validName(name) {
@@ -54,11 +55,22 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
     }
     const validAvatar = (a) => typeof a === 'string' && (presetUrls.has(a) || /^\/api\/avatars\/file\/[a-f0-9]{16}\.(png|jpg|webp)$/.test(a));
 
-    // Resolves the active profile for per-profile sync routes.
+    // The active profile of a request: X-Profile-Id/-Token headers, else the cinema_pid/cinema_ptok cookies the UI sets
+    // (plain fetches, plugin UIs and the streaming-server settings POST carry no headers).
+    const activeRef = (req) => {
+        const h = req.headers || {};
+        if (h['x-profile-id']) return { id: String(h['x-profile-id']), token: h['x-profile-token'] || '' };
+        let token = cookieValue(h.cookie, 'cinema_ptok');
+        try { token = decodeURIComponent(token); } catch (_) { token = ''; }
+        return { id: cookieValue(h.cookie, 'cinema_pid'), token };
+    };
+
+    // Resolves the active profile for per-profile sync & protected media routes.
     function requireProfile(req, res, next) {
-        const p = getProfile(req.headers['x-profile-id']);
+        const ref = activeRef(req);
+        const p = getProfile(ref.id);
         if (!p) return bad(res, 400, 'no_profile');
-        if (p.pin_hash && !tokenOk(req, p)) return bad(res, 423, 'profile_locked');
+        if (p.pin_hash && !tokens.verify(ref.token, p.id, req.login.email)) return bad(res, 423, 'profile_locked');
         req.profile = p;
         next();
     }
@@ -69,19 +81,21 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
     const ownerProfile = () => (ownerKey
         ? raw.prepare('SELECT * FROM profiles WHERE lower(trim(name)) = ? ORDER BY id LIMIT 1').get(ownerKey)
         : null);
-    // The active profile of a request: X-Profile-Id/-Token headers, else the cinema_pid/cinema_ptok cookies the UI sets
-    // (plain fetches, plugin UIs and the streaming-server settings POST carry no headers).
-    const activeRef = (req) => {
-        const h = req.headers || {};
-        if (h['x-profile-id']) return { id: String(h['x-profile-id']), token: h['x-profile-token'] || '' };
-        let token = cookieValue(h.cookie, 'cinema_ptok');
-        try { token = decodeURIComponent(token); } catch (_) { token = ''; }
-        return { id: cookieValue(h.cookie, 'cinema_pid'), token };
-    };
+    let warnedMissingOwner = false;
+    if (ownerKey && !ownerProfile()) {
+        warnedMissingOwner = true;
+        console.warn(`[Profiles] OWNER_PROFILE_NAME="${ownerName}" does not match any existing profile; admin actions will be denied until a matching profile exists.`);
+    }
     // Admin login + this request is on the unlocked owner profile. No OWNER_PROFILE_NAME: null (no gate, admin by email).
     function adminProfileGate(req, email) {
         const owner = ownerProfile();
-        if (!owner) return false;
+        if (!owner) {
+            if (ownerKey && !warnedMissingOwner) {
+                warnedMissingOwner = true;
+                console.warn(`[Profiles] OWNER_PROFILE_NAME="${ownerName}" no longer matches any existing profile; admin actions are denied.`);
+            }
+            return false;
+        }
         const ref = activeRef(req);
         if (String(ref.id) !== String(owner.id)) return false;
         return !owner.pin_hash || tokens.verify(ref.token, owner.id, email);
@@ -112,12 +126,15 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
     app.patch('/api/profiles/:id', (req, res) => {
         const p = getProfile(req.params.id);
         if (!p) return bad(res, 404, 'not_found');
-        if (!canManage(req, p)) return bad(res, 423, 'profile_locked');
+        if (!canManage(req, p)) return bad(res, p.pin_hash ? 423 : 403, p.pin_hash ? 'profile_locked' : 'forbidden');
         const b = req.body || {};
         let { name, avatar, is_kid, accent, settings_json } = p;
         if (b.name !== undefined) { name = validName(b.name); if (!name) return bad(res, 400, 'invalid_name'); }
         if (b.avatar !== undefined) { if (!validAvatar(b.avatar)) return bad(res, 400, 'invalid_avatar'); avatar = b.avatar; }
-        if (b.isKid !== undefined) is_kid = b.isKid ? 1 : 0;
+        if (b.isKid !== undefined) {
+            if (!b.isKid && p.is_kid && !req.login.isAdmin) return bad(res, 403, 'admin_only');
+            is_kid = b.isKid ? 1 : 0;
+        }
         if (b.accent !== undefined) accent = b.accent === null ? null : String(b.accent).slice(0, 16);
         if (b.settings !== undefined) {
             const merged = JSON.stringify({ ...P.safeJson(settings_json), ...(typeof b.settings === 'object' && b.settings ? b.settings : {}) });
@@ -167,6 +184,7 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
         if (!p) return bad(res, 404, 'not_found');
         const b = req.body || {};
         if (!P.validPin(b.pin)) return bad(res, 400, 'invalid_pin');
+        if (!p.pin_hash && !req.login.isAdmin && !isCreator(req, p)) return bad(res, 403, 'forbidden');
         if (!req.login.isAdmin && p.pin_hash && !P.checkPin(b.currentPin, p.pin_hash)) return bad(res, 401, 'bad_pin');
         raw.prepare('UPDATE profiles SET pin_hash=?, pin_fail_count=0, pin_locked_until=NULL WHERE id=?').run(P.hashPin(b.pin), p.id);
         db.audit(req.login.email, p.id, 'profile.pin_set', null);
@@ -176,6 +194,7 @@ function registerProfileRoutes(app, { db, secret, dataPath, ownerName = '', admi
     app.post('/api/profiles/:id/pin/remove', (req, res) => {
         const p = getProfile(req.params.id);
         if (!p) return bad(res, 404, 'not_found');
+        if (!p.pin_hash && !req.login.isAdmin && !isCreator(req, p)) return bad(res, 403, 'forbidden');
         if (!req.login.isAdmin && p.pin_hash && !P.checkPin(req.body && req.body.currentPin, p.pin_hash)) return bad(res, 401, 'bad_pin');
         raw.prepare('UPDATE profiles SET pin_hash=NULL, pin_fail_count=0, pin_locked_until=NULL WHERE id=?').run(p.id);
         db.audit(req.login.email, p.id, 'profile.pin_remove', null);

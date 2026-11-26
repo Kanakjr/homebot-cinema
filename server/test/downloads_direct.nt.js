@@ -102,3 +102,26 @@ test('direct=1 does not widen what can be read: paths outside the media roots ar
     fs.unlinkSync(outside);
     t.close();
 });
+
+test('strict Range parsing handles suffix ranges, clamps end to EOF, and rejects invalid ranges with 416', async () => {
+    const t = await setup({ withSibling: true });
+    // suffix range
+    const suffix = await t.get(t.mkv, 'direct=1', { Range: 'bytes=-5' });
+    assert.equal(suffix.status, 206);
+    assert.equal(suffix.headers['content-range'], `bytes ${MKV.length - 5}-${MKV.length - 1}/${MKV.length}`);
+    assert.deepEqual(suffix.body, MKV.subarray(MKV.length - 5));
+    // end clamped to fileSize - 1
+    const clamped = await t.get(t.mkv, 'direct=1', { Range: 'bytes=0-999999' });
+    assert.equal(clamped.status, 206);
+    assert.equal(clamped.headers['content-range'], `bytes 0-${MKV.length - 1}/${MKV.length}`);
+    assert.deepEqual(clamped.body, MKV);
+    // inverted range -> 416 (never 500 RangeError)
+    const inv = await t.get(t.mkv, 'direct=1', { Range: 'bytes=20-10' });
+    assert.equal(inv.status, 416);
+    assert.equal(inv.headers['content-range'], `bytes */${MKV.length}`);
+    // malformed range -> 200 full body (never 500 RangeError)
+    const bad = await t.get(t.mkv, 'direct=1', { Range: 'bytes=abc-def' });
+    assert.equal(bad.status, 200);
+    assert.deepEqual(bad.body, MKV);
+    t.close();
+});

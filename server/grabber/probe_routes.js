@@ -4,8 +4,10 @@
 
 const { HASH_RE } = require('./swarm_probe');
 
-function registerProbeRoutes(app, { probeMany }) {
-    app.post('/api/streams/probe', async (req, res) => {
+function registerProbeRoutes(app, { probeMany, requireProfile } = {}) {
+    const notKids = (req, res, next) => (req.profile && req.profile.is_kid ? res.status(403).json({ error: 'kids_restricted' }) : next());
+    const probeGuard = requireProfile ? [requireProfile, notKids] : [notKids];
+    app.post('/api/streams/probe', ...probeGuard, async (req, res) => {
         const list = req.body && req.body.streams;
         if (!Array.isArray(list) || list.length === 0 || list.length > 6) return res.status(400).json({ error: 'streams must be 1 to 6 items' });
         const items = list

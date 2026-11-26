@@ -173,6 +173,12 @@ test('registerPlayRoutes handles HTTP requests and validation', async () => {
         const badRes = await fetch(`http://127.0.0.1:${port}/api/play/resolve?id=tt123`);
         assert.equal(badRes.status, 400);
 
+        // invalid non-integer season/episode -> 400 (never SNaNENaN)
+        const badSeason = await fetch(`http://127.0.0.1:${port}/api/play/resolve?id=tt1254207&type=series&season=abc&episode=def`);
+        assert.equal(badSeason.status, 400);
+        const negEp = await fetch(`http://127.0.0.1:${port}/api/play/resolve?id=tt1254207&type=series&season=1&episode=-1`);
+        assert.equal(negEp.status, 400);
+
         // valid request
         const okRes = await fetch(`http://127.0.0.1:${port}/api/play/resolve?id=tt123&type=movie`);
         assert.equal(okRes.status, 200);

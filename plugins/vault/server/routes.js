@@ -1,6 +1,6 @@
 'use strict';
 // HTTP API of the Locked folder. Everything except /stream needs the admin login on the unlocked owner profile
-// (ctx.auth.requireAdmin) AND an unlock session (X-Vault-Token, or ?vt= for <img> thumbnails).
+// (ctx.auth.requireAdmin) AND an unlock session (X-Vault-Token header).
 // /stream needs a signed grant for that file, bound to the same login, while its session is unlocked: mpv in the Mac app
 // only carries the Cloudflare login cookie, not the profile cookies. Every response is `private, no-store`.
 
@@ -16,7 +16,7 @@ function registerRoutes({ app, auth, store, sessions, thumbs, audit, now = () =>
     const noStore = (_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); };
     const bad = (res, status, error, extra = {}) => res.status(status).json({ error, ...extra });
     const email = (req) => (req.login && req.login.email) || '';
-    const tokenOf = (req) => req.get('x-vault-token') || (typeof req.query.vt === 'string' ? req.query.vt : '');
+    const tokenOf = (req) => req.get('x-vault-token') || '';
     const num = (v) => (/^\d+$/.test(String(v)) ? Number(v) : null);
 
     function unlocked(req, res, next) {

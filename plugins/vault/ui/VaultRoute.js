@@ -20,10 +20,24 @@ const PAGE = 200;
 const isDesktopApp = () => typeof window !== 'undefined' && typeof window.qt !== 'undefined';
 
 const Thumb = ({ id, label }) => {
+    const [src, setSrc] = React.useState(null);
     const [failed, setFailed] = React.useState(false);
-    return failed || !id
-        ? <div className={styles['thumb-empty']}>{label}</div>
-        : <img className={styles['thumb-img']} src={V.thumbUrl(id)} alt="" loading="lazy" onError={() => setFailed(true)} />;
+    React.useEffect(() => {
+        if (!id) return undefined;
+        let revoked = null;
+        const ac = new AbortController();
+        setFailed(false);
+        V.fetchThumbUrl(id, ac.signal)
+            .then((url) => { revoked = url; setSrc(url); })
+            .catch(() => { if (!ac.signal.aborted) setFailed(true); });
+        return () => {
+            ac.abort();
+            if (revoked) URL.revokeObjectURL(revoked);
+        };
+    }, [id]);
+    if (failed || !id) return <div className={styles['thumb-empty']}>{label}</div>;
+    if (!src) return <div className={styles['thumb-empty']} />;
+    return <img className={styles['thumb-img']} src={src} alt="" onError={() => setFailed(true)} />;
 };
 Thumb.propTypes = { id: PropTypes.number, label: PropTypes.string };
 

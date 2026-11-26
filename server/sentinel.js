@@ -17,6 +17,7 @@ class SentinelDaemon {
         this.notifier = null;
         this.intervalHandle = null;
         this.library = null;
+        this._inFlightChecks = new Map();
     }
 
     loadMonitored() {
@@ -75,14 +76,18 @@ class SentinelDaemon {
     }
 
     // HTTP GET Helper with JSON parsing
-    fetchJson(url) {
+    fetchJson(url, redirects = 0) {
         return new Promise((resolve, reject) => {
+            if (redirects > 5) return reject(new Error(`Too many redirects for ${url}`));
             const client = url.startsWith('https') ? https : http;
-            client.get(url, { headers: { 'User-Agent': 'HomeBot-Cinema/2.0' } }, (res) => {
+            const req = client.get(url, { headers: { 'User-Agent': 'HomeBot-Cinema/2.0' }, timeout: 15000 }, (res) => {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                    return this.fetchJson(res.headers.location).then(resolve).catch(reject);
+                    res.resume();
+                    const nextUrl = new URL(res.headers.location, url).toString();
+                    return this.fetchJson(nextUrl, redirects + 1).then(resolve).catch(reject);
                 }
                 if (res.statusCode !== 200) {
+                    res.resume();
                     return reject(new Error(`HTTP ${res.statusCode} from ${url}`));
                 }
                 let data = '';
@@ -90,7 +95,11 @@ class SentinelDaemon {
                 res.on('end', () => {
                     try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
                 });
-            }).on('error', reject);
+            });
+            req.on('timeout', () => {
+                req.destroy(new Error(`Timeout fetching ${url}`));
+            });
+            req.on('error', reject);
         });
     }
 
@@ -223,8 +232,21 @@ class SentinelDaemon {
         });
     }
 
-    // Check a single monitored series
-    async checkSeries(imdbId) {
+    // Check a single monitored series (serialized per imdbId so overlapping triggers cannot double-queue)
+    checkSeries(imdbId) {
+        if (this._inFlightChecks.has(imdbId)) {
+            return this._inFlightChecks.get(imdbId);
+        }
+        const run = this._runCheckSeries(imdbId).finally(() => {
+            if (this._inFlightChecks.get(imdbId) === run) {
+                this._inFlightChecks.delete(imdbId);
+            }
+        });
+        this._inFlightChecks.set(imdbId, run);
+        return run;
+    }
+
+    async _runCheckSeries(imdbId) {
         const item = this.monitored[imdbId];
         if (!item || !item.monitored) return { checked: false };
 
@@ -270,7 +292,7 @@ class SentinelDaemon {
 
                 // A download for it is running, or finished and its file is still there
                 if (this.isActive(mediaId)) {
-                    item.downloadedEpisodes.push(epTag);
+                    if (!item.downloadedEpisodes.includes(epTag)) item.downloadedEpisodes.push(epTag);
                     continue;
                 }
 
@@ -317,7 +339,7 @@ class SentinelDaemon {
                             showTitle: item.title
                         });
 
-                        item.downloadedEpisodes.push(epTag);
+                        if (!item.downloadedEpisodes.includes(epTag)) item.downloadedEpisodes.push(epTag);
                         (item.downloadedAt = item.downloadedAt || {})[epTag] = new Date().toISOString();
                         queuedEpisodes.push({ epTag, title: dlRecord.title });
 

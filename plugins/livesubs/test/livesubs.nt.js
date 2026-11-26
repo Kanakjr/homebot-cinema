@@ -302,3 +302,33 @@ test('POST /api/livesubs/:id/close releases the source; unknown ids are 404', as
         assert.equal((await fetch(`${base}/api/livesubs/0000000000000000/close`, { method: 'POST' })).status, 404);
     });
 });
+
+test('livesubs isolates sessions across logins', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+        req.login = { email: req.headers['x-test-user'] || 'alice@example.com', isAdmin: false };
+        next();
+    });
+    const fakeT = { cues: [{ start: 0, end: 1, text: 'hi' }], touch: () => undefined, status: () => ({ state: 'working' }) };
+    const engine = { open: () => fakeT, get: () => fakeT, release: () => true };
+    const ctx = {
+        app,
+        auth: { requireLogin: (_req, _res, next) => next(), requireAdmin: (_req, _res, next) => next(), requireProfile: (_req, _res, next) => next() },
+        db: { migrate: () => 0, raw: openDb(':memory:', ':memory:').raw },
+        config: { get: (k, d) => (k === 'LIVESUBS_WHISPER_URL' ? 'http://w' : d), int: (_k, d) => d },
+        services: {},
+        sdk: { isInsideRoots: () => true },
+        log: { info: () => undefined, warn: () => undefined, error: () => undefined },
+    };
+    register(ctx, { engine });
+    await withServer(app, async (base) => {
+        const opened = await (await fetch(`${base}/api/livesubs/open`, {
+            method: 'POST', headers: { 'content-type': 'application/json', 'x-test-user': 'alice@example.com' },
+            body: JSON.stringify({ infoHash: 'd'.repeat(40), fileIdx: 0 }),
+        })).json();
+        assert.equal((await fetch(`${base}/api/livesubs/${opened.id}?pos=10`, { headers: { 'x-test-user': 'bob@example.com' } })).status, 403);
+        assert.equal((await fetch(`${base}/api/livesubs/${opened.id}/vtt`, { headers: { 'x-test-user': 'bob@example.com' } })).status, 403);
+        assert.equal((await fetch(`${base}/api/livesubs/${opened.id}/close`, { method: 'POST', headers: { 'x-test-user': 'bob@example.com' } })).status, 403);
+    });
+});

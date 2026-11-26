@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const net = require('net');
+const http = require('http');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -43,7 +44,7 @@ async function boot(plugins, extraEnv = {}, prepare = null) {
     assert.match(log, /listening on port/, `server did not start:\n${log}`);
     const get = async (p) => { const r = await fetch(base + p); return { status: r.status, headers: r.headers, bytes: Buffer.from(await r.clone().arrayBuffer()), body: await r.json().catch(() => null) }; };
     const post = async (p, body) => (await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).status;
-    return { get, post, log: () => log, stop: () => new Promise((r) => { child.once('exit', r); child.kill('SIGTERM'); }) };
+    return { base, get, post, log: () => log, stop: () => new Promise((r) => { child.once('exit', r); child.kill('SIGTERM'); }) };
 }
 
 test('boots with no plugins: core routes answer, plugin routes do not exist', { timeout: 30000 }, async () => {
@@ -52,6 +53,9 @@ test('boots with no plugins: core routes answer, plugin routes do not exist', { 
         const me = await s.get('/api/me');
         assert.equal(me.status, 200);
         assert.equal(me.headers.get('referrer-policy'), 'strict-origin-when-cross-origin', 'only the origin, never a path, goes to outside services; trailers need it (YouTube error 153)');
+        assert.equal(me.headers.get('x-content-type-options'), 'nosniff');
+        assert.equal(me.headers.get('x-frame-options'), 'SAMEORIGIN');
+        assert.equal(me.headers.get('x-powered-by'), null);
         assert.equal(me.body.isAdmin, true);
         const pl = await s.get('/api/plugins');
         assert.equal(pl.status, 200);
@@ -101,8 +105,60 @@ test('streaming-server settings are admin-only (both proxy paths); reading them 
     try {
         // passes the guard and reaches the (absent) streaming server
         assert.equal(await admin.post('/settings', { cacheSize: 0 }), 502);
+        assert.equal(await admin.post('/streaming/settings', { cacheSize: 0 }), 502);
+        const putRes = await fetch(`${admin.base}/settings`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: '{}' });
+        assert.equal(putRes.status, 502);
     } finally {
         await admin.stop();
+    }
+});
+
+test('streaming proxy requires login, blocks PUT for non-admin, and strips wildcard CORS', { timeout: 30000 }, async () => {
+    const H = 'a'.repeat(40);
+    // 1. Unauthenticated requests in production fail closed (401) with no Access-Control-Allow-Origin: *
+    const prod = await boot('none', { NODE_ENV: 'production', DEV_EMAIL: '', CF_TEAM_DOMAIN: 'team.cloudflareaccess.com', CF_ACCESS_AUD: 'aud-1' });
+    try {
+        for (const [method, p] of [
+            ['GET', '/settings'],
+            ['PUT', '/settings'],
+            ['POST', '/streaming/settings'],
+            ['GET', '/stats.json'],
+            ['GET', '/proxy/http://169.254.169.254/latest/meta-data/'],
+            ['GET', '/hlsv2/test/master.m3u8'],
+            ['POST', `/${H}/create`],
+        ]) {
+            const r = await fetch(`${prod.base}${p}`, { method, headers: { Origin: 'https://evil.example' } });
+            assert.equal(r.status, 401, `${method} ${p} must require login`);
+            assert.equal(r.headers.get('access-control-allow-origin'), null, `${method} ${p} must not emit ACAO`);
+        }
+        const preflight = await fetch(`${prod.base}/settings`, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } });
+        assert.equal(preflight.status, 403);
+        assert.equal(preflight.headers.get('access-control-allow-origin'), null);
+    } finally {
+        await prod.stop();
+    }
+
+    // 2. Mock upstream streaming server returning ACAO: * — proxy strips it for untrusted origins & blocks PUT for non-admin
+    const mockStream = http.createServer((req, res) => {
+        res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
+        res.end(JSON.stringify({ path: req.url, method: req.method }));
+    });
+    await new Promise((r) => mockStream.listen(0, '127.0.0.1', r));
+    const streamPort = mockStream.address().port;
+    const member = await boot('none', { ADMIN_EMAILS: 'someone-else@example.com', STREMIO_SERVER_PORT: String(streamPort) });
+    try {
+        assert.equal((await fetch(`${member.base}/settings`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: '{}' })).status, 403);
+        assert.equal((await fetch(`${member.base}/streaming/settings`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: '{}' })).status, 403);
+        const evilStats = await fetch(`${member.base}/stats.json`, { headers: { Origin: 'https://evil.example' } });
+        assert.equal(evilStats.status, 200);
+        assert.equal(evilStats.headers.get('access-control-allow-origin'), null);
+        const sameStats = await fetch(`${member.base}/stats.json`, { headers: { Origin: member.base } });
+        assert.equal(sameStats.status, 200);
+        assert.equal(sameStats.headers.get('access-control-allow-origin'), member.base);
+    } finally {
+        await member.stop();
+        mockStream.closeAllConnections();
+        await new Promise((r) => mockStream.close(r));
     }
 });
 
@@ -118,6 +174,25 @@ test('data/art/<name>.png replaces the built-in system image; other names are un
         assert.equal(a.bytes.toString(), 'OVERRIDE-EMPTY');
         assert.notEqual((await s.get('/images/logo.png')).bytes.toString(), 'NOT-ALLOWED', 'only the listed system images can be replaced');
         assert.notEqual((await s.get('/images/anonymous.png')).bytes.toString(), 'OVERRIDE-EMPTY');
+    } finally {
+        await s.stop();
+    }
+});
+
+test('kids profiles and missing profiles cannot queue/control downloads, grab, or probe swarms', { timeout: 30000 }, async () => {
+    const s = await boot('none');
+    try {
+        const kid = await (await fetch(`${s.base}/api/profiles`, {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ name: 'KidTest', isKid: true }),
+        })).json();
+        const kidHeaders = { 'content-type': 'application/json', 'x-profile-id': String(kid.id) };
+
+        assert.equal(await s.post('/api/downloads/add', { magnet: 'magnet:?xt=urn:btih:' + 'a'.repeat(40) }), 400);
+        assert.equal((await fetch(`${s.base}/api/downloads/add`, { method: 'POST', headers: kidHeaders, body: JSON.stringify({ magnet: 'magnet:?xt=urn:btih:' + 'a'.repeat(40) }) })).status, 403);
+        assert.equal((await fetch(`${s.base}/api/downloads/action`, { method: 'POST', headers: kidHeaders, body: JSON.stringify({ id: 'dl_1', action: 'pause' }) })).status, 403);
+        assert.equal((await fetch(`${s.base}/api/grabber/grab`, { method: 'POST', headers: kidHeaders, body: JSON.stringify({ streams: [], meta: { type: 'movie' } }) })).status, 403);
+        assert.equal((await fetch(`${s.base}/api/streams/probe`, { method: 'POST', headers: kidHeaders, body: JSON.stringify({ streams: [{ infoHash: 'a'.repeat(40), fileIdx: 0 }] }) })).status, 403);
     } finally {
         await s.stop();
     }

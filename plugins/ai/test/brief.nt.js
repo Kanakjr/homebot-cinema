@@ -100,3 +100,12 @@ test('pending staged actions are part of the brief every turn, and the rest is c
     const second = await b.build({ profile: w.profile, login: { email: 'a@example.com', isAdmin: false } });
     assert.match(second.text, /PENDING FOR CONFIRMATION: Download Dune \(1080p, 2\.1 GB\)/);
 });
+
+test('brief cache isolates admin vs non-admin capability text for the same profile', async () => {
+    const w = world();
+    const adminRes = await w.brief.build({ profile: w.profile, login: { email: 'admin@example.com', isAdmin: true } });
+    assert.match(adminRes.text, /Admin: may also stage a monitor/);
+    const userRes = await w.brief.build({ profile: w.profile, login: { email: 'user@example.com', isAdmin: false } });
+    assert.match(userRes.text, /Not an admin: cannot stage monitors/);
+    assert.ok(!userRes.text.includes('Admin: may also stage a monitor'));
+});
