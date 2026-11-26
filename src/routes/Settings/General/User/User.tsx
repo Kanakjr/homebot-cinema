@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from 'stremio/components';
 import styles from './User.less';
 const { switchProfile, signOutUrl } = require('stremio/common/profileManager');
@@ -8,6 +9,7 @@ type Props = {
 };
 
 const User = ({ profile }: Props) => {
+    const { t } = useTranslation();
     const ssoEmail = (typeof window !== 'undefined' && window.ssoUserEmail) ? window.ssoUserEmail : '';
 
     const avatar = useMemo(() => (
@@ -38,8 +40,8 @@ const User = ({ profile }: Props) => {
             </div>
             {/* HomeBot: the account actions live here, first in Settings, not only in the avatar menu */}
             <div style={{ display: 'flex', gap: '0.8rem', marginTop: '1.2rem' }}>
-                <Button className={styles['action']} onClick={switchProfile}>Switch profile</Button>
-                <a className={styles['action']} href={signOutUrl()}>Sign out</a>
+                <Button className={styles['action']} onClick={switchProfile}>{t('HOMEBOT_SWITCH_PROFILE', 'Switch profile')}</Button>
+                <a className={styles['action']} href={signOutUrl()}>{t('HOMEBOT_SIGN_OUT', 'Sign out')}</a>
             </div>
         </div>
     );

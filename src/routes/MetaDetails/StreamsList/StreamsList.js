@@ -390,7 +390,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
                                 {
                                     displayStreams.length === 0 ? (
                                         <div className={styles['message-container']}>
-                                            <div className={styles['label']}>No streams match your filter.</div>
+                                            <div className={styles['label']}>{t('HOMEBOT_NO_STREAMS_FILTER', 'No streams match your filter.')}</div>
                                             <Button
                                                 className={styles['install-button-container']}
                                                 onClick={() => {
@@ -399,7 +399,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
                                                     setHideCam(false);
                                                 }}
                                             >
-                                                <div className={styles['label']}>Reset Filters</div>
+                                                <div className={styles['label']}>{t('HOMEBOT_RESET_FILTERS', 'Reset Filters')}</div>
                                             </Button>
                                         </div>
                                     ) : (

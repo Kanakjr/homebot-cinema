@@ -4,6 +4,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const classNames = require('classnames');
+const { useTranslation } = require('react-i18next');
 const pm = require('stremio/common/profileManager');
 const { confirmDialog } = require('stremio/common/dialogs');
 const { BrandLockup } = require('stremio/components/BrandMark');
@@ -13,6 +14,7 @@ const styles = require('./styles');
 const PIN_LENGTH = 4;
 
 const PinPad = ({ title, subtitle, error, onSubmit, onCancel }) => {
+    const { t } = useTranslation();
     const [pin, setPin] = React.useState('');
     const push = (d) => {
         if (pin.length >= PIN_LENGTH) return;
@@ -46,7 +48,7 @@ const PinPad = ({ title, subtitle, error, onSubmit, onCancel }) => {
                     {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
                         <button key={d} type="button" onClick={() => push(d)}>{d}</button>
                     ))}
-                    <button type="button" className={styles['ghost']} onClick={onCancel}>Cancel</button>
+                    <button type="button" className={styles['ghost']} onClick={onCancel}>{t('BUTTON_CANCEL', 'Cancel')}</button>
                     <button type="button" onClick={() => push('0')}>0</button>
                     <button type="button" className={styles['ghost']} onClick={() => setPin((p) => p.slice(0, -1))}>⌫</button>
                 </div>
@@ -81,6 +83,7 @@ const fileToDataUrl = (file) => new Promise((resolve, reject) => {
 });
 
 const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDeleted }) => {
+    const { t } = useTranslation();
     const isNew = !profile;
     const [name, setName] = React.useState(profile ? profile.name : '');
     const [avatar, setAvatar] = React.useState(profile ? profile.avatar : avatars[0] && avatars[0].url);
@@ -137,7 +140,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                 <div className={styles['modal-title']}>{isNew ? 'Add profile' : 'Edit profile'}</div>
                 <img className={styles['editor-avatar']} src={avatar} alt="" />
                 <input className={styles['text-input']} value={name} maxLength={24} placeholder="Name" onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && canSave) save(); }} autoFocus />
-                <div className={styles['field-label']}>Look</div>
+                <div className={styles['field-label']}>{t('HOMEBOT_LOOK', 'Look')}</div>
                 <div className={styles['avatar-grid']}>
                     <button type="button" className={styles['avatar-choice']} onClick={() => fileRef.current && fileRef.current.click()} title="Upload a picture" aria-label="Upload a picture">＋</button>
                     <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={onFile} />
@@ -149,9 +152,9 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                 </div>
                 <label className={styles['toggle-row']}>
                     <input type="checkbox" checked={amoled} onChange={(e) => setAmoled(e.target.checked)} />
-                    <span>AMOLED black background</span>
+                    <span>{t('HOMEBOT_AMOLED_BG', 'AMOLED black background')}</span>
                 </label>
-                <div className={styles['field-label']}>Accent colour</div>
+                <div className={styles['field-label']}>{t('HOMEBOT_ACCENT_COLOUR', 'Accent colour')}</div>
                 <div className={styles['swatches']}>
                     {Object.entries(getAccents()).map(([key, a]) => (
                         <button
@@ -166,16 +169,16 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                         />
                     ))}
                 </div>
-                <div className={styles['field-label']}>Access</div>
+                <div className={styles['field-label']}>{t('HOMEBOT_ACCESS', 'Access')}</div>
                 <label className={styles['toggle-row']}>
                     <input type="checkbox" checked={isKid} onChange={(e) => setIsKid(e.target.checked)} />
-                    <span>Kids profile</span>
+                    <span>{t('HOMEBOT_KIDS_PROFILE', 'Kids profile')}</span>
                 </label>
-                <div className={styles['field-hint']}>Labels this profile as a child’s in the picker and the activity log. It doesn’t restrict content.</div>
+                <div className={styles['field-hint']}>{t('HOMEBOT_KIDS_PROFILE_HINT', 'Labels this profile as a child’s in the picker and the activity log. It doesn’t restrict content.')}</div>
                 {/* PIN fields: a visible label, digits masked (a text input, so browsers don't offer to save it as a password), and a confirm step */}
                 {!isNew && profile.hasPin && !isAdmin ?
                     <label className={styles['field']}>
-                        <span className={styles['field-label']}>Current PIN</span>
+                        <span className={styles['field-label']}>{t('HOMEBOT_CURRENT_PIN', 'Current PIN')}</span>
                         <input className={classNames(styles['text-input'], styles['pin-input'])} inputMode="numeric" autoComplete="off" maxLength={4} placeholder="4 digits" value={currentPin} onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, ''))} />
                     </label>
                     : null}
@@ -194,10 +197,10 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                         }}
                     />
                 </label>
-                {pin.length > 0 && pin.length < PIN_LENGTH ? <div className={styles['field-hint']}>A PIN has 4 digits</div> : null}
+                {pin.length > 0 && pin.length < PIN_LENGTH ? <div className={styles['field-hint']}>{t('HOMEBOT_PIN_4_DIGITS', 'A PIN has 4 digits')}</div> : null}
                 {pin.length === PIN_LENGTH ?
                     <label className={styles['field']}>
-                        <span className={styles['field-label']}>Confirm PIN</span>
+                        <span className={styles['field-label']}>{t('HOMEBOT_CONFIRM_PIN', 'Confirm PIN')}</span>
                         <input
                             className={classNames(styles['text-input'], styles['pin-input'])}
                             inputMode="numeric"
@@ -213,7 +216,7 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                     <button type="button" className={styles['link-btn']} disabled={busy} onClick={() => run(async () => {
                         await pm.removePin(profile.id, currentPin);
                         onSaved({ ...profile, hasPin: false });
-                    })}>Remove PIN</button>
+                    })}>{t('HOMEBOT_REMOVE_PIN', 'Remove PIN')}</button>
                     : null}
                 {error ? <div className={styles['form-error']}>{error}</div> : null}
                 <div className={styles['modal-actions']}>
@@ -225,12 +228,12 @@ const Editor = ({ profile, isAdmin, avatars, headers, onClose, onSaved, onDelete
                                     onDeleted(profile);
                                 });
                             }
-                        }}>Delete</button>
+                        }}>{t('DELETE', 'Delete')}</button>
                         : <span />}
                     <span>
-                        {!name.trim() ? <span className={styles['field-hint']} style={{ marginRight: '0.6rem' }}>Enter a name to save</span> : null}
-                        <button type="button" className={styles['secondary']} onClick={onClose}>Cancel</button>
-                        <button type="button" className={styles['primary']} disabled={!canSave} onClick={save}>Save</button>
+                        {!name.trim() ? <span className={styles['field-hint']} style={{ marginRight: '0.6rem' }}>{t('HOMEBOT_ENTER_NAME_SAVE', 'Enter a name to save')}</span> : null}
+                        <button type="button" className={styles['secondary']} onClick={onClose}>{t('BUTTON_CANCEL', 'Cancel')}</button>
+                        <button type="button" className={styles['primary']} disabled={!canSave} onClick={save}>{t('HOMEBOT_SAVE', 'Save')}</button>
                     </span>
                 </div>
             </div>
@@ -248,6 +251,7 @@ Editor.propTypes = {
 };
 
 const ProfilePicker = ({ isAdmin, onDone }) => {
+    const { t } = useTranslation();
     const [profiles, setProfiles] = React.useState(null);
     const [avatars, setAvatars] = React.useState([]);
     const [manage, setManage] = React.useState(false);
@@ -308,14 +312,14 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
         <div className={styles['picker']}>
             <BrandLockup size={44} className={styles['brand']} />
             <h1 className={styles['title']}>{manage ? 'Manage profiles' : 'Who’s watching?'}</h1>
-            {profiles === null ? <div className={styles['muted']}>Loading…</div> : (
+            {profiles === null ? <div className={styles['muted']}>{t('LOADING', 'Loading…')}</div> : (
                 <div className={styles['grid']}>
                     {profiles.map((p) => (
                         <button key={p.id} type="button" className={styles['profile']} onClick={() => choose(p)}>
                             <span className={classNames(styles['avatar'], { [styles['editing']]: manage })}>
                                 <img src={p.avatar} alt="" />
                                 {p.hasPin ? <span className={styles['lock']} title="PIN protected" aria-label="PIN protected">🔒</span> : null}
-                                {p.isKid ? <span className={styles['kid-badge']}>Kids</span> : null}
+                                {p.isKid ? <span className={styles['kid-badge']}>{t('HOMEBOT_KIDS', 'Kids')}</span> : null}
                                 {manage ? <span className={styles['edit-badge']}>✎</span> : null}
                             </span>
                             <span className={styles['name']}>{p.name}</span>
@@ -324,19 +328,19 @@ const ProfilePicker = ({ isAdmin, onDone }) => {
                     {profiles.length < 8 ?
                         <button type="button" className={styles['profile']} onClick={() => setEditing({ profile: null, headers: {} })}>
                             <span className={classNames(styles['avatar'], styles['add'])}>＋</span>
-                            <span className={styles['name']}>Add profile</span>
+                            <span className={styles['name']}>{t('HOMEBOT_ADD_PROFILE', 'Add profile')}</span>
                         </button>
                         : null}
                 </div>
             )}
             {error ? <div className={styles['form-error']}>{error}</div> : null}
             <label className={styles['pill']}>
-                <span>Remember my choice on this device</span>
+                <span>{t('HOMEBOT_REMEMBER_CHOICE', 'Remember my choice on this device')}</span>
                 <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
             </label>
             <div className={styles['footer-actions']}>
                 <button type="button" className={styles['secondary']} onClick={() => setManage((m) => !m)}>{manage ? 'Done' : 'Manage profiles'}</button>
-                <a className={styles['link-quiet']} href={pm.signOutUrl()}>Sign out</a>
+                <a className={styles['link-quiet']} href={pm.signOutUrl()}>{t('HOMEBOT_SIGN_OUT', 'Sign out')}</a>
             </div>
             {pinFor ?
                 <PinPad

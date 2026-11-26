@@ -4,11 +4,13 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const classnames = require('classnames');
 const { api } = require('stremio/common/serverApi');
 const styles = require('./styles');
 
 const Plugins = ({ onError }) => {
+    const { t } = useTranslation();
     const [data, setData] = React.useState(null);
     const [pending, setPending] = React.useState({}); // id -> desired state saved for the next restart
     const load = React.useCallback(() => api('GET', '/api/plugins').then(setData).catch((e) => onError(e.message)), [onError]);
@@ -21,16 +23,16 @@ const Plugins = ({ onError }) => {
             .catch((e) => onError(e.message));
     };
 
-    if (!data) return <div className={styles['empty']}>Loading…</div>;
+    if (!data) return <div className={styles['empty']}>{t('LOADING', 'Loading…')}</div>;
     const changed = Object.keys(pending).some((id) => (data.plugins.find((p) => p.id === id) || {}).enabled !== pending[id]);
     return (
         <>
-            <h2 className={styles['section']}>Plugins <span className={styles['count']}>{data.plugins.filter((p) => p.active).length} active</span></h2>
+            <h2 className={styles['section']}>{t('HOMEBOT_PLUGINS', 'Plugins')} <span className={styles['count']}>{t('HOMEBOT_ACTIVE_COUNT', '{{count}} active', { count: data.plugins.filter((p) => p.active).length })}</span></h2>
             <div className={styles['hint']}>
-                Optional features. Switching one writes <code>data/plugins.json</code> and takes effect after the server restarts.
-                {data.envOverride ? <> <b>CINEMA_PLUGINS is set in the environment and wins over these switches.</b></> : null}
+                {t('HOMEBOT_PLUGINS_HINT_START', 'Optional features. Switching one writes')} <code>{t('HOMEBOT_PLUGINS_DATA_FILE', 'data/plugins.json')}</code> {t('HOMEBOT_PLUGINS_HINT_END', 'and takes effect after the server restarts.')}
+                {data.envOverride ? <> <b>{t('HOMEBOT_PLUGINS_ENV_OVERRIDE', 'CINEMA_PLUGINS is set in the environment and wins over these switches.')}</b></> : null}
             </div>
-            {changed ? <div className={styles['hint']}><b>Restart the server to apply your changes.</b></div> : null}
+            {changed ? <div className={styles['hint']}><b>{t('HOMEBOT_RESTART_TO_APPLY_BANNER', 'Restart the server to apply your changes.')}</b></div> : null}
             <div className={styles['plugin-grid']}>
                 {data.plugins.map((p) => {
                     const on = p.id in pending ? pending[p.id] : p.enabled;
@@ -60,7 +62,7 @@ const Plugins = ({ onError }) => {
                             <div className={styles['plugin-desc']}>{p.description}</div>
                             <div className={styles['plugin-foot']}>
                                 <span className={classnames(styles['pill'], styles[`pill-${state}`])}>{label}</span>
-                                {on !== p.enabled ? <span className={styles['pill']}>Restart to apply</span> : null}
+                                {on !== p.enabled ? <span className={styles['pill']}>{t('HOMEBOT_RESTART_TO_APPLY', 'Restart to apply')}</span> : null}
                                 {failed ? <span className={styles['plugin-note']}>{p.error}</span> : null}
                                 {!failed && !p.active && p.reason ? <span className={styles['plugin-note']}>{p.reason}</span> : null}
                                 {missing.map((m) => <code key={m} className={styles['env-chip']}>{m}</code>)}

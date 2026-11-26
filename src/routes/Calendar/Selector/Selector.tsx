@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2024 Smart code 203358507
 
 import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toPath } from 'stremio-router';
 import Icon from '@stremio/stremio-icons/react';
@@ -16,6 +17,7 @@ type Props = {
 };
 
 const Selector = ({ selected, selectable, profile, showToday = false }: Props) => {
+    const { t } = useTranslation();
     const { toMonth } = useCalendarDate(profile);
     const navigate = useNavigate();
 
@@ -51,7 +53,7 @@ const Selector = ({ selected, selectable, profile, showToday = false }: Props) =
                 </div>
                 {
                     showToday ?
-                        <Button className={styles['today']} title={'Back to this month'} onClick={() => navigate('/calendar')}>Today</Button>
+                        <Button className={styles['today']} title={'Back to this month'} onClick={() => navigate('/calendar')}>{t('HOMEBOT_TODAY', 'Today')}</Button>
                         : null
                 }
             </div>

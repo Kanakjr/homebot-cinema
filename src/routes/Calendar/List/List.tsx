@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2024 Smart code 203358507
 
 import React, { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Item, ItemPlaceholder } from './Item';
 import styles from './List.less';
 
@@ -15,6 +16,7 @@ type Props = {
 };
 
 const List = ({ className, items, loading, selected, monthInfo, profile, onChange }: Props) => {
+    const { t } = useTranslation();
     const filteredItems = useMemo(() => {
         return items.filter(({ items }) => items.length);
     }, [items]);
@@ -41,8 +43,8 @@ const List = ({ className, items, loading, selected, monthInfo, profile, onChang
                     :
                     filteredItems.length === 0 ?
                         <div className={styles['empty-state']}>
-                            <div className={styles['empty-title']}>No episodes this month</div>
-                            <div className={styles['empty-sub']}>Follow shows in your library to see upcoming air dates here.</div>
+                            <div className={styles['empty-title']}>{t('HOMEBOT_NO_EPISODES_MONTH', 'No episodes this month')}</div>
+                            <div className={styles['empty-sub']}>{t('HOMEBOT_FOLLOW_SHOWS_CALENDAR', 'Follow shows in your library to see upcoming air dates here.')}</div>
                         </div>
                         :
                         filteredItems.map((item) => (

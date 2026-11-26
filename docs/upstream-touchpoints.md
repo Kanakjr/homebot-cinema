@@ -35,7 +35,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/routes/Calendar/Calendar.tsx` | 85 | On-server / auto-download markers; Month/Agenda switch. |
 | `src/routes/MetaDetails/MetaDetails.js` | 76 | MediaDownloadBar (downloads + Sentinel); slot metaDetailsSections under the description (collections). |
 | `src/App/useInterfaceScale.ts` | 55 | Default zoom 90%. |
-| `src/routes/Settings/General/User/User.tsx` | 58 | SSO identity instead of a Stremio account ("Signed in" line). |
+| `src/routes/Settings/General/User/User.tsx` | 56 | SSO identity instead of a Stremio account ("Signed in" line). |
 | `manifest.json` | 41 | PWA name, icons, colours (branding). |
 | `.github/ISSUE_TEMPLATE/feature_request.yml` | 38 | Fork issue template. |
 | `src/routes/MetaDetails/styles.less` | 94 | Download bar layout. |
@@ -45,13 +45,13 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/components/NavBar/HorizontalNavBar/HorizontalNavBar.js` | 32 | Brand mark, profile avatar, slot navButtons; Phase 3: data-tauri-drag-region. |
 | `src/components/NavBar/VerticalNavBar/NavTabButton/styles.less` | 66 | New-on-server badge; inactive-icon opacity 0.35→0.55; compact mobile bottom-bar spacing. |
 | `webpack.config.js` | 30 | Build id, hls.js config swap, colour aliases; worker entry is `src/worker/index.js` (blocks Stremio's API); five system images left out of the offline cache (private `data/art/` override). |
-| `src/routes/Board/Board.js` | 72 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row; per-profile row hide/reorder/dedupe (`rowPrefs.js`, `RowsEditor.js`). |
+| `src/routes/Board/Board.js` | 82 | Hero carousel, continue-watching cards with time left and next up (server/upnext.js), Upcoming row; per-profile row hide/reorder/dedupe (`rowPrefs.js`, `RowsEditor.js`). |
 | `src/routes/Board/StreamingServerWarning/StreamingServerWarning.tsx` | 16 | No "install the streaming server" link to stremio.com: the server is part of this install. |
 | `src/components/Scale/Scale.tsx` | 24 | Zoom slider by choice. |
 | `src/App/styles.less` | 40 | Branding; Phase 2: :root token defaults (--secondary/tertiary/quaternary-accent-color unified to primary; --primary-accent-rgb, --accent-foreground-color, --accent-thumb-color); Phase 3: --mac-traffic-lights-inset for data-shell=macos and data-fullscreen. |
 | `src/App/WebUpdateScreen/WebUpdateScreen.tsx` | 22 | No update banner. |
 | `src/routes/Calendar/Episode/Episode.less` | 18 | Markers. |
-| `src/routes/Library/Placeholder/Placeholder.tsx` | 17 | No Stremio sign-in prompt; Phase 2: accent token for title colour. |
+| `src/routes/Library/Placeholder/Placeholder.tsx` | 15 | No Stremio sign-in prompt; Phase 2: accent token for title colour. |
 | `src/routes/Library/styles.less` | 20 | Same. |
 | `src/routes/Discover/styles.less` | 15 | Pill style for discoverActions. |
 | `package.json` | 19 | Name, scripts (test:server, plugin:new, scan-translations --roots tests), lint covers plugins/. |
@@ -68,11 +68,11 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/common/Platform/Platform.tsx` | 10 | Safer external links. |
 | `.dockerignore` | 11 | Build context. |
 | `src/routes/Settings/Settings.tsx` | 117 | Slot settingsSections; scroll-spy highlights the section in the upper third of the view, same offset basis as the menu click. |
-| `src/routes/Search/Search.js` | 129 | Prepend and badge local library results (matched and unmatched) via `mergeServerResults`; "No results for …" empty state. |
+| `src/routes/Search/Search.js` | 145 | Prepend and badge local library results (matched and unmatched) via `mergeServerResults`; "No results for …" empty state. |
 | `src/routes/Search/styles.less` | 13 | Same (hint line). |
-| `src/routes/Calendar/Episode/Episode.tsx` | 9 | Markers. |
+| `src/routes/Calendar/Episode/Episode.tsx` | 11 | Markers. |
 | `src/routes/Settings/Menu/Menu.tsx` | 52 | Slot settingsSections (menu entries); `role`/`aria-current` on the section buttons. |
-| `src/routes/Calendar/Selector/Selector.tsx` | 8 | Markers. |
+| `src/routes/Calendar/Selector/Selector.tsx` | 10 | Markers. |
 | `src/common/Shortcuts/shortcuts.json` | 10 | Extra shortcuts; number keys 1–7. |
 | `src/routes/Library/Library.js` | 17 | Switch to server library. |
 | `src/routes/index.js` | 6 | Core route components (Downloads, ServerLibrary, Admin). |
@@ -131,7 +131,7 @@ upstream `development` (43 commits ahead of beta.42) is described in docs/upstre
 | `src/common/useTranslate.js` | 4 | Phase 7: catalog rows read "Popular · Movies" instead of "Popular - Movie" (English movie/series only). |
 | `src/components/NavBar/VerticalNavBar/styles.less` | 39 | Settings and Admin pinned to bottom of desktop rail; icons-only rail in short windows; keep all mobile bottom-bar tabs aligned and visible. |
 | `src/routes/Calendar/Calendar.less` | 45 | Phase 6: compact page header; Phase 7: Month/Agenda switch. |
-| `src/routes/Calendar/List/List.tsx` | 47 | Agenda opens at today; `className` prop; non-blank empty state when a month has no episodes. |
+| `src/routes/Calendar/List/List.tsx` | 49 | Agenda opens at today; `className` prop; non-blank empty state when a month has no episodes. |
 | `src/routes/Calendar/Table/Cell/Cell.tsx` | 8 | Phase 7: days before today are dimmed. |
 | `src/routes/Settings/General/User/User.less` | 11 | Phase 6: Switch profile / Sign out buttons in the Account pane. |
 | `src/routes/Settings/Settings.less` | 12 | Phase 6: readable max width for the pane. |

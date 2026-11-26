@@ -3,9 +3,11 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const styles = require('./rows-editor.less');
 
 const RowsEditor = ({ rows, onToggle, onMove, onClose }) => {
+    const { t } = useTranslation();
     React.useEffect(() => {
         const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
         window.addEventListener('keydown', onKey, true);
@@ -15,10 +17,10 @@ const RowsEditor = ({ rows, onToggle, onMove, onClose }) => {
         <div className={styles['scrim']} onMouseDown={onClose}>
             <div className={styles['panel']} role="dialog" aria-label="Customize rows" onMouseDown={(e) => e.stopPropagation()}>
                 <div className={styles['head']}>
-                    <h2>Customize Home rows</h2>
-                    <button type="button" className={styles['done']} onClick={onClose}>Done</button>
+                    <h2>{t('HOMEBOT_CUSTOMIZE_HOME_ROWS', 'Customize Home rows')}</h2>
+                    <button type="button" className={styles['done']} onClick={onClose}>{t('HOMEBOT_DONE', 'Done')}</button>
                 </div>
-                <p className={styles['hint']}>Applies to this profile on this device.</p>
+                <p className={styles['hint']}>{t('HOMEBOT_CUSTOMIZE_HINT', 'Applies to this profile on this device.')}</p>
                 <ul>
                     {rows.map((r, i) => (
                         <li key={r.key} className={r.hidden ? styles['off'] : ''}>

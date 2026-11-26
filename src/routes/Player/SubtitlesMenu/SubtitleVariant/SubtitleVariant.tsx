@@ -85,7 +85,7 @@ const SubtitleVariant = ({ track, selected, isAutoSynced, onSelect }: Props) => 
                         {variantLabel}
                     </div>
                     {track.ass ? <div className={styles['ass-badge']}>{ASS_BADGE}</div> : null}
-                    {isAutoSynced ? <div className={styles['auto-sync-badge']}>⚡ Matched</div> : null}
+                    {isAutoSynced ? <div className={styles['auto-sync-badge']}>{t('HOMEBOT_SUB_MATCHED', '⚡ Matched')}</div> : null}
                 </div>
                 <div className={styles['variant-origin']}>
                     {t(track.origin)}

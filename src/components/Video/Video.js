@@ -192,7 +192,7 @@ const Video = ({ className, id, title, thumbnail, season, episode, released, upc
                             {
                                 nextUp && !watched && !isNow ?
                                     <div className={styles['next-up-container']}>
-                                        <div className={styles['flag-label']}>Next up</div>
+                                        <div className={styles['flag-label']}>{t('HOMEBOT_NEXT_UP', 'Next up')}</div>
                                     </div>
                                     :
                                     null

@@ -84,8 +84,8 @@ const Library = ({ model }) => {
                                 subtitle={library.catalog.length ? `${library.catalog.length}${hasNextPage ? '+' : ''} title${library.catalog.length === 1 ? '' : 's'}` : null}
                                 actions={
                                     <div className={styles['server-switch']}>
-                                        <span className={styles['on']}>Your library</span>
-                                        <a href="#/server">On server</a>
+                                        <span className={styles['on']}>{t('HOMEBOT_YOUR_LIBRARY', 'Your library')}</span>
+                                        <a href="#/server">{t('HOMEBOT_ON_SERVER', 'On server')}</a>
                                     </div>
                                 }
                             />

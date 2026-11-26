@@ -4,6 +4,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const classnames = require('classnames');
 const { api, formatBytes } = require('stremio/common/serverApi');
 const useServerEvents = require('stremio/common/useServerEvents');
@@ -31,6 +32,7 @@ function scanText(f) {
 }
 
 const FolderPicker = ({ onAdd, onCancel, onError }) => {
+    const { t } = useTranslation();
     const [at, setAt] = React.useState(null); // { path, parent, dirs, isRoot }
     const [type, setType] = React.useState('movie');
     const [busy, setBusy] = React.useState(false);
@@ -57,29 +59,29 @@ const FolderPicker = ({ onAdd, onCancel, onError }) => {
     return (
         <div className={styles['folder-picker']}>
             <div className={styles['picker-head']}>
-                <button type="button" className={styles['btn-sm']} disabled={!at || !at.path} onClick={() => open(at && at.parent ? at.parent : '')}>↑ Up</button>
+                <button type="button" className={styles['btn-sm']} disabled={!at || !at.path} onClick={() => open(at && at.parent ? at.parent : '')}>{t('HOMEBOT_UP', '↑ Up')}</button>
                 <div className={styles['picker-path']} title={at && at.path ? at.path : ''}>{at && at.path ? at.path : 'Folders the server can see'}</div>
             </div>
             <div className={styles['dir-list']}>
-                {at && at.dirs.length === 0 ? <div className={styles['hint']}>No folders inside.</div> : null}
+                {at && at.dirs.length === 0 ? <div className={styles['hint']}>{t('HOMEBOT_NO_FOLDERS_INSIDE', 'No folders inside.')}</div> : null}
                 {at ? at.dirs.map((d) => (
                     <button key={d.path} type="button" className={styles['dir']} onClick={() => open(d.path)}>
                         <span className={styles['dir-name']}>📁 {d.name}</span>
-                        {d.isRoot ? <span className={styles['tag']}>In library</span> : null}
+                        {d.isRoot ? <span className={styles['tag']}>{t('HOMEBOT_IN_LIBRARY', 'In library')}</span> : null}
                     </button>
-                )) : <div className={styles['hint']}>Loading…</div>}
+                )) : <div className={styles['hint']}>{t('LOADING', 'Loading…')}</div>}
             </div>
             <div className={styles['picker-foot']}>
                 <label className={styles['type-choice']}>
-                    Contains
+                    {t('HOMEBOT_CONTAINS', 'Contains')}
                     <select className={styles['input']} value={type} onChange={(e) => setType(e.target.value)}>
-                        <option value="movie">Movies</option>
-                        <option value="series">Series</option>
+                        <option value="movie">{t('HOMEBOT_MOVIES', 'Movies')}</option>
+                        <option value="series">{t('HOMEBOT_SERIES', 'Series')}</option>
                     </select>
                 </label>
                 <span className={styles['panel-actions']}>
-                    <button type="button" className={styles['btn']} onClick={onCancel}>Cancel</button>
-                    <button type="button" className={styles['btn-white']} disabled={busy || !at || !at.path || at.isRoot} onClick={add}>Add this folder</button>
+                    <button type="button" className={styles['btn']} onClick={onCancel}>{t('BUTTON_CANCEL', 'Cancel')}</button>
+                    <button type="button" className={styles['btn-white']} disabled={busy || !at || !at.path || at.isRoot} onClick={add}>{t('HOMEBOT_ADD_THIS_FOLDER', 'Add this folder')}</button>
                 </span>
             </div>
         </div>
@@ -88,6 +90,7 @@ const FolderPicker = ({ onAdd, onCancel, onError }) => {
 FolderPicker.propTypes = { onAdd: PropTypes.func.isRequired, onCancel: PropTypes.func.isRequired, onError: PropTypes.func.isRequired };
 
 const LibraryFolders = ({ onError }) => {
+    const { t } = useTranslation();
     const [data, setData] = React.useState(null);
     const [picking, setPicking] = React.useState(false);
 
@@ -98,8 +101,8 @@ const LibraryFolders = ({ onError }) => {
     const running = !!(data && (data.scanning || data.folders.some((f) => f.scan && f.scan.running)));
     React.useEffect(() => {
         if (!running) return undefined;
-        const t = setInterval(load, 2000);
-        return () => clearInterval(t);
+        const timer = setInterval(load, 2000);
+        return () => clearInterval(timer);
     }, [running, load]);
 
     const act = async (fn) => {
@@ -127,7 +130,7 @@ const LibraryFolders = ({ onError }) => {
 
     return (
         <>
-            <h2 className={styles['section']}>Folders <span className={styles['count']}>{data ? data.folders.length : ''}</span></h2>
+            <h2 className={styles['section']}>{t('HOMEBOT_FOLDERS', 'Folders')} <span className={styles['count']}>{data ? data.folders.length : ''}</span></h2>
             <div className={styles['table']}>
                 {data ? data.folders.map((f) => (
                     <div key={f.path} className={classnames(styles['trow'], styles['folder-row'])}>
@@ -135,20 +138,19 @@ const LibraryFolders = ({ onError }) => {
                             <span className={styles['folder-path']} title={f.path}>{f.label ? `${f.label} · ${f.path}` : f.path}</span>
                             <span className={styles['tag']}>{TYPE_LABEL[f.type] || f.type}</span>
                         </div>
-                        <div className={styles['tmeta']}>{KIND_LABEL[f.kind] || f.kind} · {f.files} files · {formatBytes(f.bytes)} · {scanText(f)}</div>
+                        <div className={styles['tmeta']}>{t('HOMEBOT_FOLDER_META', '{{kind}} · {{files}} files · {{size}} · {{status}}', { kind: KIND_LABEL[f.kind] || f.kind, files: f.files, size: formatBytes(f.bytes), status: scanText(f) })}</div>
                         <span className={styles['row-actions']}>
-                            <button type="button" className={styles['btn-sm']} disabled={running || !f.online} onClick={() => scanOne(f)}>Scan</button>
-                            {f.kind === 'folder' ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => remove(f)}>Remove</button> : null}
+                            <button type="button" className={styles['btn-sm']} disabled={running || !f.online} onClick={() => scanOne(f)}>{t('HOMEBOT_SCAN', 'Scan')}</button>
+                            {f.kind === 'folder' ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => remove(f)}>{t('HOMEBOT_REMOVE', 'Remove')}</button> : null}
                         </span>
                     </div>
-                )) : <div className={styles['empty']}>Loading…</div>}
+                )) : <div className={styles['empty']}>{t('LOADING', 'Loading…')}</div>}
             </div>
             {picking
                 ? <FolderPicker onAdd={add} onCancel={() => setPicking(false)} onError={onError} />
-                : <div className={styles['panel-actions']}><button type="button" className={styles['btn']} onClick={() => setPicking(true)}>+ Add folder</button></div>}
+                : <div className={styles['panel-actions']}><button type="button" className={styles['btn']} onClick={() => setPicking(true)}>{t('HOMEBOT_ADD_FOLDER', '+ Add folder')}</button></div>}
             <div className={styles['hint']}>
-                A folder must be visible to the server before it can be added: in Docker, mount it into the container and list it in MEDIA_ROOTS.
-                A folder inside /Movies or /TV can be added too, for example to read an anime folder as series.
+                {t('HOMEBOT_FOLDER_ROOT_HINT', 'A folder must be visible to the server before it can be added: in Docker, mount it into the container and list it in MEDIA_ROOTS.\n                A folder inside /Movies or /TV can be added too, for example to read an anime folder as series.')}
             </div>
         </>
     );

@@ -51,7 +51,7 @@ const Streaming = forwardRef<HTMLDivElement, Props>(({ profile, streamingServer 
     return (
         <Section ref={ref} label={'SETTINGS_NAV_STREAMING'}>
             {SERVER_URL_EDITING && <URLsManager selectedUrl={profile.settings.streamingServerUrl} settings={streamingServer.settings} />}
-            {!canEdit && <div style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '1rem' }}>These settings apply to the whole household. Only an admin can change them.</div>}
+            {!canEdit && <div style={{ opacity: 0.6, fontSize: '0.9rem', marginBottom: '1rem' }}>{t('HOMEBOT_STREAMING_ADMIN_NOTE', 'These settings apply to the whole household. Only an admin can change them.')}</div>}
             {
                 streamingServerRemoteUrlInput.value !== null &&
                     <Option className={styles['configure-input-container']} label={'SETTINGS_REMOTE_URL'}>

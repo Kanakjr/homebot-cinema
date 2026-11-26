@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const { useNavigate } = require('react-router');
 const classnames = require('classnames');
 const PageHeader = require('stremio/components/PageHeader');
@@ -43,6 +44,7 @@ const Card = ({ item, admin }) => {
 Card.propTypes = { item: PropTypes.object.isRequired, admin: PropTypes.bool };
 
 const ServerLibrary = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const admin = isAdmin();
     const [data, setData] = React.useState(null);
@@ -110,8 +112,8 @@ const ServerLibrary = () => {
     return (
         <div className={styles['page']}>
             <div className={styles['switch']}>
-                <a href="#/library">Your library</a>
-                <span className={styles['on']}>On server</span>
+                <a href="#/library">{t('HOMEBOT_YOUR_LIBRARY', 'Your library')}</a>
+                <span className={styles['on']}>{t('HOMEBOT_ON_SERVER', 'On server')}</span>
             </div>
             <PageHeader
                 eyebrow="HomeBot Cinema"
@@ -119,7 +121,7 @@ const ServerLibrary = () => {
                 subtitle={data ? `${counts.all} title${counts.all === 1 ? '' : 's'} · ${formatBytes(total)} on disk` : 'Loading…'}
                 actions={
                     <>
-                        <button type="button" className={styles['btn']} onClick={randomPick}>🎲 Random pick</button>
+                        <button type="button" className={styles['btn']} onClick={randomPick}>{t('HOMEBOT_RANDOM_PICK', '🎲 Random pick')}</button>
                         {admin ?
                             <button type="button" className={styles['btn']} disabled={!!(scan && scan.running)} onClick={startScan}>
                                 {scan && scan.running ? 'Scanning…' : '⟳ Scan library'}
@@ -130,17 +132,17 @@ const ServerLibrary = () => {
             />
             <div className={styles['toolbar']}>
                 <div className={styles['tabs']}>
-                    {tabs.map((t) => (
-                        <button key={t.id} type="button" className={classnames(styles['tab'], { [styles['active']]: tab === t.id })} onClick={() => setTab(t.id)}>
-                            {t.label} <span className={styles['count']}>{counts[t.count]}</span>
+                    {tabs.map((itemTab) => (
+                        <button key={itemTab.id} type="button" className={classnames(styles['tab'], { [styles['active']]: tab === itemTab.id })} onClick={() => setTab(itemTab.id)}>
+                            {itemTab.label} <span className={styles['count']}>{counts[itemTab.count]}</span>
                         </button>
                     ))}
                 </div>
                 <input className={styles['search']} placeholder="Filter titles…" value={query} onChange={(e) => setQuery(e.target.value)} />
                 <select className={styles['select']} value={sort} onChange={(e) => setSort(e.target.value)}>
-                    <option value="recent">Recently added</option>
-                    <option value="az">A – Z</option>
-                    <option value="size">Largest</option>
+                    <option value="recent">{t('HOMEBOT_RECENTLY_ADDED', 'Recently added')}</option>
+                    <option value="az">{t('HOMEBOT_SORT_AZ', 'A – Z')}</option>
+                    <option value="size">{t('HOMEBOT_SORT_LARGEST', 'Largest')}</option>
                 </select>
             </div>
             {error ? <div className={styles['error']}>{error}</div> : null}

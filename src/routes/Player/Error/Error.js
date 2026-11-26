@@ -125,19 +125,19 @@ const Error = React.forwardRef(({ className, code, message, stream }, ref) => {
                     publicUrl ? (
                         <>
                             <button className={styles['external-player-btn']} onClick={reloadWithRemux}>
-                                🔄 Retry Playback
+                                {t('HOMEBOT_RETRY_PLAYBACK', '🔄 Retry Playback')}
                             </button>
                             <a className={styles['external-player-btn']} href={vlcUrl} target={'_blank'} rel="noopener noreferrer" title="Play directly in VLC">
-                                📱 Play in VLC
+                                {t('HOMEBOT_PLAY_VLC', '📱 Play in VLC')}
                             </a>
                             <a className={styles['external-player-btn']} href={infuseUrl} target={'_blank'} rel="noopener noreferrer" title="Play directly in Infuse">
-                                🍎 Open in Infuse
+                                {t('HOMEBOT_OPEN_INFUSE', '🍎 Open in Infuse')}
                             </a>
                             <a className={styles['external-player-btn']} href={iinaUrl} target={'_blank'} rel="noopener noreferrer" title="Play directly in IINA">
-                                🖥️ Open in IINA
+                                {t('HOMEBOT_OPEN_IINA', '🖥️ Open in IINA')}
                             </a>
                             <a className={styles['external-player-btn']} href={downloadUrl} download>
-                                💾 Download Media File
+                                {t('HOMEBOT_DOWNLOAD_MEDIA', '💾 Download Media File')}
                             </a>
                             <button className={styles['external-player-btn']} onClick={handleCopy}>
                                 {copied ? '✅ Stream Link Copied!' : '📋 Copy Stream Link'}

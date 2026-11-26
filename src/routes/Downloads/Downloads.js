@@ -4,6 +4,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const { useNavigate } = require('react-router');
 const classnames = require('classnames');
 const { MainNavBars } = require('stremio/components');
@@ -41,6 +42,7 @@ const Thumb = ({ src, title }) => {
 Thumb.propTypes = { src: PropTypes.string, title: PropTypes.string };
 
 const Downloads = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const admin = isAdmin();
     const [data, setData] = React.useState(null);
@@ -139,51 +141,51 @@ const Downloads = () => {
                         eyebrow="HomeBot Cinema"
                         title="Downloads"
                         subtitle={`${active.length} active · ${monitored.length} monitored show${monitored.length === 1 ? '' : 's'}`}
-                        actions={<a className={styles['btn']} href="#/server">Browse what’s on the server →</a>}
+                        actions={<a className={styles['btn']} href="#/server">{t('HOMEBOT_BROWSE_SERVER', 'Browse what’s on the server →')}</a>}
                     />
                     {error ? <div className={styles['error']}>{error}</div> : null}
 
                     {disk ?
                         <div className={styles['storage']}>
                             <div className={styles['storage-top']}>
-                                <span>Storage</span>
-                                <span className={styles['muted']}><b>{formatBytes(disk.usedBytes)}</b> used of {formatBytes(disk.totalBytes)} · {formatBytes(disk.freeBytes)} free</span>
+                                <span>{t('HOMEBOT_STORAGE', 'Storage')}</span>
+                                <span className={styles['muted']}><b>{formatBytes(disk.usedBytes)}</b> {t('HOMEBOT_STORAGE_DETAIL', 'used of {{total}} · {{free}} free', { total: formatBytes(disk.totalBytes), free: formatBytes(disk.freeBytes) })}</span>
                             </div>
                             <div className={styles['track']}><div className={classnames(styles['fill'], { [styles['hot']]: pct >= 90 })} style={{ width: `${pct}%` }} /></div>
                         </div>
                         : null}
 
-                    <h2 className={styles['section']}>Active <span className={styles['count']}>{active.length}</span></h2>
-                    {active.length === 0 ? <div className={styles['empty']}>Nothing downloading right now.</div> : null}
+                    <h2 className={styles['section']}>{t('HOMEBOT_ACTIVE', 'Active')} <span className={styles['count']}>{active.length}</span></h2>
+                    {active.length === 0 ? <div className={styles['empty']}>{t('HOMEBOT_NOTHING_DOWNLOADING', 'Nothing downloading right now.')}</div> : null}
                     <div className={styles['list']}>
-                        {active.map((t) => {
-                            const p = Math.round((t.progress || 0) * 100);
-                            const paused = t.status === 'paused';
+                        {active.map((dl) => {
+                            const p = Math.round((dl.progress || 0) * 100);
+                            const paused = dl.status === 'paused';
                             return (
-                                <div key={t.id} className={styles['card']}>
-                                    <Thumb src={t.poster} title={t.title} />
+                                <div key={dl.id} className={styles['card']}>
+                                    <Thumb src={dl.poster} title={dl.title} />
                                     <div className={styles['card-main']}>
-                                        <div className={styles['card-title']} title={t.title}>{prettyTitle(t.title)}</div>
+                                        <div className={styles['card-title']} title={dl.title}>{prettyTitle(dl.title)}</div>
                                         <div className={styles['track']}><div className={styles['fill']} style={{ width: `${p}%` }} /></div>
                                         <div className={styles['card-meta']}>
                                             <span>{paused ? 'Paused' : `${p}%`}</span>
-                                            {!paused && t.rateDownload > 0 ? <span>{formatBytes(t.rateDownload)}/s</span> : null}
-                                            {!paused ? <span>{eta(t.eta)}</span> : null}
-                                            {t.totalSize ? <span>{formatBytes(t.totalSize)}</span> : null}
+                                            {!paused && dl.rateDownload > 0 ? <span>{t('HOMEBOT_PER_SECOND', '{{rate}}/s', { rate: formatBytes(dl.rateDownload) })}</span> : null}
+                                            {!paused ? <span>{eta(dl.eta)}</span> : null}
+                                            {dl.totalSize ? <span>{formatBytes(dl.totalSize)}</span> : null}
                                         </div>
                                     </div>
                                     <div className={styles['card-actions']}>
-                                        <button type="button" className={styles['btn-sm']} onClick={() => act(t.id, paused ? 'resume' : 'pause')}>{paused ? 'Resume' : 'Pause'}</button>
-                                        {admin ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => act(t.id, 'delete')}>Cancel</button> : null}
+                                        <button type="button" className={styles['btn-sm']} onClick={() => act(dl.id, paused ? 'resume' : 'pause')}>{paused ? 'Resume' : 'Pause'}</button>
+                                        {admin ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => act(dl.id, 'delete')}>{t('BUTTON_CANCEL', 'Cancel')}</button> : null}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
 
-                    <h2 className={styles['section']}>Monitored shows <span className={styles['count']}>{monitored.length}</span></h2>
-                    <div className={styles['hint']}>Sentinel checks every 2 hours and downloads new episodes automatically.</div>
-                    {monitored.length === 0 ? <div className={styles['empty']}>No shows are being monitored. Turn on auto-download from a show’s page.</div> : null}
+                    <h2 className={styles['section']}>{t('HOMEBOT_MONITORED_SHOWS', 'Monitored shows')} <span className={styles['count']}>{monitored.length}</span></h2>
+                    <div className={styles['hint']}>{t('HOMEBOT_SENTINEL_HINT', 'Sentinel checks every 2 hours and downloads new episodes automatically.')}</div>
+                    {monitored.length === 0 ? <div className={styles['empty']}>{t('HOMEBOT_NO_MONITORED_SHOWS', 'No shows are being monitored. Turn on auto-download from a show’s page.')}</div> : null}
                     <div className={styles['list']}>
                         {monitored.map((m) => (
                             <div key={m.imdbId} className={styles['card']}>
@@ -192,30 +194,30 @@ const Downloads = () => {
                                     <div className={styles['card-title']}>{m.title}</div>
                                     <div className={styles['card-meta']}>
                                         <span title="What Sentinel is allowed to download for this show. Change it on the show's page.">{m.scopeLabel || 'All seasons'}</span>
-                                        <span>Auto-download · {profileOf(m) ? profileOf(m).name : (m.quality || '1080p')}</span>
+                                        <span>{t('HOMEBOT_AUTO_DOWNLOAD_PROFILE', 'Auto-download · {{profile}}', { profile: profileOf(m) ? profileOf(m).name : (m.quality || '1080p') })}</span>
                                         <span>{typeof m.onDiskEpisodes === 'number' ? `${m.onDiskEpisodes} episodes on disk` : `${(m.downloadedEpisodes || []).length} episodes recorded`}</span>
-                                        {m.skippedCount > 0 ? <span title="Deleted from the server. Sentinel will not download them again unless you ask.">{m.skippedCount} removed · not re-downloading</span> : null}
+                                        {m.skippedCount > 0 ? <span title="Deleted from the server. Sentinel will not download them again unless you ask.">{t('HOMEBOT_REMOVED_SKIPPED', '{{count}} removed · not re-downloading', { count: m.skippedCount })}</span> : null}
                                     </div>
                                 </div>
                                 {admin ?
                                     <div className={styles['card-actions']}>
                                         {profiles.length > 0 ?
                                             <select className={styles['profile-select']} value={m.profileId === null || m.profileId === undefined ? '' : m.profileId} onChange={(e) => changeProfile(m, e.target.value)} title="Quality profile for this show">
-                                                <option value="">Default{defaultProfile ? ` (${defaultProfile.name})` : ''}</option>
+                                                <option value="">{t('HOMEBOT_DEFAULT_WITH_NAME', 'Default{{name}}', { name: defaultProfile ? ` (${defaultProfile.name})` : '' })}</option>
                                                 {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                                             </select>
                                             : null}
-                                        {m.skippedCount > 0 ? <button type="button" className={styles['btn-sm']} onClick={() => redownload(m)}>Re-download {m.skippedCount}</button> : null}
+                                        {m.skippedCount > 0 ? <button type="button" className={styles['btn-sm']} onClick={() => redownload(m)}>{t('HOMEBOT_REDOWNLOAD_COUNT', 'Re-download {{count}}', { count: m.skippedCount })}</button> : null}
                                         <button type="button" className={styles['btn-sm']} disabled={busy === m.imdbId} onClick={() => checkNow(m.imdbId)}>{busy === m.imdbId ? 'Checking…' : 'Check now'}</button>
-                                        <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => stopMonitoring(m.imdbId)}>Stop</button>
+                                        <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => stopMonitoring(m.imdbId)}>{t('HOMEBOT_STOP', 'Stop')}</button>
                                     </div>
                                     : null}
                             </div>
                         ))}
                     </div>
 
-                    <h2 className={styles['section']}>Recently completed <span className={styles['count']}>{recent.length}</span></h2>
-                    {recent.length === 0 ? <div className={styles['empty']}>No finished downloads yet.</div> : null}
+                    <h2 className={styles['section']}>{t('HOMEBOT_RECENTLY_COMPLETED', 'Recently completed')} <span className={styles['count']}>{recent.length}</span></h2>
+                    {recent.length === 0 ? <div className={styles['empty']}>{t('HOMEBOT_NO_COMPLETED_DOWNLOADS', 'No finished downloads yet.')}</div> : null}
                     <div className={styles['list']}>
                         {recent.map((d) => (
                             <button key={d.id} type="button" className={classnames(styles['card'], styles['clickable'])} onClick={() => openOnServer(d)}>
@@ -227,7 +229,7 @@ const Downloads = () => {
                                         <span>{when(d.completedAt || d.addedAt)}</span>
                                     </div>
                                 </div>
-                                <span className={styles['go']}>Open →</span>
+                                <span className={styles['go']}>{t('HOMEBOT_OPEN_ARROW', 'Open →')}</span>
                             </button>
                         ))}
                     </div>

@@ -2,6 +2,7 @@
 
 const React = require('react');
 const classnames = require('classnames');
+const { useTranslation } = require('react-i18next');
 const useTranslate = require('stremio/common/useTranslate');
 const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalogs');
 const { useStreamingServer, useNotifications, withCoreSuspender, useProfile } = require('stremio/common');
@@ -24,7 +25,8 @@ const { default: StreamingServerWarning } = require('./StreamingServerWarning');
 const THRESHOLD = 5;
 
 const Board = () => {
-    const t = useTranslate();
+    const { t } = useTranslation();
+    const translate = useTranslate();
     const streamingServer = useStreamingServer();
     const continueWatchingPreview = useContinueWatchingPreview();
     const liveTvContinueWatching = useLiveTvContinueWatching();
@@ -67,7 +69,7 @@ const Board = () => {
     const catalogRows = React.useMemo(() => rowPrefs.applyRowPrefs(allRows, prefs), [allRows, prefs]);
     const editorRows = React.useMemo(() => rowPrefs.applyRowPrefs(allRows, prefs, { includeHidden: true })
         .filter(({ catalog }) => catalog.content?.type === 'Ready')
-        .map(({ catalog }) => ({ key: rowPrefs.rowKey(catalog), title: t.catalogTitle(catalog) || 'Row', hidden: prefs.hidden.includes(rowPrefs.rowKey(catalog)) })), [allRows, prefs, t]);
+        .map(({ catalog }) => ({ key: rowPrefs.rowKey(catalog), title: translate.catalogTitle(catalog) || 'Row', hidden: prefs.hidden.includes(rowPrefs.rowKey(catalog)) })), [allRows, prefs, translate]);
     // hero banner: a mix from the first catalogs that have loaded, minus what is already watched or in Continue watching
     const heroItems = React.useMemo(() => pickHeroItems(
         catalogRows
@@ -86,7 +88,7 @@ const Board = () => {
                         continueWatchingPreview.items.length > 0 ?
                             <MetaRow
                                 className={classnames(styles['board-row'], styles['board-row-landscape'], 'animation-fade-in')}
-                                title={t.string('BOARD_CONTINUE_WATCHING')}
+                                title={translate.string('BOARD_CONTINUE_WATCHING')}
                                 catalog={continueWatchingLandscape}
                                 itemComponent={ContinueWatchingCard}
                                 notifications={notifications}
@@ -109,7 +111,7 @@ const Board = () => {
                         liveTvCatalog.items.length > 0 ?
                             <MetaRow
                                 className={classnames(styles['board-row'], styles['board-row-landscape'], 'animation-fade-in')}
-                                title={t.string('BOARD_CONTINUE_WATCHING_LIVE')}
+                                title={translate.string('BOARD_CONTINUE_WATCHING_LIVE')}
                                 catalog={liveTvCatalog}
                                 itemComponent={LiveTvContinueWatchingItem}
                                 notifications={notifications}
@@ -148,14 +150,14 @@ const Board = () => {
                                         key={index}
                                         className={classnames(styles['board-row'], styles['board-row-poster'], 'animation-fade-in')}
                                         catalog={catalog}
-                                        title={t.catalogTitle(catalog)}
+                                        title={translate.catalogTitle(catalog)}
                                     />
                                 );
                             }
                         }
                     })}
                     <div className={styles['customize-row']}>
-                        <button type="button" className={styles['customize-button']} onClick={() => setEditing(true)}>Customize rows</button>
+                        <button type="button" className={styles['customize-button']} onClick={() => setEditing(true)}>{t('HOMEBOT_CUSTOMIZE_ROWS', 'Customize rows')}</button>
                     </div>
                 </div>
             </MainNavBars>

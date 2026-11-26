@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const { useNavigate } = require('react-router');
 const classnames = require('classnames');
 const { useCore } = require('stremio/core');
@@ -10,28 +11,32 @@ const { api, playServerFile, openInVlc, streamUrl, formatBytes, isAdmin } = requ
 const { confirmDialog, promptDialog } = require('stremio/common/dialogs');
 const styles = require('./styles');
 
-const FileRow = ({ file, label, onPlay, onVlc, onDelete, admin }) => (
-    <div className={styles['row']}>
-        <div className={styles['ep-chip']}>{label}</div>
-        <div className={styles['row-main']}>
-            <div className={styles['row-name']} title={file.name}>{file.name}</div>
-            <div className={styles['row-meta']}>
-                {[file.resolution, file.codec, formatBytes(file.size)].filter(Boolean).map((m) => <span key={m} className={styles['chip']}>{m}</span>)}
+const FileRow = ({ file, label, onPlay, onVlc, onDelete, admin }) => {
+    const { t } = useTranslation();
+    return (
+        <div className={styles['row']}>
+            <div className={styles['ep-chip']}>{label}</div>
+            <div className={styles['row-main']}>
+                <div className={styles['row-name']} title={file.name}>{file.name}</div>
+                <div className={styles['row-meta']}>
+                    {[file.resolution, file.codec, formatBytes(file.size)].filter(Boolean).map((m) => <span key={m} className={styles['chip']}>{m}</span>)}
+                </div>
+            </div>
+            <div className={styles['row-actions']}>
+                <button type="button" className={styles['btn-primary-sm']} onClick={() => onPlay(file)}>{t('HOMEBOT_PLAY_TRIANGLE', '▶ Play')}</button>
+                <button type="button" className={styles['btn-sm']} onClick={() => onVlc(file)}>{t('HOMEBOT_VLC', 'VLC')}</button>
+                <a className={styles['btn-sm']} href={`${streamUrl(file.streamId)}?download=1`} download>{t('HOMEBOT_SAVE', 'Save')}</a>
+                {admin ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => onDelete(file)}>{t('DELETE', 'Delete')}</button> : null}
             </div>
         </div>
-        <div className={styles['row-actions']}>
-            <button type="button" className={styles['btn-primary-sm']} onClick={() => onPlay(file)}>▶ Play</button>
-            <button type="button" className={styles['btn-sm']} onClick={() => onVlc(file)}>VLC</button>
-            <a className={styles['btn-sm']} href={`${streamUrl(file.streamId)}?download=1`} download>Save</a>
-            {admin ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => onDelete(file)}>Delete</button> : null}
-        </div>
-    </div>
-);
+    );
+};
 FileRow.propTypes = { file: PropTypes.object, label: PropTypes.string, onPlay: PropTypes.func, onVlc: PropTypes.func, onDelete: PropTypes.func, admin: PropTypes.bool };
 
 const has = (v) => v !== null && v !== undefined;
 
 const ServerTitle = ({ id }) => {
+    const { t } = useTranslation();
     const core = useCore();
     const navigate = useNavigate();
     const admin = isAdmin();
@@ -53,7 +58,7 @@ const ServerTitle = ({ id }) => {
     }, [id, navigate]);
     React.useEffect(() => { load(); }, [load]);
 
-    if (!item) return <div className={styles['page']}>{error ? <div className={styles['error']}>{error}</div> : <div className={styles['empty']}>Loading…</div>}</div>;
+    if (!item) return <div className={styles['page']}>{error ? <div className={styles['error']}>{error}</div> : <div className={styles['empty']}>{t('LOADING', 'Loading…')}</div>}</div>;
 
     const play = (file, label) => playServerFile(core, navigate, file.streamId, `${item.title}${label ? ` ${label}` : ''}`, {
         type: item.type, imdbId: item.matched ? item.imdbId : null, season: file.season, episode: file.episode,
@@ -101,17 +106,17 @@ const ServerTitle = ({ id }) => {
                 {item.backdrop && !bgFailed ? <img className={styles['backdrop']} src={item.backdrop} alt="" onError={() => setBgFailed(true)} /> : null}
                 <div className={styles['hero-shade']} />
                 <div className={styles['hero-content']}>
-                    <a className={styles['back']} href="#/server">← On server</a>
+                    <a className={styles['back']} href="#/server">{t('HOMEBOT_BACK_ON_SERVER', '← On server')}</a>
                     <h1 className={styles['hero-title']}>{item.title}</h1>
                     <div className={styles['hero-meta']}>
                         {[isSeries ? 'Series' : 'Movie', item.year, isSeries ? `${item.seasons.length} season${item.seasons.length === 1 ? '' : 's'}` : null, formatBytes(item.totalSize)].filter(Boolean).join(' · ')}
                     </div>
-                    {!item.matched ? <div className={styles['unmatched']}>Not matched to IMDb yet{admin ? ' – use “Identify” to fix' : ''}.</div> : null}
+                    {!item.matched ? <div className={styles['unmatched']}>{t('HOMEBOT_NOT_MATCHED_IMDB', 'Not matched to IMDb yet')}{admin ? ' – use “Identify” to fix' : ''}.</div> : null}
                     <div className={styles['hero-buttons']}>
-                        {firstFile ? <button type="button" className={styles['btn-white']} onClick={() => play(firstFile, firstLabel)}>▶ Play{firstLabel ? ` ${firstLabel}` : ''}</button> : null}
-                        {detailsHref ? <a className={styles['btn']} href={detailsHref}>Details &amp; streams</a> : null}
-                        {admin ? <button type="button" className={styles['btn']} onClick={identify}>Identify</button> : null}
-                        {admin ? <button type="button" className={classnames(styles['btn'], styles['danger'])} onClick={delItem}>Delete all</button> : null}
+                        {firstFile ? <button type="button" className={styles['btn-white']} onClick={() => play(firstFile, firstLabel)}>{firstLabel ? t('HOMEBOT_PLAY_TRIANGLE_LABEL', '▶ Play {{label}}', { label: firstLabel }) : t('HOMEBOT_PLAY_TRIANGLE', '▶ Play')}</button> : null}
+                        {detailsHref ? <a className={styles['btn']} href={detailsHref}>{t('HOMEBOT_DETAILS_AND_STREAMS', 'Details & streams')}</a> : null}
+                        {admin ? <button type="button" className={styles['btn']} onClick={identify}>{t('HOMEBOT_IDENTIFY', 'Identify')}</button> : null}
+                        {admin ? <button type="button" className={classnames(styles['btn'], styles['danger'])} onClick={delItem}>{t('HOMEBOT_DELETE_ALL', 'Delete all')}</button> : null}
                     </div>
                 </div>
             </div>
@@ -121,9 +126,9 @@ const ServerTitle = ({ id }) => {
                     {isSeries ?
                         <div className={styles['list-tools']}>
                             <select className={styles['select']} value={current ? current.season : ''} onChange={(e) => setSeason(Number(e.target.value))}>
-                                {item.seasons.map((s) => <option key={s.season} value={s.season}>Season {s.season} ({s.episodes.length})</option>)}
+                                {item.seasons.map((s) => <option key={s.season} value={s.season}>{t('HOMEBOT_SEASON_COUNT', 'Season {{season}} ({{count}})', { season: s.season, count: s.episodes.length })}</option>)}
                             </select>
-                            {admin && current ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => delSeason(current.season)}>Delete season</button> : null}
+                            {admin && current ? <button type="button" className={classnames(styles['btn-sm'], styles['danger'])} onClick={() => delSeason(current.season)}>{t('HOMEBOT_DELETE_SEASON', 'Delete season')}</button> : null}
                         </div>
                         : null}
                 </div>
@@ -139,7 +144,7 @@ const ServerTitle = ({ id }) => {
                         onDelete={delFile}
                     />
                 ))) : null}
-                {isSeries && item.extras && item.extras.length ? <div className={styles['sub-head']}>Other files</div> : null}
+                {isSeries && item.extras && item.extras.length ? <div className={styles['sub-head']}>{t('HOMEBOT_OTHER_FILES', 'Other files')}</div> : null}
                 {isSeries && item.extras ? item.extras.map((f) => <FileRow key={f.id} file={f} admin={admin} label="—" onPlay={(file) => play(file, '')} onVlc={vlc} onDelete={delFile} />) : null}
                 {!isSeries ? item.files.map((f) => <FileRow key={f.id} file={f} admin={admin} label="🎬" onPlay={(file) => play(file, '')} onVlc={vlc} onDelete={delFile} />) : null}
             </div>

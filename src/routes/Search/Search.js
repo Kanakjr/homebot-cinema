@@ -2,6 +2,7 @@
 
 const React = require('react');
 const classnames = require('classnames');
+const { useTranslation } = require('react-i18next');
 const useTranslate = require('stremio/common/useTranslate');
 const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalogs');
 const { default: Icon } = require('@stremio/stremio-icons/react');
@@ -16,7 +17,8 @@ const { useSearchParams } = require('react-router-dom');
 
 const Search = () => {
     const [queryParams] = useSearchParams();
-    const t = useTranslate();
+    const { t } = useTranslation();
+    const translate = useTranslate();
     const [search, loadSearchRows] = useSearch(queryParams);
     const query = React.useMemo(() => {
         return search.selected !== null ?
@@ -71,24 +73,24 @@ const Search = () => {
                     query === null ?
                         <div className={classnames(styles['search-hints-wrapper'])}>
                             <div className={classnames(styles['search-hints-title-container'], 'animation-fade-in')}>
-                                <div className={styles['search-hints-title']}>{t.string('SEARCH_ANYTHING')}</div>
+                                <div className={styles['search-hints-title']}>{translate.string('SEARCH_ANYTHING')}</div>
                             </div>
                             <div className={classnames(styles['search-hints-container'], 'animation-fade-in')}>
                                 <div className={styles['search-hint-container']}>
                                     <Icon className={styles['icon']} name={'trailer'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_CATEGORIES')}</div>
+                                    <div className={styles['label']}>{translate.string('SEARCH_CATEGORIES')}</div>
                                 </div>
                                 <div className={styles['search-hint-container']}>
                                     <Icon className={styles['icon']} name={'actors'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_PERSONS')}</div>
+                                    <div className={styles['label']}>{translate.string('SEARCH_PERSONS')}</div>
                                 </div>
                                 <div className={styles['search-hint-container']}>
                                     <Icon className={styles['icon']} name={'link'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_PROTOCOLS')}</div>
+                                    <div className={styles['label']}>{translate.string('SEARCH_PROTOCOLS')}</div>
                                 </div>
                                 <div className={styles['search-hint-container']}>
                                     <Icon className={styles['icon']} name={'imdb-outline'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_TYPES')}</div>
+                                    <div className={styles['label']}>{translate.string('SEARCH_TYPES')}</div>
                                 </div>
                             </div>
                         </div>
@@ -100,7 +102,7 @@ const Search = () => {
                                     src={require('/assets/images/empty.png')}
                                     alt={' '}
                                 />
-                                <div className={styles['message-label']}>{ t.string('STREMIO_TV_SEARCH_NO_ADDONS') }</div>
+                                <div className={styles['message-label']}>{ translate.string('STREMIO_TV_SEARCH_NO_ADDONS') }</div>
                             </div>
                             :
                             noResults ?
@@ -110,8 +112,8 @@ const Search = () => {
                                         src={require('/assets/images/empty.png')}
                                         alt={' '}
                                     />
-                                    <div className={styles['message-label']}>No results for “{query}”</div>
-                                    <div className={styles['message-hint']}>Check the spelling, or try a title, an actor or an IMDb link.</div>
+                                    <div className={styles['message-label']}>{t('HOMEBOT_SEARCH_NO_RESULTS', 'No results for “{{query}}”', { query })}</div>
+                                    <div className={styles['message-hint']}>{t('HOMEBOT_SEARCH_NO_RESULTS_HINT', 'Check the spelling, or try a title, an actor or an IMDb link.')}</div>
                                 </div>
                                 :
                                 <>
@@ -155,7 +157,7 @@ const Search = () => {
                                                         key={index}
                                                         className={classnames(styles['search-row'], styles['search-row-poster'], 'animation-fade-in')}
                                                         catalog={catalog}
-                                                        title={t.catalogTitle(catalog)}
+                                                        title={translate.catalogTitle(catalog)}
                                                     />
                                                 );
                                             }

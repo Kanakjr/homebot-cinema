@@ -5,6 +5,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
+const { useTranslation } = require('react-i18next');
 const { useNavigateWithOrigin } = require('stremio-router');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const usePlayResolve = require('stremio/common/usePlayResolve');
@@ -16,6 +17,7 @@ const SWIPE_PX = 40;
 const imdbArt = (kind, id) => `https://images.metahub.space/${kind}/medium/${id}/img`;
 
 const Slide = ({ item, active, onBackdropBroken }) => {
+    const { t } = useTranslation();
     const { play, resolving } = usePlayResolve();
     const { navigateWithOrigin } = useNavigateWithOrigin();
     // the text title shows until the logo image has loaded (or for good if it fails); a shimmer until the backdrop arrives
@@ -89,7 +91,7 @@ const Slide = ({ item, active, onBackdropBroken }) => {
                         <span>{resolving ? 'Loading…' : 'Play'}</span>
                     </button>
                     <a className={classnames(styles['cta'], styles['cta-details'])} href={href} onClick={onDetailsClick} tabIndex={active ? 0 : -1}>
-                        View details
+                        {t('HOMEBOT_VIEW_DETAILS_LOWER', 'View details')}
                     </a>
                 </div>
             </div>

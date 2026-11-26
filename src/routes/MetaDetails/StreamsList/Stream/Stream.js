@@ -277,7 +277,7 @@ const Stream = ({ className = '', compact = false, isEpg = false, videoId = unde
                         {parsed && parsed.sizeLabel ? <span>{parsed.sizeLabel}</span> : null}
                         {seedTone ?
                             <span className={styles['seeds']} title={`${parsed.seeders} seeders${typeof parsed.leechers === 'number' ? ` / ${parsed.leechers} leechers` : ''}`}>
-                                <i className={classnames(styles['seed-dot'], styles[`seed-${seedTone}`])} />{parsed.seeders} seeders
+                                <i className={classnames(styles['seed-dot'], styles[`seed-${seedTone}`])} />{t('HOMEBOT_SEEDERS_COUNT', '{{count}} seeders', { count: parsed.seeders })}
                             </span>
                             :
                             null}
@@ -307,7 +307,7 @@ const Stream = ({ className = '', compact = false, isEpg = false, videoId = unde
                     </span>
                     <span className={styles['card-play']}>
                         <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M6 3.8v12.4a.8.8 0 001.2.7l10-6.2a.8.8 0 000-1.4l-10-6.2A.8.8 0 006 3.8z" /></svg>
-                        Play
+                        {t('HOMEBOT_PLAY', 'Play')}
                     </span>
                 </div>
                 {children}
@@ -329,7 +329,7 @@ const Stream = ({ className = '', compact = false, isEpg = false, videoId = unde
                     !isEpg && (magnetLink || downloadLink || streamLink) &&
                         <Button className={styles['context-menu-option-container']} title="Download to HomeServer" onClick={downloadToServer}>
                             <Icon className={styles['menu-icon']} name={'download'} />
-                            <div className={styles['context-menu-option-label']}>⬇️ Download to HomeServer SSD</div>
+                            <div className={styles['context-menu-option-label']}>{t('HOMEBOT_DOWNLOAD_HOMESERVER', '⬇️ Download to HomeServer SSD')}</div>
                         </Button>
                 }
                 {

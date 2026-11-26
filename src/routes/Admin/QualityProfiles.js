@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const classnames = require('classnames');
 const { api } = require('stremio/common/serverApi');
 const { confirmDialog } = require('stremio/common/dialogs');
@@ -62,6 +63,7 @@ const Field = ({ label, hint, children }) => (
 Field.propTypes = { label: PropTypes.string, hint: PropTypes.string, children: PropTypes.node };
 
 const QualityProfiles = ({ onError }) => {
+    const { t } = useTranslation();
     const [data, setData] = React.useState(null);
     const [sel, setSel] = React.useState(null); // profile id, or 'new'
     const [form, setForm] = React.useState(null);
@@ -148,32 +150,31 @@ const QualityProfiles = ({ onError }) => {
     };
     const setSize = (q, key, v) => set({ sizes: { ...form.sizes, [q]: { ...(form.sizes[q] || {}), [key]: v } } });
 
-    if (!data || !form) return <div className={styles['empty']}>Loading…</div>;
+    if (!data || !form) return <div className={styles['empty']}>{t('LOADING', 'Loading…')}</div>;
     return (
         <>
             <div className={styles['hint']}>
-                Profiles decide which release the grabber picks — for the Save button and for Sentinel’s automatic downloads.
-                A release must pass every rule; among those that do, higher-ranked qualities and preferred keywords win.
+                {t('HOMEBOT_QP_HINT', 'Profiles decide which release the grabber picks — for the Save button and for Sentinel’s automatic downloads.\n                A release must pass every rule; among those that do, higher-ranked qualities and preferred keywords win.')}
             </div>
             <div className={styles['qp-layout']}>
                 <div className={styles['qp-list']}>
                     {data.profiles.map((p) => (
                         <button key={p.id} type="button" className={classnames(styles['qp-item'], { [styles['active']]: sel === p.id })} onClick={() => choose(p)}>
-                            <span className={styles['qp-name']}>{p.name}{p.isDefault ? <span className={styles['tag']}>Default</span> : null}</span>
+                            <span className={styles['qp-name']}>{p.name}{p.isDefault ? <span className={styles['tag']}>{t('HOMEBOT_DEFAULT', 'Default')}</span> : null}</span>
                             <span className={styles['qp-sub']}>{describe(p.config)}{p.builtin ? '' : ' · custom'}</span>
                         </button>
                     ))}
-                    <button type="button" className={classnames(styles['qp-item'], styles['qp-new'], { [styles['active']]: sel === 'new' })} onClick={startNew}>＋ New profile</button>
+                    <button type="button" className={classnames(styles['qp-item'], styles['qp-new'], { [styles['active']]: sel === 'new' })} onClick={startNew}>{t('HOMEBOT_NEW_PROFILE', '＋ New profile')}</button>
                 </div>
 
                 <div className={styles['qp-editor']}>
                     <Field label="Name"><input className={styles['input']} value={form.name} maxLength={40} onChange={(e) => set({ name: e.target.value })} /></Field>
                     <Field label="Description"><input className={styles['input']} value={form.description} maxLength={200} onChange={(e) => set({ description: e.target.value })} /></Field>
 
-                    <div className={styles['field-label']}>Allowed qualities, best first <span className={styles['field-hint']}>Releases in a higher row are always preferred over lower ones.</span></div>
+                    <div className={styles['field-label']}>{t('HOMEBOT_ALLOWED_QUALITIES', 'Allowed qualities, best first')} <span className={styles['field-hint']}>{t('HOMEBOT_ALLOWED_QUALITIES_HINT', 'Releases in a higher row are always preferred over lower ones.')}</span></div>
                     <div className={styles['q-table']}>
                         <div className={classnames(styles['q-row'], styles['q-head'])}>
-                            <span /><span>Quality</span><span>Movie min GB</span><span>Movie max GB</span><span>Episode min GB</span><span>Episode max GB</span>
+                            <span /><span>{t('HOMEBOT_QUALITY', 'Quality')}</span><span>{t('HOMEBOT_MOVIE_MIN_GB', 'Movie min GB')}</span><span>{t('HOMEBOT_MOVIE_MAX_GB', 'Movie max GB')}</span><span>{t('HOMEBOT_EPISODE_MIN_GB', 'Episode min GB')}</span><span>{t('HOMEBOT_EPISODE_MAX_GB', 'Episode max GB')}</span>
                         </div>
                         {form.order.map((q, i) => {
                             const on = !!form.enabled[q];
@@ -218,20 +219,20 @@ const QualityProfiles = ({ onError }) => {
 
                     <div className={styles['qp-actions']}>
                         <button type="button" className={styles['btn-white']} disabled={busy || !form.name.trim()} onClick={save}>{sel === 'new' ? 'Create profile' : 'Save changes'}</button>
-                        {current && !current.isDefault ? <button type="button" className={styles['btn']} disabled={busy} onClick={makeDefault}>Make default</button> : null}
-                        {current ? <button type="button" className={styles['btn']} disabled={busy} onClick={duplicate}>Duplicate</button> : null}
-                        {current && current.builtin ? <button type="button" className={styles['btn']} disabled={busy} onClick={reset}>Reset to defaults</button> : null}
-                        {current && !current.builtin ? <button type="button" className={classnames(styles['btn'], styles['danger'])} disabled={busy} onClick={remove}>Delete</button> : null}
+                        {current && !current.isDefault ? <button type="button" className={styles['btn']} disabled={busy} onClick={makeDefault}>{t('HOMEBOT_MAKE_DEFAULT', 'Make default')}</button> : null}
+                        {current ? <button type="button" className={styles['btn']} disabled={busy} onClick={duplicate}>{t('HOMEBOT_DUPLICATE', 'Duplicate')}</button> : null}
+                        {current && current.builtin ? <button type="button" className={styles['btn']} disabled={busy} onClick={reset}>{t('HOMEBOT_RESET_DEFAULTS', 'Reset to defaults')}</button> : null}
+                        {current && !current.builtin ? <button type="button" className={classnames(styles['btn'], styles['danger'])} disabled={busy} onClick={remove}>{t('DELETE', 'Delete')}</button> : null}
                         {saved ? <span className={styles['saved']}>✓ {saved}</span> : null}
                     </div>
 
                     <div className={styles['tester']}>
-                        <div className={styles['field-label']}>Try a release against {current ? `“${current.name}”` : 'the default profile'}</div>
+                        <div className={styles['field-label']}>{t('HOMEBOT_TRY_RELEASE_AGAINST', 'Try a release against {{target}}', { target: current ? `“${current.name}”` : 'the default profile' })}</div>
                         <div className={styles['test-row']}>
                             <input className={styles['input']} placeholder="Paste a release name, e.g. Movie.2026.2160p.WEB-DL.DV.HDR.HEVC-GROUP" value={test.release} onChange={(e) => setTest({ ...test, release: e.target.value })} />
                             <input className={styles['input']} type="number" min="0" step="0.1" placeholder="GB" value={test.sizeGB} onChange={(e) => setTest({ ...test, sizeGB: e.target.value })} />
                             <input className={styles['input']} type="number" min="0" placeholder="seeders" value={test.seeders} onChange={(e) => setTest({ ...test, seeders: e.target.value })} />
-                            <button type="button" className={styles['btn']} disabled={busy || !test.release.trim()} onClick={runTest}>Test</button>
+                            <button type="button" className={styles['btn']} disabled={busy || !test.release.trim()} onClick={runTest}>{t('HOMEBOT_TEST', 'Test')}</button>
                         </div>
                         {result ?
                             <div className={styles['test-result']}>
@@ -241,7 +242,7 @@ const QualityProfiles = ({ onError }) => {
                                 </div>
                                 {['movie', 'episode'].map((k) => (
                                     <div key={k} className={classnames(styles['verdict'], result[k].accepted ? styles['ok'] : styles['no'])}>
-                                        <b>As a {k}:</b> {result[k].accepted ? `accepted (score ${result[k].score})${result[k].reasons.length ? ` — ${result[k].reasons.join(', ')}` : ''}` : `rejected — ${result[k].reasons.join('; ')}`}
+                                        <b>{t('HOMEBOT_VERDICT_KIND', 'As a {{kind}}:', { kind: k })}</b> {result[k].accepted ? `accepted (score ${result[k].score})${result[k].reasons.length ? ` — ${result[k].reasons.join(', ')}` : ''}` : `rejected — ${result[k].reasons.join('; ')}`}
                                     </div>
                                 ))}
                             </div>

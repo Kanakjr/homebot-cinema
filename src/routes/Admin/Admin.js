@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const classnames = require('classnames');
 const { MainNavBars } = require('stremio/components');
 const PageHeader = require('stremio/components/PageHeader');
@@ -37,6 +38,7 @@ const Stat = ({ label, value, sub, children }) => (
 Stat.propTypes = { label: PropTypes.string, value: PropTypes.node, sub: PropTypes.node, children: PropTypes.node };
 
 const Overview = ({ o }) => {
+    const { t } = useTranslation();
     const pct = o.storage.totalBytes ? Math.round((o.storage.usedBytes / o.storage.totalBytes) * 100) : 0;
     const max = Math.max(1, ...o.library.biggest.map((b) => b.totalSize));
     return (
@@ -51,7 +53,7 @@ const Overview = ({ o }) => {
                 <Stat label="Streaming" value={o.streaming ? plural(o.streaming.torrents, 'torrent') : 'unavailable'} sub="handled by the streaming server" />
                 <Stat label="People" value={plural(o.people.logins, 'login')} sub={plural(o.people.profiles, 'profile')} />
             </div>
-            <h2 className={styles['section']}>Largest titles</h2>
+            <h2 className={styles['section']}>{t('HOMEBOT_LARGEST_TITLES', 'Largest titles')}</h2>
             {o.library.biggest.map((b) => (
                 <a key={b.id} className={styles['bar-row']} href={`#/server/${b.id}`}>
                     <span className={styles['bar-name']}>{b.title}</span>
@@ -59,7 +61,7 @@ const Overview = ({ o }) => {
                     <span className={styles['bar-size']}>{formatBytes(b.totalSize)}</span>
                 </a>
             ))}
-            {o.downloads.activeList.length ? <h2 className={styles['section']}>Downloading now</h2> : null}
+            {o.downloads.activeList.length ? <h2 className={styles['section']}>{t('HOMEBOT_DOWNLOADING_NOW', 'Downloading now')}</h2> : null}
             {o.downloads.activeList.map((d) => (
                 <div key={d.id} className={styles['bar-row']}>
                     <span className={styles['bar-name']}>{d.title}</span>
@@ -73,6 +75,7 @@ const Overview = ({ o }) => {
 Overview.propTypes = { o: PropTypes.object.isRequired };
 
 const People = ({ onError }) => {
+    const { t } = useTranslation();
     const [logins, setLogins] = React.useState([]);
     const [profiles, setProfiles] = React.useState([]);
     const load = React.useCallback(async () => {
@@ -103,15 +106,15 @@ const People = ({ onError }) => {
     };
     return (
         <>
-            <h2 className={styles['section']}>Logins <span className={styles['count']}>{logins.length}</span></h2>
-            <div className={styles['hint']}>Everyone who has signed in through Cloudflare. Disabled logins are refused by the server.</div>
+            <h2 className={styles['section']}>{t('HOMEBOT_LOGINS', 'Logins')} <span className={styles['count']}>{logins.length}</span></h2>
+            <div className={styles['hint']}>{t('HOMEBOT_LOGINS_HINT', 'Everyone who has signed in through Cloudflare. Disabled logins are refused by the server.')}</div>
             <div className={styles['table']}>
                 {logins.map((l) => (
                     <div key={l.email} className={styles['trow']}>
-                        <div className={styles['tmain']}>{l.email}{l.isAdmin ? <span className={styles['tag']}>Admin</span> : null}</div>
-                        <div className={styles['tmeta']}>last seen {ago(l.lastSeen)}</div>
+                        <div className={styles['tmain']}>{l.email}{l.isAdmin ? <span className={styles['tag']}>{t('HOMEBOT_ADMIN', 'Admin')}</span> : null}</div>
+                        <div className={styles['tmeta']}>{t('HOMEBOT_LAST_SEEN', 'last seen {{when}}', { when: ago(l.lastSeen) })}</div>
                         <label className={styles['quota']}>
-                            Quota GB
+                            {t('HOMEBOT_QUOTA_GB', 'Quota GB')}
                             <input
                                 type="number"
                                 min="0"
@@ -124,29 +127,29 @@ const People = ({ onError }) => {
                     </div>
                 ))}
             </div>
-            <h2 className={styles['section']}>Profiles <span className={styles['count']}>{profiles.length}</span></h2>
+            <h2 className={styles['section']}>{t('HOMEBOT_PROFILES', 'Profiles')} <span className={styles['count']}>{profiles.length}</span></h2>
             <div className={styles['table']}>
                 {profiles.map((p) => (
                     <div key={p.id} className={styles['trow']}>
                         <img className={styles['avatar']} src={p.avatar} alt="" />
-                        <div className={styles['tmain']}>{p.name}{p.isKid ? <span className={styles['tag']}>Kids</span> : null}{p.hasPin ? <span className={styles['tag']}>PIN</span> : null}</div>
+                        <div className={styles['tmain']}>{p.name}{p.isKid ? <span className={styles['tag']}>{t('HOMEBOT_KIDS', 'Kids')}</span> : null}{p.hasPin ? <span className={styles['tag']}>{t('HOMEBOT_PIN', 'PIN')}</span> : null}</div>
                         <span />
                         <span className={styles['row-actions']}>
                             <button type="button" className={styles['btn-sm']} onClick={async () => {
                                 const name = await promptDialog({ title: 'Rename profile', label: 'Profile name', initial: p.name, confirmLabel: 'Save' });
                                 if (name && name.trim() && name.trim() !== p.name) run(() => api('PATCH', `/api/profiles/${p.id}`, { name: name.trim() }));
-                            }}>Edit</button>
+                            }}>{t('HOMEBOT_EDIT', 'Edit')}</button>
                             {/* destructive actions sit behind a menu, with a confirm step, instead of being the only visible choice */}
                             <details className={styles['more']}>
                                 <summary className={styles['btn-sm']} aria-label={`More actions for ${p.name}`}>⋯</summary>
                                 <div className={styles['more-menu']}>
                                     <button type="button" onClick={() => run(() => api('PATCH', `/api/profiles/${p.id}`, { isKid: !p.isKid }))}>{p.isKid ? 'Remove kids mode' : 'Make a kids profile'}</button>
-                                    {p.hasPin ? <button type="button" onClick={() => run(() => api('POST', `/api/profiles/${p.id}/pin/remove`, {}))}>Reset PIN</button> : null}
+                                    {p.hasPin ? <button type="button" onClick={() => run(() => api('POST', `/api/profiles/${p.id}/pin/remove`, {}))}>{t('HOMEBOT_RESET_PIN', 'Reset PIN')}</button> : null}
                                     <button type="button" className={styles['danger-item']} onClick={async () => {
                                         if (await confirmDialog({ title: `Delete profile "${p.name}"?`, message: 'Its library, history and settings are deleted. This cannot be undone.', confirmLabel: 'Delete profile', danger: true })) {
                                             run(() => api('DELETE', `/api/profiles/${p.id}`));
                                         }
-                                    }}>Delete profile…</button>
+                                    }}>{t('HOMEBOT_DELETE_PROFILE', 'Delete profile…')}</button>
                                 </div>
                             </details>
                         </span>
@@ -158,32 +161,36 @@ const People = ({ onError }) => {
 };
 People.propTypes = { onError: PropTypes.func.isRequired };
 
-const LibraryTab = ({ o, onScan, onError }) => (
-    <>
-        <h2 className={styles['section']}>Library scanner</h2>
-        <div className={styles['panel']}>
-            <div>
-                {o.library.scan.running ? 'Scanning…' : o.library.scan.finishedAt ? `Last scan ${ago(o.library.scan.finishedAt)}` : 'No scan has run yet'}
-                {' · '}{o.library.fileCount} video files · {o.library.titles} titles · <b>{o.library.unmatched}</b> unmatched
+const LibraryTab = ({ o, onScan, onError }) => {
+    const { t } = useTranslation();
+    return (
+        <>
+            <h2 className={styles['section']}>{t('HOMEBOT_LIBRARY_SCANNER', 'Library scanner')}</h2>
+            <div className={styles['panel']}>
+                <div>
+                    {o.library.scan.running ? 'Scanning…' : o.library.scan.finishedAt ? `Last scan ${ago(o.library.scan.finishedAt)}` : 'No scan has run yet'}
+                    {t('HOMEBOT_SCANNER_COUNTS', ' · {{files}} video files · {{titles}} titles · ', { files: o.library.fileCount, titles: o.library.titles })}<b>{o.library.unmatched}</b> {t('HOMEBOT_UNMATCHED', 'unmatched')}
+                </div>
+                <div className={styles['panel-actions']}>
+                    <button type="button" className={styles['btn']} disabled={o.library.scan.running} onClick={onScan}>{t('HOMEBOT_SCAN_NOW', '⟳ Scan now')}</button>
+                    <a className={styles['btn']} href="#/server">{t('HOMEBOT_REVIEW_TITLES', 'Review titles')}{o.library.unmatched ? ` (${o.library.unmatched} unmatched)` : ''}</a>
+                </div>
             </div>
-            <div className={styles['panel-actions']}>
-                <button type="button" className={styles['btn']} disabled={o.library.scan.running} onClick={onScan}>⟳ Scan now</button>
-                <a className={styles['btn']} href="#/server">Review titles{o.library.unmatched ? ` (${o.library.unmatched} unmatched)` : ''}</a>
-            </div>
-        </div>
-        <div className={styles['hint']}>The scanner runs every 30 minutes. It groups files by their parsed names and never moves or renames anything on disk. Unmatched titles can be fixed with “Identify” on the title’s page.</div>
-        <LibraryFolders onError={onError} />
-    </>
-);
+            <div className={styles['hint']}>{t('HOMEBOT_SCANNER_HINT', 'The scanner runs every 30 minutes. It groups files by their parsed names and never moves or renames anything on disk. Unmatched titles can be fixed with “Identify” on the title’s page.')}</div>
+            <LibraryFolders onError={onError} />
+        </>
+    );
+};
 LibraryTab.propTypes = { o: PropTypes.object.isRequired, onScan: PropTypes.func.isRequired, onError: PropTypes.func.isRequired };
 
 const Activity = ({ onError }) => {
+    const { t } = useTranslation();
     const [rows, setRows] = React.useState([]);
     React.useEffect(() => { api('GET', '/api/admin/audit?limit=100').then(setRows).catch((e) => onError(e.message)); }, [onError]);
     return (
         <>
-            <h2 className={styles['section']}>Activity log <span className={styles['count']}>{rows.length}</span></h2>
-            {rows.length === 0 ? <div className={styles['empty']}>Nothing recorded yet.</div> : null}
+            <h2 className={styles['section']}>{t('HOMEBOT_ACTIVITY_LOG', 'Activity log')} <span className={styles['count']}>{rows.length}</span></h2>
+            {rows.length === 0 ? <div className={styles['empty']}>{t('HOMEBOT_NOTHING_RECORDED', 'Nothing recorded yet.')}</div> : null}
             <div className={styles['table']}>
                 {rows.map((r) => (
                     <div key={r.id} className={classnames(styles['trow'], styles['log'])}>
@@ -199,6 +206,7 @@ const Activity = ({ onError }) => {
 Activity.propTypes = { onError: PropTypes.func.isRequired };
 
 const Admin = () => {
+    const { t } = useTranslation();
     const admin = isAdmin();
     const [tab, setTab] = React.useState('overview');
     // plugin tabs (slot adminTabs) go right after Overview
@@ -213,8 +221,8 @@ const Admin = () => {
         if (!admin) return;
         loadOverview();
         // live transcodes come from the streaming server and have no event: a slow refresh covers those
-        const t = setInterval(() => { if (document.visibilityState === 'visible') loadOverview(); }, 15000);
-        return () => clearInterval(t);
+        const timer = setInterval(() => { if (document.visibilityState === 'visible') loadOverview(); }, 15000);
+        return () => clearInterval(timer);
     }, [admin, loadOverview]);
     useServerEvents(['downloads', 'library', 'sentinel'], loadOverview, { fallbackMs: 5000, enabled: admin });
 
@@ -247,7 +255,7 @@ const Admin = () => {
                             {tab === 'activity' ? <Activity onError={setError} /> : null}
                             {tab === 'plugins' ? <Plugins onError={setError} /> : null}
                             {activePlugin ? renderPlugin(activePlugin, 'adminTabs', { onError: setError }) : null}
-                            {!o && !activePlugin && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && tab !== 'plugins' && !error ? <div className={styles['empty']}>Loading…</div> : null}
+                            {!o && !activePlugin && tab !== 'people' && tab !== 'activity' && tab !== 'quality' && tab !== 'plugins' && !error ? <div className={styles['empty']}>{t('LOADING', 'Loading…')}</div> : null}
                         </>
                     )}
                 </div>

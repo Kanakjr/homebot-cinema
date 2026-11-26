@@ -4,6 +4,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const styles = require('./styles');
 
 const BrandMark = ({ size = 32, className, glow = false }) => {
@@ -37,12 +38,17 @@ const BrandMark = ({ size = 32, className, glow = false }) => {
 BrandMark.propTypes = { size: PropTypes.number, className: PropTypes.string, glow: PropTypes.bool };
 
 // mark + "HomeBot Cinema"
-const BrandLockup = ({ size = 40, className }) => (
-    <div className={`${styles['lockup']} ${className || ''}`}>
-        <BrandMark size={size} />
-        <span className={styles['name']} style={{ fontSize: `${Math.round(size * 0.5)}px` }}>HomeBot <span className={styles['name-light']}>Cinema</span></span>
-    </div>
-);
+const BrandLockup = ({ size = 40, className }) => {
+    const { t } = useTranslation();
+    return (
+        <div className={`${styles['lockup']} ${className || ''}`}>
+            <BrandMark size={size} />
+            <span className={styles['name']} style={{ fontSize: `${Math.round(size * 0.5)}px` }}>
+                {t('HOMEBOT_BRAND_FIRST', 'HomeBot')} <span className={styles['name-light']}>{t('HOMEBOT_BRAND_SECOND', 'Cinema')}</span>
+            </span>
+        </div>
+    );
+};
 BrandLockup.propTypes = { size: PropTypes.number, className: PropTypes.string };
 
 module.exports = BrandMark;

@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const { useNavigate } = require('react-router');
 const classnames = require('classnames');
 const { useCore } = require('stremio/core');
@@ -35,6 +36,7 @@ const Chevron = ({ className }) => (
 Chevron.propTypes = { className: PropTypes.string };
 
 const MediaDownloadBar = ({ meta, video, streams = [] }) => {
+    const { t } = useTranslation();
     const core = useCore();
     const navigate = useNavigate();
     const admin = isAdmin();
@@ -257,8 +259,8 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
                     {downloading ? <div className={styles['track']}><div className={styles['fill']} style={{ width: `${Math.round((status.progress || 0) * 100)}%` }} /></div> : null}
                 </div>
                 <div className={styles['actions']}>
-                    {(localFile || status.downloaded) && !downloading ? <button type="button" className={styles['btn-white']} onClick={playLocal}>▶ Play</button> : null}
-                    {lib && (expanded || !hasOptions) ? <a className={styles['btn']} href={`#/server/${lib.id}`}>Open</a> : null}
+                    {(localFile || status.downloaded) && !downloading ? <button type="button" className={styles['btn-white']} onClick={playLocal}>{t('HOMEBOT_PLAY_TRIANGLE', '▶ Play')}</button> : null}
+                    {lib && (expanded || !hasOptions) ? <a className={styles['btn']} href={`#/server/${lib.id}`}>{t('HOMEBOT_OPEN', 'Open')}</a> : null}
                     {hasOptions ?
                         <button type="button" className={styles['toggle']} aria-expanded={expanded} onClick={toggleOpen} title={expanded ? 'Hide download options' : 'Show download options'}>
                             {canSave ? 'Download' : 'Options'}<Chevron className={styles['chev']} />
@@ -270,7 +272,7 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
                 <div className={styles['save-row']}>
                     {profiles.length > 0 ?
                         <label className={styles['save-label']}>
-                            <span>Quality</span>
+                            <span>{t('HOMEBOT_QUALITY', 'Quality')}</span>
                             <select
                                 className={styles['profile-select']}
                                 value={selected ? selected.id : ''}
@@ -290,17 +292,17 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
                 <div className={styles['monitor-box']}>
                     {picking ?
                         <div className={styles['picker']}>
-                            <div className={styles['picker-title']}>Auto-download with Sentinel</div>
+                            <div className={styles['picker-title']}>{t('HOMEBOT_AUTO_DOWNLOAD_SENTINEL', 'Auto-download with Sentinel')}</div>
                             <label className={classnames(styles['opt'], { [styles['sel']]: mode === 'seasons' })}>
                                 <input type="radio" name="scope" checked={mode === 'seasons'} onChange={() => setMode('seasons')} />
                                 <i className={styles['dot']} />
-                                <span>Specific seasons</span>
+                                <span>{t('HOMEBOT_SPECIFIC_SEASONS', 'Specific seasons')}</span>
                             </label>
                             {mode === 'seasons' ?
                                 <div className={styles['season-chips']}>
                                     {seasonInfo.map((sn) => (
                                         <button key={sn.season} type="button" aria-pressed={chosen.has(sn.season)} className={classnames(styles['season-chip'], { [styles['on']]: chosen.has(sn.season) })} onClick={() => toggleSeason(sn.season)}>
-                                            Season {sn.season}<em>{sn.missing === 0 ? 'all on server' : `${sn.missing} to get`}</em>
+                                            {t('HOMEBOT_SEASON_NUM', 'Season {{season}}', { season: sn.season })}<em>{sn.missing === 0 ? 'all on server' : `${sn.missing} to get`}</em>
                                         </button>
                                     ))}
                                 </div>
@@ -308,34 +310,34 @@ const MediaDownloadBar = ({ meta, video, streams = [] }) => {
                             <label className={classnames(styles['opt'], { [styles['sel']]: mode === 'new' })}>
                                 <input type="radio" name="scope" checked={mode === 'new'} onChange={() => setMode('new')} />
                                 <i className={styles['dot']} />
-                                <span>New episodes only <em className={styles['hint']}>as they air, nothing from the past</em></span>
+                                <span>{t('HOMEBOT_NEW_EPISODES_ONLY', 'New episodes only')} <em className={styles['hint']}>{t('HOMEBOT_NEW_EPISODES_HINT', 'as they air, nothing from the past')}</em></span>
                             </label>
                             <label className={classnames(styles['opt'], { [styles['sel']]: mode === 'all' })}>
                                 <input type="radio" name="scope" checked={mode === 'all'} onChange={() => setMode('all')} />
                                 <i className={styles['dot']} />
-                                <span>Every season <em className={styles['hint']}>the whole back catalog</em></span>
+                                <span>{t('HOMEBOT_EVERY_SEASON', 'Every season')} <em className={styles['hint']}>{t('HOMEBOT_EVERY_SEASON_HINT', 'the whole back catalog')}</em></span>
                             </label>
                             <div className={classnames(styles['picker-summary'], { [styles['big']]: queueNow(mode, chosen) > 0 })}>
                                 {mode === 'new' ? 'Nothing is downloaded now. New episodes are fetched when they air.'
                                     : `Queues ${queueNow(mode, chosen)} episode${queueNow(mode, chosen) === 1 ? '' : 's'} right now${mode === 'seasons' ? ', then the rest of those seasons as they air' : ''}.`}
                             </div>
                             <div className={styles['picker-actions']}>
-                                <button type="button" className={styles['btn']} disabled={mode === 'seasons' && chosen.size === 0} onClick={startMonitor}>Start</button>
-                                <button type="button" className={styles['link-btn']} onClick={() => setPicking(false)}>Cancel</button>
+                                <button type="button" className={styles['btn']} disabled={mode === 'seasons' && chosen.size === 0} onClick={startMonitor}>{t('HOMEBOT_START', 'Start')}</button>
+                                <button type="button" className={styles['link-btn']} onClick={() => setPicking(false)}>{t('BUTTON_CANCEL', 'Cancel')}</button>
                             </div>
                         </div>
                         : monitor ?
                             <div className={styles['monitor-row']}>
-                                <span>Auto-download: <strong>{monitor.scopeLabel || 'All seasons'}</strong>{selected ? <em className={styles['hint']}> · {selected.name}</em> : null}</span>
-                                <button type="button" className={styles['link-btn']} onClick={openPicker}>Change</button>
-                                <button type="button" className={styles['link-btn']} onClick={stopMonitor}>Stop</button>
+                                <span>{t('HOMEBOT_AUTO_DOWNLOAD_COLON', 'Auto-download:')} <strong>{monitor.scopeLabel || 'All seasons'}</strong>{selected ? <em className={styles['hint']}> · {selected.name}</em> : null}</span>
+                                <button type="button" className={styles['link-btn']} onClick={openPicker}>{t('HOMEBOT_CHANGE', 'Change')}</button>
+                                <button type="button" className={styles['link-btn']} onClick={stopMonitor}>{t('HOMEBOT_STOP', 'Stop')}</button>
                             </div>
                             :
-                            <button type="button" className={styles['link-btn']} onClick={openPicker} title="Choose which seasons Sentinel downloads">Auto-download episodes…</button>}
+                            <button type="button" className={styles['link-btn']} onClick={openPicker} title="Choose which seasons Sentinel downloads">{t('HOMEBOT_AUTO_DOWNLOAD_EPISODES', 'Auto-download episodes…')}</button>}
                 </div>
                 : null}
             {message ? <div className={styles['message']}>{message}</div> : null}
-            {canForce ? <button type="button" className={styles['btn']} onClick={() => handleDownload(true)}>Save anyway</button> : null}
+            {canForce ? <button type="button" className={styles['btn']} onClick={() => handleDownload(true)}>{t('HOMEBOT_SAVE_ANYWAY', 'Save anyway')}</button> : null}
         </div>
     );
 };

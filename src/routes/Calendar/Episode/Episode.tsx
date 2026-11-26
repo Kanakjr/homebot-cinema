@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2026 Smart code 203358507
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import Icon from '@stremio/stremio-icons/react';
 import { Button, Image } from 'stremio/components';
@@ -17,6 +18,7 @@ const renderPlaceholder = () => (
 );
 
 const Episode = ({ name, title, season, episode, poster, background, thumbnail, deepLinks, hideSpoilers, onClick }: Props) => {
+    const { t } = useTranslation();
     const marker = useEpisodeMarker(deepLinks.metaDetailsStreams);
     const onEpisodeClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
         onClick && onClick(event, deepLinks.metaDetailsStreams);
@@ -45,9 +47,9 @@ const Episode = ({ name, title, season, episode, poster, background, thumbnail, 
                     S{season}E{episode}
                     {
                         marker === 'server' ?
-                            <span className={classNames(styles['marker'], styles['marker-server'])} title={'Already on your server'}>On server</span>
+                            <span className={classNames(styles['marker'], styles['marker-server'])} title={'Already on your server'}>{t('HOMEBOT_ON_SERVER', 'On server')}</span>
                             : marker === 'auto' ?
-                                <span className={classNames(styles['marker'], styles['marker-auto'])} title={'Sentinel downloads new episodes of this show automatically'}>Auto-download</span>
+                                <span className={classNames(styles['marker'], styles['marker-auto'])} title={'Sentinel downloads new episodes of this show automatically'}>{t('HOMEBOT_AUTO_DOWNLOAD', 'Auto-download')}</span>
                                 : null
                     }
                 </div>

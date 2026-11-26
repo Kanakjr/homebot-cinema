@@ -19,8 +19,8 @@ const Menu = ({ selected, extraSections = [], onSelect }: Props) => {
     return (
         // HomeBot: role/aria-current so VoiceOver and keyboard users can find and follow the section links
         <div className={styles['menu']}>
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.GENERAL })} title={'Account'} data-section={SECTIONS.GENERAL} role={'button'} aria-current={selected === SECTIONS.GENERAL ? 'true' : undefined} onClick={onSelect}>
-                Account
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.GENERAL })} title={t('ACCOUNT', 'Account')} data-section={SECTIONS.GENERAL} role={'button'} aria-current={selected === SECTIONS.GENERAL ? 'true' : undefined} onClick={onSelect}>
+                {t('ACCOUNT', 'Account')}
             </Button>
             {extraSections.map((s) => (
                 <Button key={s.id} className={classNames(styles['button'], { [styles['selected']]: selected === s.id })} title={s.label} data-section={s.id} role={'button'} aria-current={selected === s.id ? 'true' : undefined} onClick={onSelect}>
@@ -40,8 +40,8 @@ const Menu = ({ selected, extraSections = [], onSelect }: Props) => {
                 { t('SETTINGS_NAV_SHORTCUTS') }
             </Button> }
 
-            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.ABOUT })} title={'About'} data-section={SECTIONS.ABOUT} role={'button'} aria-current={selected === SECTIONS.ABOUT ? 'true' : undefined} onClick={onSelect}>
-                About
+            <Button className={classNames(styles['button'], { [styles['selected']]: selected === SECTIONS.ABOUT })} title={t('ABOUT', 'About')} data-section={SECTIONS.ABOUT} role={'button'} aria-current={selected === SECTIONS.ABOUT ? 'true' : undefined} onClick={onSelect}>
+                {t('ABOUT', 'About')}
             </Button>
         </div>
     );

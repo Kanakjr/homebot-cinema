@@ -3,6 +3,7 @@
 
 const React = require('react');
 const PropTypes = require('prop-types');
+const { useTranslation } = require('react-i18next');
 const classnames = require('classnames');
 const styles = require('./StreamFilterBar.less');
 
@@ -26,58 +27,61 @@ const SearchIcon = () => (
     </svg>
 );
 
-const StreamFilterBar = ({ activePill, onSelectPill, searchQuery, onSearchChange, hideCam, onToggleHideCam, totalCount, filteredCount, counts, profileName }) => (
-    <div className={styles['filter-bar-container']}>
-        <div className={styles['top-row']}>
-            <label className={styles['search-wrapper']}>
-                <SearchIcon />
-                <input
-                    type="text"
-                    className={styles['search-input']}
-                    placeholder="Search streams, e.g. Atmos, x265, Hindi"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                />
-                {searchQuery ?
-                    <button type="button" className={styles['search-clear']} onClick={() => onSearchChange('')} title="Clear" aria-label="Clear search">×</button>
-                    : null}
-            </label>
-            <button
-                type="button"
-                role="switch"
-                aria-checked={hideCam}
-                className={classnames(styles['switch'], { [styles['on']]: hideCam })}
-                onClick={onToggleHideCam}
-                title="Hide cam and telesync rips"
-            >
-                <span className={styles['switch-track']}><span className={styles['switch-thumb']} /></span>
-                <span>Hide CAM</span>
-            </button>
+const StreamFilterBar = ({ activePill, onSelectPill, searchQuery, onSearchChange, hideCam, onToggleHideCam, totalCount, filteredCount, counts, profileName }) => {
+    const { t } = useTranslation();
+    return (
+        <div className={styles['filter-bar-container']}>
+            <div className={styles['top-row']}>
+                <label className={styles['search-wrapper']}>
+                    <SearchIcon />
+                    <input
+                        type="text"
+                        className={styles['search-input']}
+                        placeholder="Search streams, e.g. Atmos, x265, Hindi"
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                    />
+                    {searchQuery ?
+                        <button type="button" className={styles['search-clear']} onClick={() => onSearchChange('')} title="Clear" aria-label="Clear search">×</button>
+                        : null}
+                </label>
+                <button
+                    type="button"
+                    role="switch"
+                    aria-checked={hideCam}
+                    className={classnames(styles['switch'], { [styles['on']]: hideCam })}
+                    onClick={onToggleHideCam}
+                    title="Hide cam and telesync rips"
+                >
+                    <span className={styles['switch-track']}><span className={styles['switch-thumb']} /></span>
+                    <span>{t('HOMEBOT_HIDE_CAM', 'Hide CAM')}</span>
+                </button>
+            </div>
+            <div className={styles['pills-row']}>
+                {FILTER_PILLS.map((pill) => {
+                    const n = pill.count && counts ? counts[pill.count] : null;
+                    if (n === 0 && pill.id !== 'ALL') return null;
+                    if (pill.id === 'PROFILE' && typeof n !== 'number') return null;
+                    return (
+                        <button
+                            key={pill.id}
+                            type="button"
+                            className={classnames(styles['pill'], { [styles['active']]: activePill === pill.id })}
+                            title={pill.title}
+                            onClick={() => onSelectPill(pill.id)}
+                        >
+                            {pill.id === 'PROFILE' && profileName ? `Fits ${profileName}` : pill.label}
+                            {typeof n === 'number' ? <span className={styles['pill-count']}>{n}</span> : null}
+                        </button>
+                    );
+                })}
+                <span className={styles['showing']}>
+                    {filteredCount === totalCount ? `${totalCount} streams` : `${filteredCount} of ${totalCount}`}
+                </span>
+            </div>
         </div>
-        <div className={styles['pills-row']}>
-            {FILTER_PILLS.map((pill) => {
-                const n = pill.count && counts ? counts[pill.count] : null;
-                if (n === 0 && pill.id !== 'ALL') return null;
-                if (pill.id === 'PROFILE' && typeof n !== 'number') return null;
-                return (
-                    <button
-                        key={pill.id}
-                        type="button"
-                        className={classnames(styles['pill'], { [styles['active']]: activePill === pill.id })}
-                        title={pill.title}
-                        onClick={() => onSelectPill(pill.id)}
-                    >
-                        {pill.id === 'PROFILE' && profileName ? `Fits ${profileName}` : pill.label}
-                        {typeof n === 'number' ? <span className={styles['pill-count']}>{n}</span> : null}
-                    </button>
-                );
-            })}
-            <span className={styles['showing']}>
-                {filteredCount === totalCount ? `${totalCount} streams` : `${filteredCount} of ${totalCount}`}
-            </span>
-        </div>
-    </div>
-);
+    );
+};
 
 StreamFilterBar.propTypes = {
     activePill: PropTypes.string.isRequired,

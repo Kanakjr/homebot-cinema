@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import classnames from 'classnames';
 import styles from './ShortcutsModal.less';
 
@@ -50,6 +51,7 @@ const SHORTCUT_SECTIONS = [
 ];
 
 const ShortcutsModal = React.forwardRef<HTMLDivElement, Props>(({ className, onClose }, ref) => {
+    const { t } = useTranslation();
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -74,7 +76,7 @@ const ShortcutsModal = React.forwardRef<HTMLDivElement, Props>(({ className, onC
                 <div className={styles['shortcuts-modal-header']}>
                     <div className={styles['title-group']}>
                         <span className={styles['icon']}>⚡</span>
-                        <span className={styles['title']}>HomeBot Cinema Hotkeys & Shortcuts</span>
+                        <span className={styles['title']}>{t('HOMEBOT_HOTKEYS_TITLE', 'HomeBot Cinema Hotkeys & Shortcuts')}</span>
                     </div>
                     <button type="button" className={styles['close-button']} onClick={onClose} title="Close (Esc)" aria-label="Close shortcuts guide">
                         ✕

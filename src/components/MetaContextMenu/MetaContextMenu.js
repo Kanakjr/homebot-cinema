@@ -5,6 +5,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
+const { useTranslation } = require('react-i18next');
 const { useCore } = require('stremio/core');
 const { useNavigateWithOrigin } = require('stremio-router');
 const { default: Icon } = require('@stremio/stremio-icons/react');
@@ -96,6 +97,7 @@ function resolvePoster(item) {
 }
 
 const MetaContextMenu = ({ position, onClose, item }) => {
+    const { t } = useTranslation();
     const core = useCore();
     const { navigateWithOrigin } = useNavigateWithOrigin();
     const { play, resolving } = usePlayResolve();
@@ -337,7 +339,7 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                 {/* View Details */}
                 <button type="button" className={styles['item']} onClick={onViewDetails}>
                     <Icon className={styles['icon']} name={'details'} />
-                    <span className={styles['label']}>View Details</span>
+                    <span className={styles['label']}>{t('HOMEBOT_VIEW_DETAILS', 'View Details')}</span>
                 </button>
 
                 {/* Copy Link */}
@@ -352,7 +354,7 @@ const MetaContextMenu = ({ position, onClose, item }) => {
                         <div className={styles['divider']} />
                         <button type="button" className={classnames(styles['item'], styles['danger'])} onClick={onDismiss}>
                             <Icon className={styles['icon']} name={'close'} />
-                            <span className={styles['label']}>Dismiss from Continue Watching</span>
+                            <span className={styles['label']}>{t('HOMEBOT_DISMISS_CONTINUE_WATCHING', 'Dismiss from Continue Watching')}</span>
                         </button>
                     </React.Fragment>
                 ) : null}
