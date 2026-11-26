@@ -31,11 +31,11 @@ const PROPERTIES: Record<string, Property> = {
     },
     'hudNotice': {
         label: '',
-        format: (value) => String(value),
+        format: (value) => (value && typeof value === 'object' ? String((value as { text?: string }).text ?? '') : String(value)),
     },
 };
 
-type VideoState = Record<string, number | string>;
+type VideoState = Record<string, number | string | { text?: string, seq?: number } | null>;
 
 type Props = {
     className: string,
@@ -68,7 +68,7 @@ const Indicator = ({ className, videoState, disabled }: Props) => {
             const next = videoState[property];
 
             if (next && next !== prev) {
-                if (!initialized.current.has(property)) {
+                if (property !== 'hudNotice' && !initialized.current.has(property)) {
                     initialized.current.add(property);
                 } else {
                     setCurrent(property);

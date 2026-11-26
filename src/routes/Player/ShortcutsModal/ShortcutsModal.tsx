@@ -12,9 +12,9 @@ const SHORTCUT_SECTIONS = [
         title: '🎬 Playback & Seeking',
         items: [
             { label: 'Jump to 0% – 90%', keys: ['0 – 9'] },
-            { label: 'Play / Pause', keys: ['Space', 'K'] },
-            { label: 'Seek ±5 seconds', keys: ['←', '→'] },
-            { label: 'Seek ±10 seconds', keys: ['J', 'L'] },
+            { label: 'Jump to Start / End', keys: ['Home', 'End'] },
+            { label: 'Play / Pause (Hold 2×)', keys: ['Space', 'K'] },
+            { label: 'Seek ±10 seconds', keys: ['←', '→', 'J', 'L'] },
             { label: 'Next Video / Episode', keys: ['Shift + N'] },
         ]
     },
@@ -38,7 +38,7 @@ const SHORTCUT_SECTIONS = [
     {
         title: '⚙️ Controls & Display',
         items: [
-            { label: 'Speed ±0.25x', keys: ['<', '>'] },
+            { label: 'Speed ±0.25x', keys: ['<', '>', '[', ']'] },
             { label: 'Speed Menu', keys: ['R'] },
             { label: 'Toggle Fullscreen', keys: ['F'] },
             { label: 'Aspect Ratio Mode', keys: ['V'] },

@@ -160,8 +160,13 @@ const useVideo = () => {
         setProp('videoScale', scale);
     }, [setProp]);
 
+    const hudNoticeSeq = React.useRef(0);
     const setHudNotice = React.useCallback((notice) => {
-        setState((state) => ({ ...state, hudNotice: notice }));
+        hudNoticeSeq.current += 1;
+        setState((state) => ({
+            ...state,
+            hudNotice: notice ? { text: String(notice), seq: hudNoticeSeq.current } : null,
+        }));
     }, []);
 
     const setFullscreen = React.useCallback((state) => {

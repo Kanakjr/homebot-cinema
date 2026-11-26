@@ -59,9 +59,11 @@ const App = () => {
                 toggleGamepadModal();
                 break;
             case 'navigateSearch':
+                if (window.location.hash.startsWith('#/player')) return;
                 navigate('/search');
                 break;
             case 'navigateTabs': {
+                if (window.location.hash.startsWith('#/player')) return;
                 const routes = navTabs(!!window.ssoIsAdmin).map((tab) => tab.href);
                 const index = Number(key) - 1;
                 if (index >= 0 && index < routes.length)

@@ -42,7 +42,6 @@ const Video = require('./Video');
 const { default: Indicator } = require('./Indicator/Indicator');
 const { default: useMediaSession } = require('./useMediaSession');
 const { default: ShortcutsModal } = require('./ShortcutsModal');
-const formatTime = require('./ControlBar/SeekBar/formatTime');
 const { PluginSlot } = require('stremio/plugins'); // HomeBot: slot playerOverlays (skip intro, ...)
 const { usePluginSubtitleSources } = require('./usePluginSubtitleSources'); // HomeBot: slot subtitleSources (AI subtitles)
 
@@ -788,12 +787,12 @@ const Player = () => {
     }, [isEpg, video.state.paused, player.nextVideo, onPlayRequested, onPauseRequested, onNextVideoRequested]);
 
     useShortcut('seekForward', React.useCallback((combo) => {
-        const seekDuration = combo === 1 ? settings.seekShortTimeDuration : settings.seekTimeDuration;
+        const seekDuration = combo === 2 ? 10000 : combo === 1 ? settings.seekShortTimeDuration : settings.seekTimeDuration;
         onKeyboardSeekRequested(seekDuration);
     }, [settings.seekShortTimeDuration, settings.seekTimeDuration, onKeyboardSeekRequested]), !menusOpen && canSeek);
 
     useShortcut('seekBackward', React.useCallback((combo) => {
-        const seekDuration = combo === 1 ? settings.seekShortTimeDuration : settings.seekTimeDuration;
+        const seekDuration = combo === 2 ? 10000 : combo === 1 ? settings.seekShortTimeDuration : settings.seekTimeDuration;
         onKeyboardSeekRequested(-seekDuration);
     }, [settings.seekShortTimeDuration, settings.seekTimeDuration, onKeyboardSeekRequested]), !menusOpen && canSeek);
 
@@ -831,7 +830,8 @@ const Player = () => {
 
     useShortcut('speed', React.useCallback((combo) => {
         if (video.state.playbackSpeed !== null) {
-            const speed = combo === 0 ? Math.max(video.state.playbackSpeed - 0.25, 0.25) : Math.min(video.state.playbackSpeed + 0.25, 2);
+            const delta = (combo === 0 || combo === 2) ? -0.25 : 0.25;
+            const speed = Math.max(0.25, Math.min(2.5, Math.round((video.state.playbackSpeed + delta) * 100) / 100));
             onPlaybackSpeedChanged(speed);
         }
     }, [video.state.playbackSpeed, onPlaybackSpeedChanged]), !menusOpen);
@@ -923,44 +923,38 @@ const Player = () => {
                 return;
             }
 
-            // Number keys 0-9 timeline percentage jump
+            // Number keys 0-9 timeline percentage jump (0% - 90%), YouTube-style (silent, reveals seek bar briefly)
             if (/^[0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
-                if (canSeek && video.state.duration !== null && !isNaN(video.state.duration) && video.state.duration > 0) {
+                if (canSeek && Number.isFinite(seekEnd) && seekEnd > seekStart) {
                     e.preventDefault();
                     const digit = parseInt(e.key, 10);
-                    const percent = digit * 10;
-                    const targetTime = (video.state.duration * percent) / 100;
+                    const targetTime = seekStart + ((seekEnd - seekStart) * (digit * 10)) / 100;
                     onSeekRequested(targetTime);
-                    setSeeking(true);
-                    const formattedTarget = formatTime(targetTime);
-                    const formattedTotal = formatTime(video.state.duration);
-                    video.setHudNotice(`⚡ Jump ${percent}% (${formattedTarget} / ${formattedTotal})`);
                     setImmersed(false);
                     setImmersedDebounced(true);
                     return;
                 }
             }
 
-            // YouTube-style seek keys J (-10s) and L (+10s)
-            if ((e.key === 'j' || e.key === 'J') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen && canSeek) {
-                e.preventDefault();
-                onKeyboardSeekRequested(-10000);
-                return;
-            }
-            if ((e.key === 'l' || e.key === 'L') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen && canSeek) {
-                e.preventDefault();
-                onKeyboardSeekRequested(10000);
-                return;
+            // Home / End keys jump to start / near end of video
+            if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
+                if (canSeek && Number.isFinite(seekEnd) && seekEnd > seekStart) {
+                    e.preventDefault();
+                    const targetTime = e.key === 'Home' ? seekStart : Math.max(seekStart, seekEnd - 5000);
+                    onSeekRequested(targetTime);
+                    setImmersed(false);
+                    setImmersedDebounced(true);
+                    return;
+                }
             }
 
-            // Playback speed shortcuts (< / , and > / .)
-            if ((e.key === '<' || e.key === ',' || e.key === '>' || e.key === '.') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
+            // Playback speed shortcuts (< and >)
+            if ((e.key === '<' || e.key === '>') && !e.ctrlKey && !e.metaKey && !e.altKey && !menusOpen) {
                 if (video.state.playbackSpeed !== null) {
                     e.preventDefault();
-                    const delta = (e.key === '<' || e.key === ',') ? -0.25 : 0.25;
+                    const delta = e.key === '<' ? -0.25 : 0.25;
                     const newSpeed = Math.max(0.25, Math.min(2.5, Math.round((video.state.playbackSpeed + delta) * 100) / 100));
                     onPlaybackSpeedChanged(newSpeed);
-                    video.setHudNotice(`Speed: ${newSpeed}x`);
                     return;
                 }
             }
@@ -1072,7 +1066,7 @@ const Player = () => {
             window.removeEventListener('mouseup', onMouseUp);
             window.removeEventListener('blur', onBlur);
         };
-    }, [routeFocused, menusOpen, video.state.volume, video.state.paused, video.state.duration, video.state.playbackSpeed, video.state.extraSubtitlesDelay, video.state.selectedSubtitlesTrackId, video.state.selectedExtraSubtitlesTrackId, canSeek, allSubtitleTracks, finishDetailsHold, releaseDetailsHold, cancelKeyboardSeek, flushKeyboardSeek, releaseKeyboardSeek, startPlaybackSpeedHold, finishPlaybackSpeedHold, cancelPlaybackSpeedHold, onSeekRequested, onKeyboardSeekRequested, onPlaybackSpeedChanged, toggleShortcutsModal]);
+    }, [routeFocused, menusOpen, video.state.volume, video.state.paused, video.state.duration, seekStart, seekEnd, video.state.playbackSpeed, video.state.extraSubtitlesDelay, video.state.selectedSubtitlesTrackId, video.state.selectedExtraSubtitlesTrackId, canSeek, allSubtitleTracks, finishDetailsHold, releaseDetailsHold, cancelKeyboardSeek, flushKeyboardSeek, releaseKeyboardSeek, startPlaybackSpeedHold, finishPlaybackSpeedHold, cancelPlaybackSpeedHold, onSeekRequested, onKeyboardSeekRequested, onPlaybackSpeedChanged, toggleShortcutsModal]);
 
     React.useEffect(() => {
         video.events.on('error', onError);
