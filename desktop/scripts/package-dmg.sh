@@ -2,7 +2,8 @@
 # Builds the macOS app and a DMG on THIS Mac (Apple Silicon, macOS 12+). Used by CI (.github/workflows/desktop.yml).
 #   - the app asks for your server's address on first run (File > Server > Change Server...), so one build fits every
 #     install. Set CINEMA_ORIGIN=https://your-host only for a private build that should skip that screen
-#   - needs libmpv on the Mac it runs on (`brew install mpv`); it is not bundled yet
+#   - bundles libmpv and its libraries into the app, copied from THIS Mac's Homebrew mpv (`brew install mpv` once);
+#     the Macs it runs on need nothing installed
 #   - ad-hoc signed only (no Developer ID, not notarized): a downloaded DMG needs right-click > Open the first time
 #   - dev-only tools are compiled out
 #
@@ -63,9 +64,8 @@ cp -R "$app" "$stage/"; ln -s /Applications "$stage/Applications"
 cat > "$stage/READ ME FIRST.txt" <<TXT
 $NAME $VERSION (Apple Silicon)
 
-1. Install mpv once (it provides the video player library):   brew install mpv
-2. Drag "$NAME" onto Applications, then open it.
-3. Enter your server's address when asked (the one you open in a browser), then sign in. Both are remembered.
+1. Drag "$NAME" onto Applications, then open it.
+2. Enter your server's address when asked (the one you open in a browser), then sign in. Both are remembered.
    To switch servers later: Server > Change Server... in the menu bar.
 
 If macOS says the app can't be opened, right-click it and choose Open (it is not notarized yet).

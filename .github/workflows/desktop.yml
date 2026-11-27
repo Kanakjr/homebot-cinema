@@ -43,6 +43,9 @@ jobs:
           if [ -z "$TAG" ] && [ "${GITHUB_REF_TYPE}" = "tag" ]; then TAG="$GITHUB_REF_NAME"; fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+      - name: Install mpv
+        # the app bundles libmpv and its libraries (desktop/scripts/bundle-libmpv.py), copied from Homebrew's mpv here
+        run: brew install mpv
       - name: Build the DMG
         # no CINEMA_ORIGIN: public builds ask for the server's address on first run
         run: VERSION="${{ steps.v.outputs.version }}" zsh desktop/scripts/package-dmg.sh
