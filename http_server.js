@@ -110,6 +110,37 @@ function warmTorrent(infoHash, extraTrackers) {
     return promise;
 }
 
+// GET a JSON endpoint of the streaming server; resolves null when it cannot be read
+function streamingJson(pathName, timeout = 5000) {
+    return new Promise((resolve) => {
+        const r = http.get({ host: STREMIO_SERVER_HOST, port: STREMIO_SERVER_PORT, path: pathName, timeout }, (resp) => {
+            let body = '';
+            resp.setEncoding('utf8');
+            resp.on('data', (c) => { body += c; });
+            resp.on('end', () => {
+                if (resp.statusCode !== 200) return resolve(null);
+                try { resolve(JSON.parse(body)); } catch (_) { resolve(null); }
+            });
+            resp.on('error', () => resolve(null));
+        });
+        r.on('error', () => resolve(null));
+        r.on('timeout', () => { r.destroy(); resolve(null); });
+    });
+}
+
+// Logs playback starts / slow reads and closes torrents nobody watches (server/stream_monitor.js).
+// STREAM_IDLE_MINUTES (default 20; 0 = never close any).
+const streamIdleMinutes = Number.isFinite(Number(process.env.STREAM_IDLE_MINUTES)) && process.env.STREAM_IDLE_MINUTES !== ''
+    ? Math.max(0, Number(process.env.STREAM_IDLE_MINUTES)) : 20;
+const streamMonitor = require('./server/stream_monitor').createStreamMonitor({
+    listEngines: () => streamingJson('/stats.json', 10000),
+    statsOf: (hash) => streamingJson(`/${hash}/stats.json`),
+    removeEngine: async (hash) => (await streamingJson(`/${hash}/remove`, 15000)) !== null,
+    onRemoved: (hash) => warmedTorrents.delete(hash), // playing it again must start (warm) it again
+    idleMs: streamIdleMinutes * 60 * 1000,
+});
+streamMonitor.start();
+
 function allowedCorsOrigin(origin, req) {
     if (!origin) return null;
     try {
@@ -165,6 +196,9 @@ app.use(['/settings', '/streaming/settings'], (req, res, next) => {
 });
 
 app.use(streamingPaths, async (req, res) => {
+    // counts this viewer connection for the torrent (so it is never closed under them) and times the first data
+    const watch = streamMonitor.track(req.originalUrl, req.method);
+    if (watch) res.on('close', watch.done);
 
     let targetPath = req.originalUrl.replace(/^\/streaming/, '') || '/';
 
@@ -215,6 +249,10 @@ app.use(streamingPaths, async (req, res) => {
         res.writeHead(proxyRes.statusCode, responseHeaders);
         proxyRes.on('error', () => res.destroy());
         proxyRes.pipe(res, { end: true });
+        if (watch) {
+            watch.response(proxyRes.statusCode);
+            proxyRes.once('data', watch.firstData);
+        }
     });
 
     // Abort the upstream request when the browser goes away (seek, tab close)
@@ -323,7 +361,7 @@ const qualityStore = new QualityStore(cinemaDb);
 const { createSwarmProbe } = require('./server/grabber/swarm_probe');
 const { registerProbeRoutes } = require('./server/grabber/probe_routes');
 // live check: can the streaming server really pull data for this torrent right now?
-const swarmProbe = createSwarmProbe({ host: STREMIO_SERVER_HOST, port: STREMIO_SERVER_PORT, warm: (hash) => warmTorrent(hash, []) });
+const swarmProbe = createSwarmProbe({ host: STREMIO_SERVER_HOST, port: STREMIO_SERVER_PORT, warm: (hash) => warmTorrent(hash, []), log: console.log });
 sentinelDaemon.setGrabber({ resolve: (id) => qualityStore.resolve(id), probeMany: swarmProbe.probeMany });
 sentinelDaemon.setNotifier((n) => hooks.emit('notify', n));
 
@@ -387,17 +425,10 @@ require('./server/admin_routes').registerAdminRoutes(app, {
     downloadsManager,
     sentinel: sentinelDaemon,
     // best-effort count of torrents the streaming server is currently handling
-    streamingStats: () => new Promise((resolve) => {
-        const r = http.get({ host: STREMIO_SERVER_HOST, port: STREMIO_SERVER_PORT, path: '/stats.json', timeout: 3000 }, (resp) => {
-            let body = '';
-            resp.on('data', (c) => { body += c; });
-            resp.on('end', () => {
-                try { resolve({ torrents: Object.keys(JSON.parse(body) || {}).length }); } catch (_) { resolve(null); }
-            });
-        });
-        r.on('error', () => resolve(null));
-        r.on('timeout', () => { r.destroy(); resolve(null); });
-    })
+    streamingStats: async () => {
+        const all = await streamingJson('/stats.json', 3000);
+        return all && typeof all === 'object' ? { torrents: Object.keys(all).length } : null;
+    }
 });
 setTimeout(() => library.scan(), 15 * 1000);
 setInterval(() => library.scan(), 30 * 60 * 1000);

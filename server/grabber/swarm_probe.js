@@ -15,6 +15,7 @@ const HASH_RE = /^[a-f0-9]{40}$/i;
 function createSwarmProbe({
     host, port, warm = async () => {}, bytesWanted = 512 * 1024, goodMs = 6000, maxMs = 10000,
     cacheMs = 5 * 60 * 1000, concurrency = 6, now = () => Date.now(), random = Math.random,
+    log = null, // (line) => void: one line per fresh verdict
 }) {
     const cache = new Map(); // key -> { at, promise }
     let running = 0;
@@ -109,7 +110,12 @@ function createSwarmProbe({
             else if (stats && stats.unchoked >= 1) verdict = 'slow';
             else if (!hasIdx) verdict = stats && stats.unchoked >= 2 ? 'good' : 'dead';
             else verdict = 'dead';
-            return { verdict, bytes: head.bytes, ms: head.ms, start: head.start, peers: stats ? stats.peers : null, unchoked: stats ? stats.unchoked : null };
+            const result = { verdict, bytes: head.bytes, ms: head.ms, start: head.start, peers: stats ? stats.peers : null, unchoked: stats ? stats.unchoked : null };
+            if (log) {
+                const read = hasIdx ? `${Math.round(head.bytes / 1024)} KB in ${(head.ms / 1000).toFixed(1)} s, ` : '';
+                log(`[probe] ${hash.slice(0, 8)}${hasIdx ? `/${idx}` : ''} ${verdict}: ${read}peers ${result.peers ?? '?'}, unchoked ${result.unchoked ?? '?'}`);
+            }
+            return result;
         } catch (_) {
             return { verdict: 'unknown', bytes: 0, ms: 0, peers: null, unchoked: null };
         } finally {

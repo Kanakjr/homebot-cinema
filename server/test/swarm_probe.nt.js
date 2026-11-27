@@ -154,3 +154,14 @@ test('different probes pick different offsets; with no file list yet it falls ba
     assert.equal(s.hits.ranges[s.hits.ranges.length - 1], 'bytes=0-524287');
     s.close();
 });
+
+test('each fresh verdict is logged once (cached repeats are not)', async () => {
+    const s = await fakeStreamingServer();
+    const lines = [];
+    const p = mk(s.port, { log: (l) => lines.push(l) });
+    await p.probe(DEAD, 2);
+    await p.probe(DEAD, 2);
+    assert.equal(lines.length, 1);
+    assert.match(lines[0], /^\[probe\] cccccccc\/2 dead: 0 KB in \d+\.\d s, peers 41, unchoked 0$/);
+    s.close();
+});

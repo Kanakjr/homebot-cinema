@@ -37,6 +37,7 @@ Read this file instead of exploring; open only the files named here.
 | `server/downloads_manager.js`, `transmission.js` | Download records, Transmission RPC, ffmpeg remux |
 | `server/events.js`, `snapshots.js` | SSE hints (`/api/events`); daily DB snapshot (keeps 7) |
 | `server/proxy_rewrite.js`, `streamlinks.js` | Host rewriting for proxied URLs, HEVC→H.264 for HLS; signed stream links (`.../video.mp4/?exp&sig`, trailing slash on purpose) |
+| `server/stream_monitor.js` | Logs playback starts, slow reads and probe verdicts (`[stream]`, `[probe]`); closes streaming-server torrents with no viewer for `STREAM_IDLE_MINUTES` (default 20) |
 | `plugins/` | `ai`, `find`, `themes`, `skip`, `nowplaying`, `collections`, `similar`, `metalfx`, `controllers`, `remote`, `mdblist`, `telegram`, `gdrive`, `livesubs`, `getapp`, `vault` (Locked folder) |
 | `src/plugins/` | UI plugin host: registry, `slot()`, `<PluginSlot>` |
 | `src/worker/` | Core worker entry with the Stremio API fetch guard |
@@ -91,7 +92,7 @@ Dev run: `CINEMA_DATA_DIR=<scratch> PORT=3099 NODE_ENV=development DEV_EMAIL=<ad
 ## Config
 Core env (see `.env.example`): `CF_TEAM_DOMAIN`, `CF_ACCESS_AUD`, `ADMIN_EMAILS`, `OWNER_PROFILE_NAME`, `CINEMA_PLUGINS`,
 `CINEMA_DATA_DIR`, `STREMIO_SERVER_HOST/PORT`, `TRANSMISSION_HOST/PORT`, `LIBRARY_MOVIES_DIR`, `LIBRARY_TV_DIR`, `MEDIA_ROOTS`,
-`STREAM_ADDON_URL`, `TMDB_API_KEY`, `WATCH_REGION`, `PUBLIC_HOSTS`, `DASHBOARD_URL`, `HLS_FORCE_H264`, `DEFAULT_TRACKERS`.
+`STREAM_ADDON_URL`, `TMDB_API_KEY`, `WATCH_REGION`, `PUBLIC_HOSTS`, `DASHBOARD_URL`, `HLS_FORCE_H264`, `DEFAULT_TRACKERS`, `STREAM_IDLE_MINUTES`.
 Plugin settings are listed in each `plugin.json`.
 
 ## Conventions
