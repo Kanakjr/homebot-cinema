@@ -145,6 +145,7 @@ fn build_menu(app: &tauri::App) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> 
     ])?;
     let window_sub = Submenu::with_items(app, "Window", true, &[
         &PredefinedMenuItem::minimize(app, None)?,
+        &PredefinedMenuItem::maximize(app, Some("Zoom"))?, // fill the screen again / back to the default size
     ])?;
 
     Menu::with_items(app, &[
@@ -642,8 +643,10 @@ fn main() {
             };
             let mut builder = WebviewWindowBuilder::new(app, "main", target)
                 .title("HomeBot Cinema")
-                .inner_size(1280.0, 760.0)
+                .inner_size(1280.0, 760.0) // the size Window › Zoom returns to
                 .min_inner_size(640.0, 400.0)
+                // open filling the screen (macOS "zoom": a normal window over the whole desktop, not a full-screen Space)
+                .maximized(true)
                 .transparent(true)
                 .title_bar_style(tauri::TitleBarStyle::Overlay)
                 .hidden_title(true)
