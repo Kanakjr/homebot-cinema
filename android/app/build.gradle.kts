@@ -3,6 +3,13 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+// A private build can carry its server (CINEMA_ORIGIN=https://your-host, like the desktop app): a fresh install then
+// skips the first-run setup. Unset (the default, and every public build) = ask on first run. Never committed.
+val bakedServerUrl = (System.getenv("CINEMA_ORIGIN") ?: "").trim().trimEnd('/')
+require(bakedServerUrl.isEmpty() || Regex("^https://[A-Za-z0-9.-]+(:[0-9]+)?$").matches(bakedServerUrl)) {
+    "CINEMA_ORIGIN must look like https://host[:port] (got \"$bakedServerUrl\")"
+}
+
 android {
     namespace = "com.homebot.cinema"
     compileSdk = 35
@@ -13,6 +20,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
+        buildConfigField("String", "BAKED_SERVER_URL", "\"$bakedServerUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

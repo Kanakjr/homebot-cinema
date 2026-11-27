@@ -31,6 +31,10 @@ A lightweight Android companion app for phones, tablets, and Android TV / Google
 # Build debug APK:
 scripts/build-android.sh
 
+# Private build for your own household: your server baked in, so a fresh install skips the setup screen
+# (the user can still change it later). Leave CINEMA_ORIGIN unset for a public build.
+CINEMA_ORIGIN=https://your-host scripts/build-android.sh
+
 # Or run unit tests, lint, and APK build directly:
 cd android
 ./gradlew testDebugUnitTest lintDebug assembleDebug

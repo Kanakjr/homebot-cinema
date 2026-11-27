@@ -40,4 +40,15 @@ class ServerUrlConfigTest {
         assertNull(ServerUrlConfig.cookieSpec("https://media.example.org", "  "))
         assertNull(ServerUrlConfig.cookieSpec("not-a-url", "jwt-abc"))
     }
+
+    @Test
+    fun effectiveServerUrl_prefersSavedThenBakedThenSetup() {
+        // the user's own choice always wins
+        assertEquals("https://mine.example.com", ServerUrlConfig.effectiveServerUrl("https://mine.example.com/", "https://cinema.example.com"))
+        // nothing saved yet: a private build opens its baked-in server (no setup screen)
+        assertEquals("https://cinema.example.com", ServerUrlConfig.effectiveServerUrl(null, "https://cinema.example.com"))
+        assertEquals("https://cinema.example.com", ServerUrlConfig.effectiveServerUrl("  ", "https://cinema.example.com"))
+        // a public build (nothing baked in) shows the setup screen
+        assertNull(ServerUrlConfig.effectiveServerUrl(null, ""))
+    }
 }

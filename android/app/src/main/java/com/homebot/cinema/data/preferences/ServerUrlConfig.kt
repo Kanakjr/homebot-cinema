@@ -36,6 +36,10 @@ object ServerUrlConfig {
         return "$scheme://$host$portPart$pathPart"
     }
 
+    /** The server to open: the user's saved choice, else the build's baked-in one, else null (first-run setup). */
+    fun effectiveServerUrl(saved: String?, baked: String): String? =
+        normalizeServerUrl(saved?.takeIf { it.isNotBlank() } ?: baked)
+
     fun originFor(serverUrl: String): String? {
         val uri = try {
             URI(serverUrl)

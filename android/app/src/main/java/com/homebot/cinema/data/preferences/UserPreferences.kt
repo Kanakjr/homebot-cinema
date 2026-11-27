@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.homebot.cinema.BuildConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -23,8 +24,9 @@ class UserPreferences(private val context: Context) {
         prefs[KEY_SERVER_URL]?.takeIf { it.isNotBlank() } ?: DEFAULT_SERVER_URL
     }
 
+    // the saved server, else the one baked in at build time (private builds), else null = show the setup screen
     val configuredServerUrl: Flow<String?> = context.dataStore.data.map { prefs ->
-        prefs[KEY_SERVER_URL]?.let { ServerUrlConfig.normalizeServerUrl(it) }
+        ServerUrlConfig.effectiveServerUrl(prefs[KEY_SERVER_URL], BuildConfig.BAKED_SERVER_URL)
     }
 
     val profileId: Flow<String?> = context.dataStore.data.map { prefs ->
